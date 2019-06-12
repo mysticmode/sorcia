@@ -16,7 +16,7 @@ a {
   color: #2680a4;
   outline: none; }
   a:hover {
-    color: #1c607b; }
+    color: #185066; }
 
 p {
   line-height: 20px; }
@@ -81,23 +81,6 @@ ul {
 
 .container {
   margin: 30px 0; }
-  .container--git {
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: flex;
-    -webkit-box-pack: justify;
-    -ms-flex-pack: justify;
-    justify-content: space-between; }
-    .container--git__repos {
-      width: 560px; }
-      .container--git__repos li {
-        background: #edf0f2;
-        padding: 10px;
-        margin-bottom: 10px; }
-      .container--git__repos a {
-        display: block;
-        margin-bottom: 5px;
-        font-weight: bold; }
   .container__info {
     width: 210px; }
     .container__info .button {
@@ -106,3 +89,43 @@ ul {
       width: -moz-max-content;
       width: max-content;
       margin-top: 10px; }
+
+.git {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+  -ms-flex-pack: justify;
+  justify-content: space-between; }
+  .git__repos {
+    width: 560px; }
+    .git__repos li {
+      background: #edf0f2;
+      padding: 10px;
+      margin-bottom: 10px; }
+    .git__repos a {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold; }
+
+.repo__title {
+  font-weight: bold; }
+
+.repo__description {
+  margin-top: 5px; }
+
+.repo__menu {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  margin-top: 15px;
+  border-bottom: 1px solid #edf0f2; }
+  .repo__menu__item {
+    color: #333333;
+    margin-right: 20px;
+    padding: 7px 10px; }
+    .repo__menu__item:hover {
+      background: #edf0f2;
+      color: #333333; }
+    .repo__menu__item--active {
+      background: #edf0f2; }
