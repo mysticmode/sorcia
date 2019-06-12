@@ -16,6 +16,10 @@ a {
     text-decoration: none;
     color: #2680a4;
     outline: none;
+
+    &:hover {
+        color: darken($color: #2680a4, $amount: 10%);
+    }
 }
 
 p {
@@ -33,6 +37,7 @@ ul {
 
     &:hover {
         background: darken($color: #2680a4, $amount: 10%);
+        color: white;
     }
 }
 

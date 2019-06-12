@@ -15,6 +15,8 @@ a {
   text-decoration: none;
   color: #2680a4;
   outline: none; }
+  a:hover {
+    color: #1c607b; }
 
 p {
   line-height: 20px; }
@@ -27,7 +29,8 @@ ul {
   color: white;
   padding: 7px 10px; }
   .button:hover {
-    background: #1c607b; }
+    background: #1c607b;
+    color: white; }
 
 .header {
   display: -webkit-box;
