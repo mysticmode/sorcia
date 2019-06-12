@@ -1,0 +1,59 @@
+* {
+  margin: 0;
+  padding: 0;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box; }
+
+body {
+  width: 700px;
+  margin: 20px;
+  font-family: sans-serif;
+  font-size: 14px;
+  color: #333333; }
+
+.header {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-box-pack: justify;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+  width: 100%; }
+  .header__left {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center; }
+  .header__logo {
+    font-family: 'PT Mono', monospace;
+    font-size: 20px;
+    text-decoration: none;
+    color: #2680a4;
+    outline: none;
+    margin-right: 50px; }
+  .header__menu {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    list-style: none; }
+    .header__menu li {
+      margin-right: 20px; }
+      .header__menu li:last-child {
+        margin-right: 0; }
+    .header__menu__item {
+      text-decoration: none;
+      color: #787878; }
+      .header__menu__item:hover {
+        color: #333333; }
+  .header__profile {
+    color: #333333; }
+    .header__profile a {
+      text-decoration: none;
+      color: #787878; }
+      .header__profile a:hover {
+        color: #333333; }
