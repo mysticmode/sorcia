@@ -13,7 +13,8 @@ body {
 
 a {
   text-decoration: none;
-  color: #2680a4; }
+  color: #2680a4;
+  outline: none; }
 
 p {
   line-height: 20px; }
