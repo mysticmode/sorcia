@@ -46,9 +46,9 @@ body {
 
         &__item {
             text-decoration: none;
-            color: #787878;
+            color: #8d8d8d;
 
-            &:hover {
+            &:hover, &--active {
                 color: #333333;
             }
         }
@@ -60,7 +60,7 @@ body {
 
         & a {
             text-decoration: none;
-            color: #787878;
+            color: #8d8d8d;
 
             &:hover {
                 color: #333333;
