@@ -47,13 +47,13 @@ body {
         margin-right: 0; }
     .header__menu__item {
       text-decoration: none;
-      color: #787878; }
-      .header__menu__item:hover {
+      color: #8d8d8d; }
+      .header__menu__item:hover, .header__menu__item--active {
         color: #333333; }
   .header__profile {
     color: #333333; }
     .header__profile a {
       text-decoration: none;
-      color: #787878; }
+      color: #8d8d8d; }
       .header__profile a:hover {
         color: #333333; }
