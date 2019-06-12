@@ -5,11 +5,30 @@
 }
 
 body {
-    width: 700px;
+    width: 800px;
     margin: 20px;
     font-family: sans-serif;
     font-size: 14px;
     color: #333333;
+}
+
+a {
+    text-decoration: none;
+    color: #2680a4;
+}
+
+p {
+    line-height: 20px;
+}
+
+ul {
+    list-style: none;
+}
+
+.button {
+    background: #2680a4;
+    color: white;
+    padding: 7px 10px;
 }
 
 .header {
@@ -65,6 +84,41 @@ body {
             &:hover {
                 color: #333333;
             }
+        }
+    }
+}
+
+.container {
+    margin: 30px 0;
+
+    &--git {
+        display: flex;
+        justify-content: space-between;
+
+        &__repos {
+            width: 560px;
+            
+            & li {
+                background: #edf0f2;
+                padding: 10px;
+                margin-bottom: 10px;
+            }
+            
+            & a {
+                display: block;
+                margin-bottom: 5px;
+                font-weight: bold;
+            }
+        }
+    }
+
+    &__info {
+        width: 210px;
+
+        & .button {
+            display: block;
+            width: max-content;
+            margin-top: 10px;
         }
     }
 }
