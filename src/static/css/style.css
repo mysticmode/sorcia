@@ -26,6 +26,8 @@ ul {
   background: #2680a4;
   color: white;
   padding: 7px 10px; }
+  .button:hover {
+    background: #1c607b; }
 
 .header {
   display: -webkit-box;
