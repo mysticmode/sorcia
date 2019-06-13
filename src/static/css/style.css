@@ -136,6 +136,9 @@ ul {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
   width: 100%;
   background: #edf0f2;
   padding: 10px; }
@@ -143,5 +146,20 @@ ul {
     font-size: 12px;
     margin-right: 20px; }
 
-.readme {
+.repo__branch {
+  font-family: sans-serif;
+  font-size: 12px;
+  margin-right: 20px; }
+
+.readme, .repo-tree {
   margin-top: 20px; }
+
+.repo-tree a {
+  display: block;
+  padding: 5px;
+  border-bottom: 1px solid #e0e4e7; }
+
+.repo-tree__file {
+  color: #333333; }
+  .repo-tree__file:hover {
+    text-decoration: underline; }
