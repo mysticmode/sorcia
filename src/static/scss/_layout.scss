@@ -59,6 +59,10 @@ ul {
         color: #2680a4;
         outline: none;
         margin-right: 50px;
+
+        &:hover {
+            color: #2680a4;
+        }
     }
 
     &__menu {

@@ -57,6 +57,8 @@ ul {
     color: #2680a4;
     outline: none;
     margin-right: 50px; }
+    .header__logo:hover {
+      color: #2680a4; }
   .header__menu {
     display: -webkit-box;
     display: -ms-flexbox;
