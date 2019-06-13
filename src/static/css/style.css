@@ -129,3 +129,17 @@ ul {
       color: #333333; }
     .repo__menu__item--active {
       background: #edf0f2; }
+
+.repo__sub-menu {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  width: 100%;
+  background: #edf0f2;
+  padding: 10px; }
+  .repo__sub-menu__item {
+    font-size: 12px;
+    margin-right: 20px; }
+
+.readme {
+  margin-top: 20px; }
