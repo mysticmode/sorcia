@@ -170,6 +170,7 @@ ul {
 
     &__sub-menu {
         display: flex;
+        flex-wrap: wrap;
         align-items: center;
         width: 100%;
         background: #edf0f2;
