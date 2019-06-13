@@ -143,12 +143,11 @@ ul {
   background: #edf0f2;
   padding: 10px; }
   .repo__sub-menu__item {
-    font-size: 12px;
     margin-right: 20px; }
 
 .repo__branch {
   font-family: sans-serif;
-  font-size: 12px;
+  font-size: 14px;
   margin-right: 20px; }
 
 .readme, .repo-tree {
