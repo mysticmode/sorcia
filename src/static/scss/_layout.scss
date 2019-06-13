@@ -170,6 +170,7 @@ ul {
 
     &__sub-menu {
         display: flex;
+        align-items: center;
         width: 100%;
         background: #edf0f2;
         padding: 10px;
@@ -179,8 +180,31 @@ ul {
             margin-right: 20px;
         }
     }
+
+    &__branch {
+        font-family: sans-serif;
+        font-size: 12px;
+        margin-right: 20px;
+    }
 }
 
-.readme {
+.readme, .repo-tree {
     margin-top: 20px;
+}
+
+.repo-tree {
+    
+    & a {
+        display: block;
+        padding: 5px;
+        border-bottom: 1px solid #e0e4e7;
+    }
+
+    &__file {
+        color: #333333;
+        
+        &:hover {
+            text-decoration: underline;
+        }
+    }
 }
