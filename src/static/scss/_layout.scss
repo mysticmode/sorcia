@@ -30,6 +30,14 @@ ul {
     list-style: none;
 }
 
+pre {
+    overflow-x: auto;
+
+    & code {
+        font-family: SFMono-Regular,Consolas,Liberation Mono,Menlo,Courier,monospace;
+    }
+}
+
 .button {
     background: #2680a4;
     color: white;
@@ -188,7 +196,7 @@ ul {
     }
 }
 
-.readme, .repo-tree {
+.readme, .repo-tree, .file-viewer {
     margin-top: 20px;
 }
 
@@ -207,4 +215,8 @@ ul {
             text-decoration: underline;
         }
     }
+}
+
+.file-viewer {
+    border: 1px solid #e0e4e7;
 }

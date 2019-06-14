@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>sorcia - A simple and self-hosted Git service</title>
+    <link href="https://fonts.googleapis.com/css?family=PT+Mono&display=swap" rel="stylesheet"> 
+    <link rel="stylesheet" href="static/css/style.css" />
+</head>
+<body>
+    <header class="header">
+        <div class="header__left">
+            <a href="" class="header__logo">sorcia</a>
+            <ul class="header__menu">
+                <li>
+                    <a href="" class="header__menu__item header__menu__item--active">git</a>
+                </li>
+                <li>
+                    <a href="" class="header__menu__item">todo</a>
+                </li>
+                <li>
+                    <a href="" class="header__menu__item">lists</a>
+                </li>
+                <li>
+                    <a href="" class="header__menu__item">man</a>
+                </li>
+                <li>
+                    <a href="" class="header__menu__item">meta</a>
+                </li>
+            </ul>
+        </div>
+        <div class="header__profile"><a href="">logout</a></div>
+    </header>
+    <main class="container repo">
+        <div class="repo__title"><a href="">~mysticmode</a> / joyread</div>
+        <div class="repo__description">Self-hosted multi-user free(libre) ebook reader.</div>
+        <div class="repo__menu">
+            <a href="" class="repo__menu__item">summary</a>
+            <a href="" class="repo__menu__item repo__menu__item--active">tree</a>
+            <a href="" class="repo__menu__item">log</a>
+            <a href="" class="repo__menu__item">contributors</a>
+            <a href="" class="repo__menu__item">settings</a>
+        </div>
+        <div class="repo__sub-menu">
+            <div class="repo__path">
+                <a href="">joyread</a> / gulpfile.js
+            </div>
+        </div>
+        <div class="file-viewer">
+            <pre>
+                <code class="js">
+    const gulp = require('gulp');
+        const sass = require('gulp-sass');
+        const autoprefixer = require('gulp-autoprefixer');
+        
+        var paths = {
+            style: {
+                src: 'src/static/scss/style.scss',
+                all: 'src/static/scss/**/**/*.scss',
+                dest: 'src/static/css/'
+            }
+        }
+        
+        function style() {
+            return gulp.src(paths.style.src)
+            .pipe(sass().on('error', sass.logError))
+            .pipe(autoprefixer({
+                browsers: ['last 2 versions'],
+                cascade: false
+            }))
+            .pipe(gulp.dest(paths.style.dest));
+        }
+        
+        function watch() {
+            gulp.watch(paths.style.all, style);
+        }
+        
+        gulp.task('default', gulp.series(watch));
+        gulp.task('style', style)
+                </code>
+            </pre>
+        </div>
+    </main>
+</body>
+</html>
