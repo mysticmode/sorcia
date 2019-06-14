@@ -14,12 +14,17 @@ func main() {
 	}
 	defer file.Close()
 
+	var codeLines []string
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		fmt.Println("<p>" + scanner.Text() + "</p>")
+		codeLines = append(codeLines, scanner.Text())
 	}
 
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
+	}
+
+	for _, eachline := range codeLines {
+		fmt.Println(eachline)
 	}
 }
