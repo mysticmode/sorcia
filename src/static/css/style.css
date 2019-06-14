@@ -24,6 +24,11 @@ p {
 ul {
   list-style: none; }
 
+pre {
+  overflow-x: auto; }
+  pre code {
+    font-family: SFMono-Regular,Consolas,Liberation Mono,Menlo,Courier,monospace; }
+
 .button {
   background: #2680a4;
   color: white;
@@ -152,7 +157,7 @@ ul {
   font-size: 14px;
   margin-right: 20px; }
 
-.readme, .repo-tree {
+.readme, .repo-tree, .file-viewer {
   margin-top: 20px; }
 
 .repo-tree a {
@@ -164,3 +169,6 @@ ul {
   color: #333333; }
   .repo-tree__file:hover {
     text-decoration: underline; }
+
+.file-viewer {
+  border: 1px solid #e0e4e7; }
