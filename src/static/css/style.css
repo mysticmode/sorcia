@@ -25,10 +25,13 @@ ul {
   list-style: none; }
 
 pre {
-  overflow-x: auto; }
+  overflow-x: auto;
+  line-height: 4px; }
   pre code {
     font-family: SFMono-Regular,Consolas,Liberation Mono,Menlo,Courier,monospace;
     font-size: 14px; }
+    pre code p {
+      display: block; }
 
 .button {
   background: #2680a4;
