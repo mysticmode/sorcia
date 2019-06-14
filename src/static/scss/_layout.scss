@@ -48,9 +48,18 @@ pre {
 
         & .hljs-ln-numbers {
             display: inline-block;
+            width: 20px;
             font-size: 12px;
-            margin-right: 10px;
+            color: #8d8d8d;
+            text-align: right;
+            margin-right: 20px;
             cursor: pointer;
+
+            &:hover {
+                & .hljs-ln-line.hljs-ln-n {
+                    color: #333333;
+                }
+            }
         }
     }
 }
