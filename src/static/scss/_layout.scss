@@ -37,8 +37,20 @@ pre {
         font-family: SFMono-Regular,Consolas,Liberation Mono,Menlo,Courier,monospace;
         font-size: 14px;
 
-        & p {
-            display: block;
+        & table, & tbody, & tr {
+            width: 100%;
+        }
+
+        & tr {
+            display: flex;
+            align-items: center;
+        }
+
+        & .hljs-ln-numbers {
+            display: inline-block;
+            font-size: 12px;
+            margin-right: 10px;
+            cursor: pointer;
         }
     }
 }
