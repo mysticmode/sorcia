@@ -29,8 +29,20 @@ pre {
   pre code {
     font-family: SFMono-Regular,Consolas,Liberation Mono,Menlo,Courier,monospace;
     font-size: 14px; }
-    pre code p {
-      display: block; }
+    pre code table, pre code tbody, pre code tr {
+      width: 100%; }
+    pre code tr {
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -webkit-box-align: center;
+      -ms-flex-align: center;
+      align-items: center; }
+    pre code .hljs-ln-numbers {
+      display: inline-block;
+      font-size: 12px;
+      margin-right: 10px;
+      cursor: pointer; }
 
 .button {
   background: #2680a4;

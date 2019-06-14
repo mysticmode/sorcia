@@ -27,4 +27,6 @@ func main() {
 	for _, eachline := range codeLines {
 		fmt.Println(eachline)
 	}
+
+	fmt.Println(len(codeLines))
 }
