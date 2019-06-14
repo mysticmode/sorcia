@@ -32,7 +32,6 @@ ul {
 
 pre {
     overflow-x: auto;
-    line-height: 4px;
 
     & code {
         font-family: SFMono-Regular,Consolas,Liberation Mono,Menlo,Courier,monospace;
@@ -226,4 +225,11 @@ pre {
 .file-viewer {
     border: 1px solid #e0e4e7;
     padding: 10px;
+
+    & .hljs {
+        background: white;
+        color: #333333;
+        padding: 0;
+        overflow: hidden;
+    }
 }
