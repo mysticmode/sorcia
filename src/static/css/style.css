@@ -27,7 +27,8 @@ ul {
 pre {
   overflow-x: auto; }
   pre code {
-    font-family: SFMono-Regular,Consolas,Liberation Mono,Menlo,Courier,monospace; }
+    font-family: SFMono-Regular,Consolas,Liberation Mono,Menlo,Courier,monospace;
+    font-size: 14px; }
 
 .button {
   background: #2680a4;
@@ -171,4 +172,5 @@ pre {
     text-decoration: underline; }
 
 .file-viewer {
-  border: 1px solid #e0e4e7; }
+  border: 1px solid #e0e4e7;
+  padding: 10px; }
