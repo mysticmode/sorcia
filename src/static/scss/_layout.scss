@@ -32,10 +32,15 @@ ul {
 
 pre {
     overflow-x: auto;
+    line-height: 4px;
 
     & code {
         font-family: SFMono-Regular,Consolas,Liberation Mono,Menlo,Courier,monospace;
         font-size: 14px;
+
+        & p {
+            display: block;
+        }
     }
 }
 
