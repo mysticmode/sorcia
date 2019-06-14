@@ -48,35 +48,51 @@
             </div>
         </div>
         <div class="file-viewer">
-<pre><code><p>const gulp = require('gulp');</p>
-<p>const sass = require('gulp-sass');</p>
-<p>const autoprefixer = require('gulp-autoprefixer');</p>
-<p></p>
-<p>var paths = {</p>
-<p>    style: {</p>
-<p>        src: 'src/static/scss/style.scss',</p>
-<p>        all: 'src/static/scss/**/**/*.scss',</p>
-<p>        dest: 'src/static/css/'</p>
-<p>    }</p>
-<p>}</p>
-<p></p>
-<p>function style() {</p>
-<p>    return gulp.src(paths.style.src)</p>
-<p>    .pipe(sass().on('error', sass.logError))</p>
-<p>    .pipe(autoprefixer({</p>
-<p>        browsers: ['last 2 versions'],</p>
-<p>        cascade: false</p>
-<p>    }))</p>
-<p>    .pipe(gulp.dest(paths.style.dest));</p>
-<p>}</p>
-<p></p>
-<p>function watch() {</p>
-<p>    gulp.watch(paths.style.all, style);</p>
-<p>}</p>
-<p></p>
-<p>gulp.task('default', gulp.series(watch));</p>
-<p>gulp.task('style', style)</p></code></pre>
+            <pre>
+                <code class="javascript">
+const gulp = require('gulp');
+const sass = require('gulp-sass');
+const autoprefixer = require('gulp-autoprefixer');
+
+var paths = {
+    style: {
+        src: 'src/static/scss/style.scss',
+        all: 'src/static/scss/**/**/*.scss',
+        dest: 'src/static/css/'
+    }
+}
+
+function style() {
+    return gulp.src(paths.style.src)
+    .pipe(sass().on('error', sass.logError))
+    .pipe(autoprefixer({
+        browsers: ['last 2 versions'],
+        cascade: false
+    }))
+    .pipe(gulp.dest(paths.style.dest));
+}
+
+function watch() {
+    gulp.watch(paths.style.all, style);
+}
+
+gulp.task('default', gulp.series(watch));
+gulp.task('style', style)
+                </code>
+            </pre>
         </div>
     </main>
+    <link rel="stylesheet"
+    href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.8/styles/default.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.8/highlight.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', (event) => {
+
+  document.querySelectorAll('pre code').forEach((block) => {
+    hljs.highlightBlock(block);
+  });
+});
+</script>
 </body>
 </html>
