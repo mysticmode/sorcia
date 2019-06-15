@@ -4,9 +4,9 @@ const autoprefixer = require('gulp-autoprefixer');
 
 var paths = {
     style: {
-        src: 'src/static/scss/style.scss',
-        all: 'src/static/scss/**/**/*.scss',
-        dest: 'src/static/css/'
+        src: 'public/scss/style.scss',
+        all: 'public/scss/**/**/*.scss',
+        dest: 'public/css/'
     }
 }
 
