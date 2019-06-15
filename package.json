@@ -9,7 +9,7 @@
       "http-server": "^0.11.1"
     },
     "scripts": {
-      "start": "http-server ./src",
+      "start": "http-server .",
       "gulp-watch": "gulp",
       "gulp-style": "gulp style"
     }
