@@ -177,6 +177,9 @@ pre {
   font-size: 14px;
   margin-right: 20px; }
 
+.repo__path {
+  line-height: 20px; }
+
 .readme, .repo-tree, .file-viewer {
   margin-top: 20px; }
 

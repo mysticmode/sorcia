@@ -220,6 +220,10 @@ pre {
         font-size: 14px;
         margin-right: 20px;
     }
+
+    &__path {
+        line-height: 20px;
+    }
 }
 
 .readme, .repo-tree, .file-viewer {
