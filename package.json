@@ -5,11 +5,9 @@
     "devDependencies": {
       "gulp": "^4.0.0",
       "gulp-autoprefixer": "^5.0.0",
-      "gulp-sass": "^4.0.1",
-      "http-server": "^0.11.1"
+      "gulp-sass": "^4.0.1"
     },
     "scripts": {
-      "start": "http-server ./templates",
       "gulp-watch": "gulp",
       "gulp-style": "gulp style"
     }
