@@ -27,7 +27,7 @@ ul {
 pre {
   overflow-x: auto; }
   pre code {
-    font-family: SFMono-Regular,Consolas,Liberation Mono,Menlo,Courier,monospace;
+    font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, Courier, monospace;
     font-size: 14px; }
     pre code table, pre code tbody, pre code tr {
       width: 100%; }
@@ -48,6 +48,17 @@ pre {
       cursor: pointer; }
       pre code .hljs-ln-numbers:hover .hljs-ln-line.hljs-ln-n {
         color: #333333; }
+
+.container {
+  margin: 30px 0; }
+  .container__info {
+    width: 210px; }
+    .container__info .button {
+      display: block;
+      width: -webkit-max-content;
+      width: -moz-max-content;
+      width: max-content;
+      margin-top: 10px; }
 
 .button {
   background: #2680a4;
@@ -76,7 +87,7 @@ pre {
     -ms-flex-align: center;
     align-items: center; }
   .header__logo {
-    font-family: 'PT Mono', monospace;
+    font-family: "PT Mono", monospace;
     font-size: 20px;
     text-decoration: none;
     color: #2680a4;
@@ -105,17 +116,6 @@ pre {
       color: #8d8d8d; }
       .header__profile a:hover {
         color: #333333; }
-
-.container {
-  margin: 30px 0; }
-  .container__info {
-    width: 210px; }
-    .container__info .button {
-      display: block;
-      width: -webkit-max-content;
-      width: -moz-max-content;
-      width: max-content;
-      margin-top: 10px; }
 
 .git {
   display: -webkit-box;

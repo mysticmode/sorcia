@@ -1,0 +1,108 @@
+.git {
+    display: flex;
+    justify-content: space-between;
+
+    &__repos {
+        width: 560px;
+        
+        & li {
+            background: $brand-bg-1;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        
+        & a {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+    }
+}
+
+.repo {
+
+    &__title {
+        font-weight: bold;
+    }
+
+    &__description {
+        margin-top: 5px;
+    }
+
+    &__menu {
+        display: flex;
+        margin-top: 15px;
+        border-bottom: 1px solid $brand-bg-1;
+        
+        &__item {
+            color: $text-color;
+            margin-right: 20px;
+            padding: 7px 10px;
+
+            &:hover {
+                background: $brand-bg-1;
+                color: $text-color;
+            }
+
+            &--active {
+                background: $brand-bg-1;
+            }
+        }
+    }
+
+    &__sub-menu {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        width: 100%;
+        background: $brand-bg-1;
+        padding: 10px;
+
+        &__item {
+            margin-right: 20px;
+        }
+    }
+
+    &__branch {
+        font-family: $font-default;
+        font-size: 14px;
+        margin-right: 20px;
+    }
+
+    &__path {
+        line-height: 20px;
+    }
+}
+
+.readme, .repo-tree, .file-viewer {
+    margin-top: 20px;
+}
+
+.repo-tree {
+    
+    & a {
+        display: block;
+        padding: 5px;
+        border-bottom: 1px solid $brand-border;
+    }
+
+    &__file {
+        color: $text-color;
+        
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}
+
+.file-viewer {
+    border: 1px solid $brand-border;
+    padding: 10px;
+
+    & .hljs {
+        background: white;
+        color: $text-color;
+        padding: 0;
+        overflow: hidden;
+    }
+}
