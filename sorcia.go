@@ -1,6 +1,10 @@
 package main
 
-import "github.com/gin-gonic/gin"
+import (
+	"fmt"
+
+	"github.com/gin-gonic/gin"
+)
 
 func main() {
 	// Gin initiate
@@ -13,10 +17,19 @@ func main() {
 	r.Static("/public", "./public")
 
 	// Gin handlers
-	r.GET("/", func(c *gin.Context) {
-		c.HTML(200, "index.html", "")
-	})
+	r.GET("/", Home)
+	r.GET("/host", GetHostAddress)
 
 	// Listen and serve on 1937
 	r.Run(":1937")
+}
+
+// Home ...
+func Home(c *gin.Context) {
+	c.HTML(200, "index.html", "")
+}
+
+// GetHostAddress returns the URL address
+func GetHostAddress(c *gin.Context) {
+	c.String(200, fmt.Sprintf("%s", c.Request.Host))
 }
