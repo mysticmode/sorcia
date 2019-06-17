@@ -26,7 +26,7 @@ func main() {
 
 // Home ...
 func Home(c *gin.Context) {
-	c.HTML(200, "index.html", "")
+	c.HTML(200, "repo-tree.html", "")
 }
 
 // GetHostAddress returns the URL address
