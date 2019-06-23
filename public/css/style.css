@@ -150,7 +150,9 @@ input[type="text"], input[type="email"], input[type="password"] {
     -ms-flex-align: center;
     align-items: center; }
   .onboard__form i {
-    color: #d15555; }
+    color: #d15555;
+    font-style: normal;
+    margin-left: 2px; }
 
 .git {
   display: -webkit-box;
