@@ -1,0 +1,41 @@
+.onboard {
+    width: 300px;
+
+    &__form {
+        
+        &:first-child {
+            margin-bottom: 30px;
+        }
+
+        &__title {
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        &__group {
+            margin-bottom: 10px;
+        }
+
+        & label, &__input {
+            display: block;
+        }
+
+        & label {
+            margin-bottom: 5px;
+        }
+
+        &__input {
+            width: 300px;
+        }
+
+        &__submit-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        & i {
+            color: $brand-danger;
+        }
+    }
+}

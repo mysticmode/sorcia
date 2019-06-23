@@ -63,10 +63,17 @@ pre {
 .button {
   background: #2680a4;
   color: white;
-  padding: 7px 10px; }
+  border: none;
+  padding: 7px 10px;
+  cursor: pointer; }
   .button:hover {
     background: #1c607b;
     color: white; }
+
+input[type="text"], input[type="email"], input[type="password"] {
+  border: 1px solid #e0e4e7;
+  border-radius: 0;
+  padding: 7px 10px; }
 
 .header {
   display: -webkit-box;
@@ -116,6 +123,34 @@ pre {
       color: #8d8d8d; }
       .header__profile a:hover {
         color: #333333; }
+
+.onboard {
+  width: 300px; }
+  .onboard__form:first-child {
+    margin-bottom: 30px; }
+  .onboard__form__title {
+    font-weight: bold;
+    margin-bottom: 15px; }
+  .onboard__form__group {
+    margin-bottom: 10px; }
+  .onboard__form label, .onboard__form__input {
+    display: block; }
+  .onboard__form label {
+    margin-bottom: 5px; }
+  .onboard__form__input {
+    width: 300px; }
+  .onboard__form__submit-group {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: justify;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center; }
+  .onboard__form i {
+    color: #d15555; }
 
 .git {
   display: -webkit-box;

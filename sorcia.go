@@ -18,6 +18,7 @@ func main() {
 
 	// Gin handlers
 	r.GET("/", Home)
+	r.GET("/login", Login)
 	r.GET("/host", GetHostAddress)
 
 	// Listen and serve on 1937
@@ -27,6 +28,11 @@ func main() {
 // Home ...
 func Home(c *gin.Context) {
 	c.HTML(200, "index.html", "")
+}
+
+// Login ...
+func Login(c *gin.Context) {
+	c.HTML(200, "login.html", "")
 }
 
 // GetHostAddress returns the URL address
