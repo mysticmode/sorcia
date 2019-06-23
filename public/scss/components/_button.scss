@@ -1,7 +1,9 @@
 .button {
     background: $brand-primary;
     color: white;
+    border: none;
     padding: 7px 10px;
+    cursor: pointer;
 
     &:hover {
         background: darken($color: #2680a4, $amount: 10%);
