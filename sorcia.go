@@ -48,6 +48,7 @@ func main() {
 	// Gin handlers
 	r.GET("/", GetHome)
 	r.GET("/login", GetLogin)
+	r.POST("/login", PostLogin)
 	r.GET("/logout", GetLogout)
 	r.POST("/register", PostRegister)
 	r.GET("/host", GetHostAddress)
@@ -84,6 +85,11 @@ func validateJWTToken(tokenString string, passwordHash string) (bool, error) {
 	return token.Valid, err
 }
 
+// ErrorResponse struct
+type ErrorResponse struct {
+	Error string `json:"error"`
+}
+
 // GetHome ...
 func GetHome(c *gin.Context) {
 	userPresent, ok := c.MustGet("userPresent").(bool)
@@ -112,16 +118,56 @@ func GetLogin(c *gin.Context) {
 	}
 }
 
+// LoginRequest struct
+type LoginRequest struct {
+	Username string `form:"username" binding:"required"`
+	Password string `form:"password" binding:"required"`
+}
+
+// PostLogin ...
+func PostLogin(c *gin.Context) {
+	var form LoginRequest
+
+	if err := c.Bind(&form); err == nil {
+		db, ok := c.MustGet("db").(*sql.DB)
+		if !ok {
+			fmt.Println("Middleware db error")
+		}
+
+		sphjwt := auth.SelectPasswordHashAndJWTTokenStruct{
+			Username: form.Username,
+		}
+		sphjwtr := auth.SelectPasswordHashAndJWTToken(db, sphjwt)
+
+		if isPasswordValid := checkPasswordHash(form.Password, sphjwtr.PasswordHash); isPasswordValid == true {
+			isTokenValid, err := validateJWTToken(sphjwtr.Token, sphjwtr.PasswordHash)
+			cError.CheckError(err)
+
+			if isTokenValid == true {
+				expiration := time.Now().Add(365 * 24 * time.Hour)
+				cookie := http.Cookie{Name: "sorcia-token", Value: sphjwtr.Token, Expires: expiration}
+				http.SetCookie(c.Writer, &cookie)
+
+				c.Redirect(http.StatusMovedPermanently, "/")
+			} else {
+				c.HTML(http.StatusOK, "login.html", "")
+			}
+		} else {
+			c.HTML(http.StatusOK, "login.html", "")
+		}
+	} else {
+		errorResponse := &ErrorResponse{
+			Error: err.Error(),
+		}
+		c.JSON(http.StatusBadRequest, errorResponse)
+	}
+}
+
 // RegisterRequest struct
 type RegisterRequest struct {
 	Username string `form:"username" binding:"required"`
 	Email    string `form:"email" binding:"required"`
 	Password string `form:"password" binding:"required"`
-}
-
-// ErrorResponse struct
-type ErrorResponse struct {
-	Error string `json:"error"`
 }
 
 // PostRegister ...

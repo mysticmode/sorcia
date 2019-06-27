@@ -44,3 +44,32 @@ func GetUserIDFromToken(db *sql.DB, token string) int {
 
 	return userID
 }
+
+
+// SelectPasswordHashAndJWTTokenStruct struct
+type SelectPasswordHashAndJWTTokenStruct struct {
+	Username string
+}
+
+// SelectPasswordHashAndJWTTokenResponse struct
+type SelectPasswordHashAndJWTTokenResponse struct {
+	PasswordHash string
+	Token        string
+}
+
+// SelectPasswordHashAndJWTToken ...
+func SelectPasswordHashAndJWTToken(db *sql.DB, sphjwt SelectPasswordHashAndJWTTokenStruct) *SelectPasswordHashAndJWTTokenResponse {
+	// Search for username in the 'account' table with the given string
+	rows, err := db.Query("SELECT password_hash, jwt_token FROM account WHERE username = $1", sphjwt.Username)
+	cError.CheckError(err)
+
+	var sphjwtr SelectPasswordHashAndJWTTokenResponse
+
+	if rows.Next() {
+		err := rows.Scan(&sphjwtr.PasswordHash, &sphjwtr.Token)
+		cError.CheckError(err)
+	}
+	rows.Close()
+
+	return &sphjwtr
+}
