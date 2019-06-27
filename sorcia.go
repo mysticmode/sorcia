@@ -37,7 +37,7 @@ func main() {
 	r.GET("/host", GetHostAddress)
 
 	// Listen and serve on 1937
-	r.Run(":1937")
+	r.Run(fmt.Sprintf(":%s", conf.Server.HTTPPort))
 }
 
 // Home ...
