@@ -46,8 +46,7 @@ func UserMiddleware(db *sql.DB) gin.HandlerFunc {
 		}
 
 		token, _ := c.Cookie("sorcia-token")
-		fmt.Println(token)
-		
+
 		userID := auth.GetUserIDFromToken(db, token)
 
 		userPresent := false

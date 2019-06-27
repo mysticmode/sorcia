@@ -114,7 +114,9 @@ func GetLogin(c *gin.Context) {
 	if userPresent {
 		c.Redirect(http.StatusMovedPermanently, "/")
 	} else {
-		c.HTML(http.StatusOK, "login.html", "")
+		c.HTML(http.StatusOK, "login.html", gin.H{
+			"loginErrMessage": "",
+		})
 	}
 }
 
@@ -150,10 +152,14 @@ func PostLogin(c *gin.Context) {
 
 				c.Redirect(http.StatusMovedPermanently, "/")
 			} else {
-				c.HTML(http.StatusOK, "login.html", "")
+				c.HTML(http.StatusOK, "login.html", gin.H{
+					"loginErrMessage": "Your username or password is incorrect.",
+				})
 			}
 		} else {
-			c.HTML(http.StatusOK, "login.html", "")
+			c.HTML(http.StatusOK, "login.html", gin.H{
+				"loginErrMessage": "Your username or password is incorrect.",
+			})
 		}
 	} else {
 		errorResponse := &ErrorResponse{

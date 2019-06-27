@@ -14,39 +14,19 @@
     <header class="header">
         <div class="header__left">
             <a href="" class="header__logo">sorcia</a>
-            <ul class="header__menu">
-                <li>
-                    <a href="" class="header__menu__item header__menu__item--active">git</a>
-                </li>
-                <li>
-                    <a href="" class="header__menu__item">todo</a>
-                </li>
-                <li>
-                    <a href="" class="header__menu__item">releases</a>
-                </li>
-                <li>
-                    <a href="" class="header__menu__item">roadmap</a>
-                </li>
-                <li>
-                    <a href="" class="header__menu__item">man</a>
-                </li>
-                <li>
-                    <a href="" class="header__menu__item">meta</a>
-                </li>
-            </ul>
         </div>
-        <div class="header__profile"><a href="/logout">logout</a></div>
     </header>
     <main class="container onboard">
         <form method="post" action="/login" class="onboard__form">
             <div class="onboard__form__title">login</div>
+            <div class="onboard__form__error">{{ .loginErrMessage }}</div>
             <div class="onboard__form__group">
                 <label for="loginUsername">username<i>*</i></label>
-                <input type="text" class="onboard__form__input" id="loginUsername" name="username" />
+                <input type="text" class="onboard__form__input" id="loginUsername" name="username" required />
             </div>
             <div class="onboard__form__group">
                 <label for="loginPassword">password<i>*</i></label>
-                <input type="password" class="onboard__form__input" id="loginPassword" name="password" />
+                <input type="password" class="onboard__form__input" id="loginPassword" name="password" required />
             </div>
             <div class="onboard__form__submit-group">
                 <input type="submit" class="button button--primary" value="Login" />
@@ -57,15 +37,15 @@
             <div class="onboard__form__title">create account</div>
             <div class="onboard__form__group">
                 <label for="registerUsername">username<i>*</i></label>
-                <input type="text" class="onboard__form__input" id="registerUsername" name="username" />
+                <input type="text" class="onboard__form__input" id="registerUsername" name="username" required />
             </div>
             <div class="onboard__form__group">
                 <label for="registerEmail">email address<i>*</i></label>
-                <input type="text" class="onboard__form__input" id="registerEmail" name="email" />
+                <input type="text" class="onboard__form__input" id="registerEmail" name="email" required />
             </div>
             <div class="onboard__form__group">
                 <label for="registerPassword">password<i>*</i></label>
-                <input type="password" class="onboard__form__input" id="registerPassword" name="password" />
+                <input type="password" class="onboard__form__input" id="registerPassword" name="password" required />
             </div>
             <input type="submit" class="button button--primary" value="Create account" />
         </form>
