@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>sorcia - A simple and self-hosted Git service</title>
-    <link href="https://fonts.googleapis.com/css?family=PT+Mono&display=swap" rel="stylesheet"> 
+    <link href="https://fonts.googleapis.com/css?family=PT+Mono&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="public/css/style.css" />
 </head>
+
 <body>
     <header class="header">
         <div class="header__left">
@@ -36,37 +38,38 @@
         <div class="header__profile"><a href="">logout</a></div>
     </header>
     <main class="container onboard">
-        <div class="onboard__form">
+        <form method="post" action="/login" class="onboard__form">
             <div class="onboard__form__title">login</div>
             <div class="onboard__form__group">
                 <label for="loginUsername">username<i>*</i></label>
-                <input type="text" class="onboard__form__input" id="loginUsername" />
+                <input type="text" class="onboard__form__input" id="loginUsername" name="username" />
             </div>
             <div class="onboard__form__group">
                 <label for="loginPassword">password<i>*</i></label>
-                <input type="password" class="onboard__form__input" id="loginPassword" />
+                <input type="password" class="onboard__form__input" id="loginPassword" name="password" />
             </div>
             <div class="onboard__form__submit-group">
                 <input type="submit" class="button button--primary" value="Login" />
                 <a href="">forgot your password?</a>
             </div>
-        </div>
-        <div class="onboard__form">
+        </form>
+        <form method="post" action="/register" class="onboard__form">
             <div class="onboard__form__title">create account</div>
             <div class="onboard__form__group">
                 <label for="registerUsername">username<i>*</i></label>
-                <input type="text" class="onboard__form__input" id="registerUsername" />
+                <input type="text" class="onboard__form__input" id="registerUsername" name="username" />
             </div>
             <div class="onboard__form__group">
                 <label for="registerEmail">email address<i>*</i></label>
-                <input type="text" class="onboard__form__input" id="registerEmail" />
+                <input type="text" class="onboard__form__input" id="registerEmail" name="email" />
             </div>
             <div class="onboard__form__group">
                 <label for="registerPassword">password<i>*</i></label>
-                <input type="password" class="onboard__form__input" id="registerPassword" />
+                <input type="password" class="onboard__form__input" id="registerPassword" name="password" />
             </div>
             <input type="submit" class="button button--primary" value="Create account" />
-        </div>
+        </form>
     </main>
 </body>
+
 </html>
