@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>sorcia - A simple and self-hosted Git service</title>
-    <link href="https://fonts.googleapis.com/css?family=PT+Mono&display=swap" rel="stylesheet"> 
+    <link href="https://fonts.googleapis.com/css?family=PT+Mono&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="public/css/style.css" />
 </head>
+
 <body>
     <header class="header">
         <div class="header__left">
@@ -33,7 +35,7 @@
                 </li>
             </ul>
         </div>
-        <div class="header__profile"><a href="">logout</a></div>
+        <div class="header__profile"><a href="/logout">logout</a></div>
     </header>
     <main class="container repo">
         <div class="repo__title"><a href="">~mysticmode</a> / joyread</div>
@@ -81,18 +83,19 @@ gulp.task('default', gulp.series(watch));
 gulp.task('style', style);</code></pre>
         </div>
     </main>
-    <link rel="stylesheet"
-    href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.8/styles/default.min.css">
-<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.8/highlight.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/highlightjs-line-numbers.js@2.6.0/dist/highlightjs-line-numbers.min.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', (event) => {
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.8/styles/default.min.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.8/highlight.min.js"></script>
+    <script
+        src="https://cdn.jsdelivr.net/npm/highlightjs-line-numbers.js@2.6.0/dist/highlightjs-line-numbers.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
 
-  document.querySelectorAll('pre code').forEach((block) => {
-    hljs.highlightBlock(block);
-    hljs.initLineNumbersOnLoad();
-  });
-});
-</script>
+            document.querySelectorAll('pre code').forEach((block) => {
+                hljs.highlightBlock(block);
+                hljs.initLineNumbersOnLoad();
+            });
+        });
+    </script>
 </body>
+
 </html>

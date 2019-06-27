@@ -2,6 +2,9 @@ package middleware
 
 import (
 	"database/sql"
+	"fmt"
+
+	"sorcia/models/auth"
 
 	"github.com/gin-gonic/gin"
 )
@@ -35,22 +38,22 @@ func APIMiddleware(db *sql.DB) gin.HandlerFunc {
 }
 
 // UserMiddleware ...
-// func UserMiddleware(db *sql.DB) gin.HandlerFunc {
-// 	return func(c *gin.Context) {
-// 		db, ok := c.MustGet("db").(*sql.DB)
-// 		if !ok {
-// 			fmt.Println("Middleware db error")
-// 		}
+func UserMiddleware(db *sql.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		db, ok := c.MustGet("db").(*sql.DB)
+		if !ok {
+			fmt.Println("Middleware db error")
+		}
 
-// 		token, _ := c.Cookie("sorcia-token")
-// 		userID := models.GetUserIDFromToken(db, token)
+		token, _ := c.Cookie("sorcia-token")
+		userID := auth.GetUserIDFromToken(db, token)
 
-// 		userPresent := false
-// 		if userID != 0 {
-// 			userPresent = true
-// 		}
+		userPresent := false
+		if userID != 0 {
+			userPresent = true
+		}
 
-// 		c.Set("userPresent", userPresent)
-// 		c.Next()
-// 	}
-// }
+		c.Set("userPresent", userPresent)
+		c.Next()
+	}
+}

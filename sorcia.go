@@ -42,12 +42,13 @@ func main() {
 	r.Use(
 		middleware.CORSMiddleware(),
 		middleware.APIMiddleware(db),
-		// middleware.UserMiddleware(db),
+		middleware.UserMiddleware(db),
 	)
 
 	// Gin handlers
 	r.GET("/", GetHome)
 	r.GET("/login", GetLogin)
+	r.GET("/logout", GetLogout)
 	r.POST("/register", PostRegister)
 	r.GET("/host", GetHostAddress)
 
@@ -85,12 +86,30 @@ func validateJWTToken(tokenString string, passwordHash string) (bool, error) {
 
 // GetHome ...
 func GetHome(c *gin.Context) {
-	c.HTML(200, "index.html", "")
+	userPresent, ok := c.MustGet("userPresent").(bool)
+	if !ok {
+		fmt.Println("Middleware user error")
+	}
+
+	if userPresent {
+		c.HTML(200, "index.html", "")
+	} else {
+		c.Redirect(http.StatusMovedPermanently, "/login")
+	}
 }
 
 // GetLogin ...
 func GetLogin(c *gin.Context) {
-	c.HTML(200, "login.html", "")
+	userPresent, ok := c.MustGet("userPresent").(bool)
+	if !ok {
+		fmt.Println("Middleware user error")
+	}
+
+	if userPresent {
+		c.Redirect(http.StatusMovedPermanently, "/")
+	} else {
+		c.HTML(http.StatusOK, "login.html", "")
+	}
 }
 
 // RegisterRequest struct
@@ -144,6 +163,15 @@ func PostRegister(c *gin.Context) {
 		}
 		c.JSON(http.StatusBadRequest, errorResponse)
 	}
+}
+
+// GetLogout ...
+func GetLogout(c *gin.Context) {
+	expiration := time.Now().Add(365 * 24 * time.Hour)
+	cookie := http.Cookie{Name: "sorcia-token", Value: "", Expires: expiration}
+	http.SetCookie(c.Writer, &cookie)
+
+	c.Redirect(http.StatusMovedPermanently, "/login")
 }
 
 // GetHostAddress returns the URL address
