@@ -211,10 +211,10 @@ func PostRegister(c *gin.Context) {
 
 // GetLogout ...
 func GetLogout(c *gin.Context) {
-	cookie := http.Cookie{Name: "sorcia-token", Value: "", MaxAge: -1}
-	http.SetCookie(c.Writer, &cookie)
+	// Clear the cookie
+	c.SetCookie("sorcia-token", "", -1, "", "", false, true)
 
-	c.Redirect(http.StatusMovedPermanently, "/login")
+	c.Redirect(http.StatusTemporaryRedirect, "/login")
 }
 
 // GetHostAddress returns the URL address
