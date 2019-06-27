@@ -28,3 +28,19 @@ func InsertAccount(db *sql.DB, cas CreateAccountStruct) {
 	err := db.QueryRow("INSERT INTO account (username, email, password_hash, jwt_token, is_admin) VALUES ($1, $2, $3, $4, $5) returning id", cas.Username, cas.Email, cas.PasswordHash, cas.Token, cas.IsAdmin).Scan(&lastInsertID)
 	cError.CheckError(err)
 }
+
+// GetUserIDFromToken ...
+func GetUserIDFromToken(db *sql.DB, token string) int {
+	rows, err := db.Query("SELECT id FROM account WHERE jwt_token = $1", token)
+	cError.CheckError(err)
+
+	var userID int
+
+	if rows.Next() {
+		err := rows.Scan(&userID)
+		cError.CheckError(err)
+	}
+	rows.Close()
+
+	return userID
+}
