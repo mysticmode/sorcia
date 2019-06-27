@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"path"
-	"time"
+	"strings"
 
 	cError "sorcia/error"
 	"sorcia/middleware"
@@ -144,9 +144,9 @@ func PostLogin(c *gin.Context) {
 			cError.CheckError(err)
 
 			if isTokenValid == true {
-				expiration := time.Now().Add(365 * 24 * time.Hour)
-				cookie := http.Cookie{Name: "sorcia-token", Value: sphjwtr.Token, Expires: expiration}
-				http.SetCookie(c.Writer, &cookie)
+				fmt.Println(sphjwtr.Token)
+				fmt.Println("y")
+				c.SetCookie("sorcia-token", sphjwtr.Token, 0, "/", strings.Split(c.Request.Host, ":")[0], false, true)
 
 				c.Redirect(http.StatusMovedPermanently, "/")
 			} else {
@@ -198,9 +198,7 @@ func PostRegister(c *gin.Context) {
 
 		auth.InsertAccount(db, rr)
 
-		expiration := time.Now().Add(365 * 24 * time.Hour)
-		cookie := http.Cookie{Name: "sorcia-token", Value: token, Expires: expiration}
-		http.SetCookie(c.Writer, &cookie)
+		c.SetCookie("sorcia-token", token, 0, "/", strings.Split(c.Request.Host, ":")[0], false, true)
 
 		c.Redirect(http.StatusMovedPermanently, "/")
 	} else {
@@ -213,8 +211,7 @@ func PostRegister(c *gin.Context) {
 
 // GetLogout ...
 func GetLogout(c *gin.Context) {
-	expiration := time.Now().Add(365 * 24 * time.Hour)
-	cookie := http.Cookie{Name: "sorcia-token", Value: "", Expires: expiration}
+	cookie := http.Cookie{Name: "sorcia-token", Value: "", MaxAge: -1}
 	http.SetCookie(c.Writer, &cookie)
 
 	c.Redirect(http.StatusMovedPermanently, "/login")
