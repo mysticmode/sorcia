@@ -291,7 +291,7 @@ func PostCreateRepo(c *gin.Context) {
 		token, _ := c.Cookie("sorcia-token")
 
 		userID := auth.GetUserIDFromToken(db, token)
-		
+
 		var isPrivate int
 		if isPrivate = 0; form.IsPrivate == "1" {
 			isPrivate = 1
@@ -305,6 +305,13 @@ func PostCreateRepo(c *gin.Context) {
 		}
 
 		repo.InsertRepo(db, crs)
+
+		// Get config values
+		conf := settings.GetConf()
+
+		// Create repositories directory
+		// 0755 - The owner can read, write, execute. Everyone else can read and execute but not modify the file.
+		os.MkdirAll(path.Join(conf.Paths.DataPath, "repositories/" + form.Name), 0755)
 
 		c.Redirect(http.StatusMovedPermanently, "/")
 	} else {
