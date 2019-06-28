@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+	"os"
 	"path"
 	"strings"
 
@@ -30,6 +31,10 @@ func main() {
 
 	// Serve static files
 	r.Static("/public", path.Join(conf.Paths.AssetPath, "public"))
+
+	// Create repositories directory
+	// 0755 - The owner can read, write, execute. Everyone else can read and execute but not modify the file.
+	os.MkdirAll(path.Join(conf.Paths.DataPath, "repositories"), 0755)
 
 	// Open postgres database
 	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s", conf.Postgres.Username, conf.Postgres.Password, conf.Postgres.Hostname, conf.Postgres.Port, conf.Postgres.Name, conf.Postgres.SSLMode)
