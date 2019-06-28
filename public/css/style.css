@@ -60,6 +60,13 @@ pre {
       width: max-content;
       margin-top: 10px; }
 
+.create-repo {
+  width: 500px; }
+  .create-repo .form {
+    width: 100%; }
+    .create-repo .form__input, .create-repo .form__label {
+      width: 100%; }
+
 .button {
   background: #2680a4;
   color: white;
@@ -76,6 +83,45 @@ input[type="text"], input[type="email"], input[type="password"] {
   padding: 7px 10px; }
   input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus {
     border: 1px solid #2680a4; }
+
+.form:first-child {
+  margin-bottom: 50px; }
+
+.form__title {
+  font-weight: bold;
+  margin-bottom: 15px; }
+
+.form__error {
+  margin-bottom: 10px;
+  color: #d15555; }
+
+.form__group {
+  margin-bottom: 10px; }
+
+.form label, .form__input {
+  display: block; }
+
+.form label {
+  margin-bottom: 5px; }
+
+.form__input {
+  width: 300px; }
+
+.form__submit-group {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center; }
+
+.form i {
+  color: #d15555;
+  font-style: normal;
+  margin-left: 2px; }
 
 .header {
   display: -webkit-box;

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>sorcia - A simple and self-hosted Git service</title>
+    <link href="https://fonts.googleapis.com/css?family=PT+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="public/css/style.css" />
+</head>
+
+<body>
+    <header class="header">
+        <div class="header__left">
+            <a href="" class="header__logo">sorcia</a>
+            <ul class="header__menu">
+                <li>
+                    <a href="" class="header__menu__item header__menu__item--active">git</a>
+                </li>
+                <li>
+                    <a href="" class="header__menu__item">todo</a>
+                </li>
+                <li>
+                    <a href="" class="header__menu__item">releases</a>
+                </li>
+                <li>
+                    <a href="" class="header__menu__item">blog</a>
+                </li>
+                <li>
+                    <a href="" class="header__menu__item">man</a>
+                </li>
+                <li>
+                    <a href="" class="header__menu__item">meta</a>
+                </li>
+            </ul>
+        </div>
+        <div class="header__profile"><a href="/logout">logout</a></div>
+    </header>
+    <main class="container create-repo">
+        <form method="post" action="/create" class="form create-repo__form">
+            <div class="form__title">create new repository</div>
+            <div class="form__group">
+                <label for="repoName">Name<i>*</i></label>
+                <input type="text" class="form__input" id="repoName" name="name" required />
+            </div>
+            <div class="form__group">
+                <label for="repoDescription">Description</label>
+                <input type="text" class="form__input" id="repoDescription" name="description" required />
+            </div>
+            <input type="submit" class="button button--primary" value="Create" />
+        </form>
+    </main>
+</body>
+
+</html>
