@@ -45,7 +45,6 @@ func GetUserIDFromToken(db *sql.DB, token string) int {
 	return userID
 }
 
-
 // SelectPasswordHashAndJWTTokenStruct struct
 type SelectPasswordHashAndJWTTokenStruct struct {
 	Username string

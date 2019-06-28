@@ -14,10 +14,10 @@ func CreateRepo(db *sql.DB) {
 
 // CreateRepoStruct struct
 type CreateRepoStruct struct {
-	Name string
+	Name        string
 	Description string
-	RepoType string
-	UserID int
+	RepoType    string
+	UserID      int
 }
 
 // InsertRepo ...
@@ -26,4 +26,35 @@ func InsertRepo(db *sql.DB, crs CreateRepoStruct) {
 
 	err := db.QueryRow("INSERT INTO repository (repo_from, name, description, type) VALUES ($1, $2, $3, $4) returning id", crs.UserID, crs.Name, crs.Description, crs.RepoType).Scan(&lastInsertID)
 	cError.CheckError(err)
+}
+
+// GetReposFromUserIDResponse struct
+type GetReposFromUserIDResponse struct {
+	Repositories []ReposDetailStruct
+}
+
+// ReposDetailStruct struct
+type ReposDetailStruct struct {
+	Name        string
+	Description string
+	Type        string
+}
+
+// GetReposFromUserID ...
+func GetReposFromUserID(db *sql.DB, userID int) *GetReposFromUserIDResponse {
+	rows, err := db.Query("SELECT name, description, type FROM repository WHERE repo_from = $1", userID)
+	cError.CheckError(err)
+
+	var grfur GetReposFromUserIDResponse
+	var rds ReposDetailStruct
+
+	for rows.Next() {
+		err := rows.Scan(&rds.Name, &rds.Description, &rds.Type)
+		cError.CheckError(err)
+
+		grfur.Repositories = append(grfur.Repositories, rds)
+	}
+	rows.Close()
+
+	return &grfur
 }
