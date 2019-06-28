@@ -159,8 +159,11 @@ func PostLogin(c *gin.Context) {
 			fmt.Println("Middleware db error")
 		}
 
+		// Sorcia username identity
+		username := "~" + form.Username
+
 		sphjwt := auth.SelectPasswordHashAndJWTTokenStruct{
-			Username: form.Username,
+			Username: username,
 		}
 		sphjwtr := auth.SelectPasswordHashAndJWTToken(db, sphjwt)
 
