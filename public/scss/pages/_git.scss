@@ -15,6 +15,17 @@
             display: block;
             margin-bottom: 5px;
             font-weight: bold;
+
+            & i {
+                display: inline-block;
+                font-weight: normal;
+                font-style: normal;
+                font-size: 12px;
+                color: white;
+                background: $text-color-2;
+                padding: 2px;
+                margin-left: 2px;
+            }
         }
     }
 }

@@ -41,13 +41,14 @@
         <div class="container__info">
             <p>Welcome back, mysticmode! This is the sorcia git hosting service. Documentation for its use is <a
                     href="">available here</a>.</p>
-            <a href="" class="button button--primary">Create new repository</a>
+            <a href="/create" class="button button--primary">Create new repository</a>
         </div>
         <div class="git__repos">
             <ul class="repos">
                 {{ range .repos.Repositories }}
                 <li>
-                    <a href="">{{ $.username }} / {{ .Name }}</a>
+                    <a href="">{{ $.username }} / {{ .Name }} {{ if eq .IsPrivate "true" }} <i>Private</i>
+                        {{ end }}</a>
                     <p>{{ .Description }}</p>
                 </li>
                 {{ end }}

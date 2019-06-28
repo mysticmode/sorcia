@@ -120,7 +120,7 @@ func GetHome(c *gin.Context) {
 
 		c.HTML(200, "index.html", gin.H{
 			"username": username,
-			"repos": repos,
+			"repos":    repos,
 		})
 	} else {
 		c.Redirect(http.StatusMovedPermanently, "/login")
@@ -272,7 +272,7 @@ func GetCreateRepo(c *gin.Context) {
 type CreateRepoRequest struct {
 	Name        string `form:"name" binding:"required"`
 	Description string `form:"description" binding:"required"`
-	Type        string `form:"type" binding:"required"`
+	IsPrivate   string `form:"is_private" binding:"required"`
 }
 
 // PostCreateRepo ...
@@ -288,11 +288,16 @@ func PostCreateRepo(c *gin.Context) {
 		token, _ := c.Cookie("sorcia-token")
 
 		userID := auth.GetUserIDFromToken(db, token)
+		
+		var isPrivate int
+		if isPrivate = 0; form.IsPrivate == "1" {
+			isPrivate = 1
+		}
 
 		crs := repo.CreateRepoStruct{
 			Name:        form.Name,
 			Description: form.Description,
-			RepoType:    form.Type,
+			IsPrivate:   isPrivate,
 			UserID:      userID,
 		}
 
