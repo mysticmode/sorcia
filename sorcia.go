@@ -101,13 +101,25 @@ type ErrorResponse struct {
 
 // GetHome ...
 func GetHome(c *gin.Context) {
+	db, ok := c.MustGet("db").(*sql.DB)
+	if !ok {
+		fmt.Println("Middleware db error")
+	}
+
 	userPresent, ok := c.MustGet("userPresent").(bool)
 	if !ok {
 		fmt.Println("Middleware user error")
 	}
 
 	if userPresent {
-		c.HTML(200, "index.html", "")
+		token, _ := c.Cookie("sorcia-token")
+		userID := auth.GetUserIDFromToken(db, token)
+
+		repos := repo.GetReposFromUserID(db, userID)
+
+		c.HTML(200, "index.html", gin.H{
+			"repos": repos,
+		})
 	} else {
 		c.Redirect(http.StatusMovedPermanently, "/login")
 	}
@@ -203,8 +215,11 @@ func PostRegister(c *gin.Context) {
 			fmt.Println("Middleware db error")
 		}
 
+		// Sorcia username identity
+		username := "~" + form.Username
+
 		rr := auth.CreateAccountStruct{
-			Username:     form.Username,
+			Username:     username,
 			Email:        form.Email,
 			PasswordHash: passwordHash,
 			Token:        token,

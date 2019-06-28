@@ -45,18 +45,12 @@
         </div>
         <div class="git__repos">
             <ul class="repos">
+                {{ range .repos.Repositories }}
                 <li>
-                    <a href="">~mysticmode / joyread</a>
-                    <p>Self-hosted multi-user free(libre) ebook reader.</p>
+                    <a href="">~mysticmode / {{ .Name }}</a>
+                    <p>{{ .Description }}</p>
                 </li>
-                <li>
-                    <a href="">~mysticmode / joyread-design</a>
-                    <p>Initial design for Joyread application.</p>
-                </li>
-                <li>
-                    <a href="">~mysticmode / aviaOS</a>
-                    <p>Experimental operating system written in Rust for RISC-V architecture.</p>
-                </li>
+                {{ end }}
             </ul>
         </div>
     </main>
