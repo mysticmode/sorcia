@@ -98,6 +98,22 @@ input[type="text"], input[type="email"], input[type="password"] {
 .form__group {
   margin-bottom: 10px; }
 
+.form__radio-group {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex; }
+
+.form__radio {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: baseline;
+  -ms-flex-align: baseline;
+  align-items: baseline;
+  margin-right: 20px; }
+  .form__radio input {
+    margin-right: 3px; }
+
 .form label, .form__input {
   display: block; }
 
