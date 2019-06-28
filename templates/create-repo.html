@@ -48,6 +48,16 @@
                 <label for="repoDescription">Description</label>
                 <input type="text" class="form__input" id="repoDescription" name="description" required />
             </div>
+            <div class="form__group form__radio-group">
+                <div class="form__radio">
+                    <input type="radio" name="type" value="public" id="repoPublic" checked />
+                    <label for="repoPublic">Public</label>
+                </div>
+                <div class="form__radio">
+                    <input type="radio" name="type" value="private" id="repoPrivate" />
+                    <label for="repoPrivate">Private</label>
+                </div>
+            </div>
             <input type="submit" class="button button--primary" value="Create" />
         </form>
     </main>

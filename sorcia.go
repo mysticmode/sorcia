@@ -11,6 +11,7 @@ import (
 	cError "sorcia/error"
 	"sorcia/middleware"
 	"sorcia/models/auth"
+	"sorcia/models/repo"
 	"sorcia/settings"
 
 	"github.com/dgrijalva/jwt-go"
@@ -43,6 +44,7 @@ func main() {
 	defer db.Close()
 
 	auth.CreateAccount(db)
+	repo.CreateRepo(db)
 
 	r.Use(
 		middleware.CORSMiddleware(),
@@ -57,6 +59,7 @@ func main() {
 	r.GET("/logout", GetLogout)
 	r.POST("/register", PostRegister)
 	r.GET("/create", GetCreateRepo)
+	r.POST("/create", PostCreateRepo)
 	r.GET("/host", GetHostAddress)
 
 	// Listen and serve on 1937
@@ -236,5 +239,53 @@ func GetHostAddress(c *gin.Context) {
 
 // GetCreateRepo ...
 func GetCreateRepo(c *gin.Context) {
-	c.HTML(http.StatusOK, "create-repo.html", "")
+	userPresent, ok := c.MustGet("userPresent").(bool)
+	if !ok {
+		fmt.Println("Middleware user error")
+	}
+
+	if userPresent {
+		c.HTML(http.StatusOK, "create-repo.html", "")
+	} else {
+		c.Redirect(http.StatusMovedPermanently, "/login")
+	}
+}
+
+// CreateRepoRequest struct
+type CreateRepoRequest struct {
+	Name        string `form:"name" binding:"required"`
+	Description string `form:"description" binding:"required"`
+	Type        string `form:"type" binding:"required"`
+}
+
+// PostCreateRepo ...
+func PostCreateRepo(c *gin.Context) {
+	var form CreateRepoRequest
+
+	if err := c.Bind(&form); err == nil {
+		db, ok := c.MustGet("db").(*sql.DB)
+		if !ok {
+			fmt.Println("Middleware db error")
+		}
+
+		token, _ := c.Cookie("sorcia-token")
+
+		userID := auth.GetUserIDFromToken(db, token)
+
+		crs := repo.CreateRepoStruct{
+			Name:        form.Name,
+			Description: form.Description,
+			RepoType:    form.Type,
+			UserID:      userID,
+		}
+
+		repo.InsertRepo(db, crs)
+
+		c.Redirect(http.StatusMovedPermanently, "/")
+	} else {
+		errorResponse := &ErrorResponse{
+			Error: err.Error(),
+		}
+		c.JSON(http.StatusBadRequest, errorResponse)
+	}
 }
