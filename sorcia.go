@@ -56,6 +56,7 @@ func main() {
 	r.POST("/login", PostLogin)
 	r.GET("/logout", GetLogout)
 	r.POST("/register", PostRegister)
+	r.GET("/create", GetCreateRepo)
 	r.GET("/host", GetHostAddress)
 
 	// Listen and serve on 1937
@@ -231,4 +232,9 @@ func GetLogout(c *gin.Context) {
 // GetHostAddress returns the URL address
 func GetHostAddress(c *gin.Context) {
 	c.String(200, fmt.Sprintf("%s", c.Request.Host))
+}
+
+// GetCreateRepo ...
+func GetCreateRepo(c *gin.Context) {
+	c.HTML(http.StatusOK, "create-repo.html", "")
 }

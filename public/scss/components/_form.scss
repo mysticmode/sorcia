@@ -1,0 +1,44 @@
+.form {
+        
+    &:first-child {
+        margin-bottom: 50px;
+    }
+
+    &__title {
+        font-weight: bold;
+        margin-bottom: 15px;
+    }
+
+    &__error {
+        margin-bottom: 10px;
+        color: $brand-danger;
+    }
+
+    &__group {
+        margin-bottom: 10px;
+    }
+
+    & label, &__input {
+        display: block;
+    }
+
+    & label {
+        margin-bottom: 5px;
+    }
+
+    &__input {
+        width: 300px;
+    }
+
+    &__submit-group {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    & i {
+        color: $brand-danger;
+        font-style: normal;
+        margin-left: 2px;
+    }
+}
