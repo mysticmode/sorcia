@@ -114,10 +114,12 @@ func GetHome(c *gin.Context) {
 	if userPresent {
 		token, _ := c.Cookie("sorcia-token")
 		userID := auth.GetUserIDFromToken(db, token)
+		username := auth.GetUsernameFromToken(db, token)
 
 		repos := repo.GetReposFromUserID(db, userID)
 
 		c.HTML(200, "index.html", gin.H{
+			"username": username,
 			"repos": repos,
 		})
 	} else {
