@@ -47,7 +47,7 @@
             <ul class="repos">
                 {{ range .repos.Repositories }}
                 <li>
-                    <a href="">~mysticmode / {{ .Name }}</a>
+                    <a href="">{{ $.username }} / {{ .Name }}</a>
                     <p>{{ .Description }}</p>
                 </li>
                 {{ end }}
