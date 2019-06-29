@@ -265,7 +265,18 @@ func GetCreateRepo(c *gin.Context) {
 	}
 
 	if userPresent {
-		c.HTML(http.StatusOK, "create-repo.html", "")
+		db, ok := c.MustGet("db").(*sql.DB)
+		if !ok {
+			fmt.Println("Middleware db error")
+		}
+		
+		token, _ := c.Cookie("sorcia-token")
+		
+		username := auth.GetUsernameFromToken(db, token)
+
+		c.HTML(http.StatusOK, "create-repo.html", gin.H{
+			"username": username,
+		})
 	} else {
 		c.Redirect(http.StatusMovedPermanently, "/login")
 	}
