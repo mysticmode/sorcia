@@ -19,6 +19,20 @@
 
         &__group {
             margin-bottom: 10px;
+
+            &-sub {
+                display: flex;
+                align-items: center;
+            }
+        }
+
+        &__username-tag {
+            display: flex;
+            align-items: center;
+            color: white;
+            background: $text-color-2;
+            padding: 7px 10px;
+            height: 33px;
         }
 
         & label, &__input {
