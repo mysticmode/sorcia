@@ -200,6 +200,24 @@ input[type="text"], input[type="email"], input[type="password"] {
     color: #d15555; }
   .onboard__form__group {
     margin-bottom: 10px; }
+    .onboard__form__group-sub {
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -webkit-box-align: center;
+      -ms-flex-align: center;
+      align-items: center; }
+  .onboard__form__username-tag {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    color: white;
+    background: #8d8d8d;
+    padding: 7px 10px;
+    height: 33px; }
   .onboard__form label, .onboard__form__input {
     display: block; }
   .onboard__form label {
