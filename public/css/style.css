@@ -106,8 +106,8 @@ input[type="text"], input[type="email"], input[type="password"] {
     align-items: center; }
 
 .form__username-tag {
-  color: white;
-  background: #8d8d8d;
+  color: #333333;
+  background: #edf0f2;
   padding: 7px 10px;
   height: 33px;
   min-width: -webkit-max-content;
@@ -230,8 +230,8 @@ input[type="text"], input[type="email"], input[type="password"] {
     -webkit-box-align: center;
     -ms-flex-align: center;
     align-items: center;
-    color: white;
-    background: #8d8d8d;
+    color: #333333;
+    background: #edf0f2;
     padding: 7px 10px;
     height: 33px; }
   .onboard__form label, .onboard__form__input {
