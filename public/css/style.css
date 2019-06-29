@@ -61,7 +61,7 @@ pre {
       margin-top: 10px; }
 
 .create-repo {
-  width: 500px; }
+  width: 560px; }
   .create-repo .form {
     width: 100%; }
     .create-repo .form__input, .create-repo .form__label {
@@ -97,6 +97,22 @@ input[type="text"], input[type="email"], input[type="password"] {
 
 .form__group {
   margin-bottom: 10px; }
+  .form__group-sub {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center; }
+
+.form__username-tag {
+  color: white;
+  background: #8d8d8d;
+  padding: 7px 10px;
+  height: 33px;
+  min-width: -webkit-max-content;
+  min-width: -moz-max-content;
+  min-width: max-content; }
 
 .form__radio-group {
   display: -webkit-box;
