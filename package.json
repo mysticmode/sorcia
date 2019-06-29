@@ -1,14 +1,14 @@
 {
-    "name": "sorcia",
-    "version": "0.1.0",
-    "private": true,
-    "devDependencies": {
-      "gulp": "^4.0.0",
-      "gulp-autoprefixer": "^5.0.0",
-      "gulp-sass": "^4.0.1"
-    },
-    "scripts": {
-      "gulp-watch": "gulp",
-      "gulp-style": "gulp style"
-    }
+  "name": "sorcia",
+  "version": "0.1.0",
+  "private": true,
+  "devDependencies": {
+    "gulp": "^4.0.0",
+    "gulp-autoprefixer": "^5.0.0",
+    "gulp-sass": "^4.0.1"
+  },
+  "scripts": {
+    "gulp-watch": "gulp",
+    "gulp-style": "gulp style"
+  }
 }
