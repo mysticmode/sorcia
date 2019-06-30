@@ -7,7 +7,7 @@
 body {
   width: 800px;
   margin: 20px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  font-family: "Open Sans", sans-serif;
   font-size: 14px;
   color: #333333; }
 
@@ -69,6 +69,7 @@ pre {
 
 .button {
   background: #2680a4;
+  font-family: "Open Sans", sans-serif;
   color: white;
   border: none;
   padding: 7px 10px;
@@ -78,6 +79,7 @@ pre {
     color: white; }
 
 input[type="text"], input[type="email"], input[type="password"] {
+  font-family: "Open Sans", sans-serif;
   border: 1px solid #e0e4e7;
   border-radius: 0;
   padding: 7px 10px; }
@@ -320,7 +322,7 @@ input[type="text"], input[type="email"], input[type="password"] {
     margin-right: 20px; }
 
 .repo__branch {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  font-family: "Open Sans", sans-serif;
   font-size: 14px;
   margin-right: 20px; }
 
