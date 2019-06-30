@@ -177,7 +177,7 @@ input[type="text"], input[type="email"], input[type="password"] {
     align-items: center; }
   .header__logo {
     font-family: "PT Mono", monospace;
-    font-size: 20px;
+    font-size: 22px;
     text-decoration: none;
     color: #2680a4;
     outline: none;
