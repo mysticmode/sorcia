@@ -5,6 +5,7 @@
     border: none;
     padding: 7px 10px;
     cursor: pointer;
+    outline: none;
 
     &:hover {
         background: darken($color: #2680a4, $amount: 10%);
