@@ -73,7 +73,8 @@ pre {
   color: white;
   border: none;
   padding: 7px 10px;
-  cursor: pointer; }
+  cursor: pointer;
+  outline: none; }
   .button:hover {
     background: #1c607b;
     color: white; }
@@ -82,7 +83,8 @@ input[type="text"], input[type="email"], input[type="password"] {
   font-family: "Open Sans", sans-serif;
   border: 1px solid #e0e4e7;
   border-radius: 0;
-  padding: 7px 10px; }
+  padding: 7px 10px;
+  outline: none; }
   input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus {
     border: 1px solid #2680a4; }
 
