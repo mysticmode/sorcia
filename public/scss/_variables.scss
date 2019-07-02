@@ -8,11 +8,8 @@ $brand-danger: #d15555;
 $text-color: #333333;
 $text-color-2: #8d8d8d;
 
-// Logo font
-$font-logo: 'PT Mono', monospace;
-
 // Default font
-$font-default: 'Open Sans', sans-serif;
+$font-default: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 
 // Source code font
-$font-source-code: SFMono-Regular, Consolas, Liberation Mono, Menlo, Courier, monospace;
+$font-source-code: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;

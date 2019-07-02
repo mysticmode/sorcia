@@ -7,7 +7,7 @@
 body {
   width: 800px;
   margin: 20px;
-  font-family: "Open Sans", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   font-size: 14px;
   color: #333333; }
 
@@ -27,7 +27,7 @@ ul {
 pre {
   overflow-x: auto; }
   pre code {
-    font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, Courier, monospace;
+    font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     font-size: 14px; }
     pre code table, pre code tbody, pre code tr {
       width: 100%; }
@@ -69,7 +69,7 @@ pre {
 
 .button {
   background: #2680a4;
-  font-family: "Open Sans", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   color: white;
   border: none;
   padding: 7px 10px;
@@ -80,7 +80,7 @@ pre {
     color: white; }
 
 input[type="text"], input[type="email"], input[type="password"] {
-  font-family: "Open Sans", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   border: 1px solid #e0e4e7;
   border-radius: 0;
   padding: 7px 10px;
@@ -178,14 +178,10 @@ input[type="text"], input[type="email"], input[type="password"] {
     -ms-flex-align: center;
     align-items: center; }
   .header__logo {
-    font-family: "PT Mono", monospace;
-    font-size: 22px;
-    text-decoration: none;
-    color: #2680a4;
+    width: 70px;
+    height: 16px;
     outline: none;
     margin-right: 50px; }
-    .header__logo:hover {
-      color: #2680a4; }
   .header__menu {
     display: -webkit-box;
     display: -ms-flexbox;
@@ -324,7 +320,7 @@ input[type="text"], input[type="email"], input[type="password"] {
     margin-right: 20px; }
 
 .repo__branch {
-  font-family: "Open Sans", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   font-size: 14px;
   margin-right: 20px; }
 

@@ -10,16 +10,10 @@
     }
 
     &__logo {
-        font-family: $font-logo;
-        font-size: 22px;
-        text-decoration: none;
-        color: $brand-primary;
+        width: 70px;
+        height: 16px;
         outline: none;
         margin-right: 50px;
-
-        &:hover {
-            color: $brand-primary;
-        }
     }
 
     &__menu {
