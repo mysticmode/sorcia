@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"sorcia/models/auth"
+	"sorcia/models"
 
 	"github.com/gin-gonic/gin"
 )
@@ -47,7 +47,7 @@ func UserMiddleware(db *sql.DB) gin.HandlerFunc {
 
 		token, _ := c.Cookie("sorcia-token")
 
-		userID := auth.GetUserIDFromToken(db, token)
+		userID := models.GetUserIDFromToken(db, token)
 
 		userPresent := false
 		if userID != 0 {
