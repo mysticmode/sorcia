@@ -333,10 +333,17 @@ func PostCreateRepo(c *gin.Context) {
 
 		username := auth.GetUsernameFromToken(db, token)
 
+		// Create Git bare repository
 		bareRepoDir := path.Join(conf.Paths.DataPath, "repositories/"+username+"/"+form.Name+".git")
 
 		cmd := exec.Command("git", "init", "--bare", bareRepoDir)
 		err := cmd.Run()
+		cError.CheckError(err)
+
+		// Clone from the bare repository created above
+		repoDir := path.Join(conf.Paths.DataPath, "repositories/"+username+"/"+form.Name)
+		cmd = exec.Command("git", "clone", bareRepoDir, repoDir)
+		err = cmd.Run()
 		cError.CheckError(err)
 
 		c.Redirect(http.StatusMovedPermanently, "/")
