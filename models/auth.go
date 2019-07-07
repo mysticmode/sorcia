@@ -1,4 +1,4 @@
-package auth
+package models
 
 import (
 	"database/sql"

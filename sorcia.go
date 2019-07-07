@@ -12,8 +12,7 @@ import (
 
 	errorhandler "sorcia/error"
 	"sorcia/middleware"
-	"sorcia/models/auth"
-	"sorcia/models/repo"
+	"sorcia/models"
 	"sorcia/setting"
 
 	"github.com/dgrijalva/jwt-go"
@@ -45,8 +44,8 @@ func main() {
 	errorhandler.CheckError(err)
 	defer db.Close()
 
-	auth.CreateAccount(db)
-	repo.CreateRepo(db)
+	models.CreateAccount(db)
+	models.CreateRepo(db)
 
 	r.Use(
 		middleware.CORSMiddleware(),
@@ -115,10 +114,10 @@ func GetHome(c *gin.Context) {
 
 	if userPresent {
 		token, _ := c.Cookie("sorcia-token")
-		userID := auth.GetUserIDFromToken(db, token)
-		username := auth.GetUsernameFromToken(db, token)
+		userID := models.GetUserIDFromToken(db, token)
+		username := models.GetUsernameFromToken(db, token)
 
-		repos := repo.GetReposFromUserID(db, userID)
+		repos := models.GetReposFromUserID(db, userID)
 
 		c.HTML(200, "index.html", gin.H{
 			"username": username,
@@ -164,10 +163,10 @@ func PostLogin(c *gin.Context) {
 		// Sorcia username identity
 		username := "~" + form.Username
 
-		sphjwt := auth.SelectPasswordHashAndJWTTokenStruct{
+		sphjwt := models.SelectPasswordHashAndJWTTokenStruct{
 			Username: username,
 		}
-		sphjwtr := auth.SelectPasswordHashAndJWTToken(db, sphjwt)
+		sphjwtr := models.SelectPasswordHashAndJWTToken(db, sphjwt)
 
 		if isPasswordValid := checkPasswordHash(form.Password, sphjwtr.PasswordHash); isPasswordValid == true {
 			isTokenValid, err := validateJWTToken(sphjwtr.Token, sphjwtr.PasswordHash)
@@ -235,7 +234,7 @@ func PostRegister(c *gin.Context) {
 		// Sorcia username identity
 		username := "~" + form.Username
 
-		rr := auth.CreateAccountStruct{
+		rr := models.CreateAccountStruct{
 			Username:     username,
 			Email:        form.Email,
 			PasswordHash: passwordHash,
@@ -243,7 +242,7 @@ func PostRegister(c *gin.Context) {
 			IsAdmin:      1,
 		}
 
-		auth.InsertAccount(db, rr)
+		models.InsertAccount(db, rr)
 
 		// Get config values
 		conf := setting.GetConf()
@@ -294,9 +293,9 @@ func GetCreateRepo(c *gin.Context) {
 
 		token, _ := c.Cookie("sorcia-token")
 
-		username := auth.GetUsernameFromToken(db, token)
+		username := models.GetUsernameFromToken(db, token)
 
-		c.HTML(http.StatusOK, "create-repo.html", gin.H{
+		c.HTML(http.StatusOK, "create-models.html", gin.H{
 			"username": username,
 		})
 	} else {
@@ -323,26 +322,26 @@ func PostCreateRepo(c *gin.Context) {
 
 		token, _ := c.Cookie("sorcia-token")
 
-		userID := auth.GetUserIDFromToken(db, token)
+		userID := models.GetUserIDFromToken(db, token)
 
 		var isPrivate int
 		if isPrivate = 0; form.IsPrivate == "1" {
 			isPrivate = 1
 		}
 
-		crs := repo.CreateRepoStruct{
+		crs := models.CreateRepoStruct{
 			Name:        form.Name,
 			Description: form.Description,
 			IsPrivate:   isPrivate,
 			UserID:      userID,
 		}
 
-		repo.InsertRepo(db, crs)
+		models.InsertRepo(db, crs)
 
 		// Get config values
 		conf := setting.GetConf()
 
-		username := auth.GetUsernameFromToken(db, token)
+		username := models.GetUsernameFromToken(db, token)
 
 		// Create Git bare repository
 		bareRepoDir := path.Join(conf.Paths.DataPath, "repositories/"+username+"/"+form.Name+".git")
