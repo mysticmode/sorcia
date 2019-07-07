@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"os/exec"
 	"path"
 	"strings"
 
@@ -233,6 +234,16 @@ func PostRegister(c *gin.Context) {
 
 		auth.InsertAccount(db, rr)
 
+		// Get config values
+		conf := settings.GetConf()
+
+		// Create repositories directory
+		// 0755 - The owner can read, write, execute. Everyone else can read and execute but not modify the file.
+		repoDir := path.Join(conf.Paths.DataPath, "repositories/"+username)
+		if _, err := os.Stat(repoDir); os.IsNotExist(err) {
+			os.MkdirAll(repoDir, 0755)
+		}
+
 		c.SetCookie("sorcia-token", token, 0, "/", strings.Split(c.Request.Host, ":")[0], false, true)
 
 		c.Redirect(http.StatusMovedPermanently, "/")
@@ -269,9 +280,9 @@ func GetCreateRepo(c *gin.Context) {
 		if !ok {
 			fmt.Println("Middleware db error")
 		}
-		
+
 		token, _ := c.Cookie("sorcia-token")
-		
+
 		username := auth.GetUsernameFromToken(db, token)
 
 		c.HTML(http.StatusOK, "create-repo.html", gin.H{
@@ -320,9 +331,13 @@ func PostCreateRepo(c *gin.Context) {
 		// Get config values
 		conf := settings.GetConf()
 
-		// Create repositories directory
-		// 0755 - The owner can read, write, execute. Everyone else can read and execute but not modify the file.
-		os.MkdirAll(path.Join(conf.Paths.DataPath, "repositories/" + form.Name), 0755)
+		username := auth.GetUsernameFromToken(db, token)
+
+		bareRepoDir := path.Join(conf.Paths.DataPath, "repositories/"+username+"/"+form.Name+".git")
+
+		cmd := exec.Command("git", "init", "--bare", bareRepoDir)
+		err := cmd.Run()
+		cError.CheckError(err)
 
 		c.Redirect(http.StatusMovedPermanently, "/")
 	} else {
