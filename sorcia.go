@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"regexp"
 	"strings"
 
 	cError "sorcia/error"
@@ -219,6 +220,16 @@ func PostRegister(c *gin.Context) {
 		db, ok := c.MustGet("db").(*sql.DB)
 		if !ok {
 			fmt.Println("Middleware db error")
+		}
+
+		usernameConvention := "^[a-zA-Z0-9_]*$"
+
+		if re := regexp.MustCompile(usernameConvention); !re.MatchString(form.Username) {
+			c.HTML(http.StatusOK, "login.html", gin.H{
+				"registerErrMessage": "Username is invalid. Supports only alphanumeric and underscore characters.",
+			})
+
+			return
 		}
 
 		// Sorcia username identity
