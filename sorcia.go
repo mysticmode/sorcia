@@ -295,7 +295,7 @@ func GetCreateRepo(c *gin.Context) {
 
 		username := model.GetUsernameFromToken(db, token)
 
-		c.HTML(http.StatusOK, "create-model.html", gin.H{
+		c.HTML(http.StatusOK, "create-repo.html", gin.H{
 			"username": username,
 		})
 	} else {
