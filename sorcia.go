@@ -14,7 +14,7 @@ import (
 	"sorcia/middleware"
 	"sorcia/models/auth"
 	"sorcia/models/repo"
-	"sorcia/settings"
+	"sorcia/setting"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
@@ -27,7 +27,7 @@ func main() {
 	r := gin.Default()
 
 	// Get config values
-	conf := settings.GetConf()
+	conf := setting.GetConf()
 
 	// HTML rendering
 	r.LoadHTMLGlob(path.Join(conf.Paths.TemplatePath, "templates/*"))
@@ -246,7 +246,7 @@ func PostRegister(c *gin.Context) {
 		auth.InsertAccount(db, rr)
 
 		// Get config values
-		conf := settings.GetConf()
+		conf := setting.GetConf()
 
 		// Create repositories directory
 		// 0755 - The owner can read, write, execute. Everyone else can read and execute but not modify the file.
@@ -340,7 +340,7 @@ func PostCreateRepo(c *gin.Context) {
 		repo.InsertRepo(db, crs)
 
 		// Get config values
-		conf := settings.GetConf()
+		conf := setting.GetConf()
 
 		username := auth.GetUsernameFromToken(db, token)
 
