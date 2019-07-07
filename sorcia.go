@@ -10,7 +10,7 @@ import (
 	"regexp"
 	"strings"
 
-	cError "sorcia/error"
+	errorhandler "sorcia/error"
 	"sorcia/middleware"
 	"sorcia/models/auth"
 	"sorcia/models/repo"
@@ -42,7 +42,7 @@ func main() {
 	// Open postgres database
 	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s", conf.Postgres.Username, conf.Postgres.Password, conf.Postgres.Hostname, conf.Postgres.Port, conf.Postgres.Name, conf.Postgres.SSLMode)
 	db, err := sql.Open("postgres", connStr)
-	cError.CheckError(err)
+	errorhandler.CheckError(err)
 	defer db.Close()
 
 	auth.CreateAccount(db)
@@ -171,7 +171,7 @@ func PostLogin(c *gin.Context) {
 
 		if isPasswordValid := checkPasswordHash(form.Password, sphjwtr.PasswordHash); isPasswordValid == true {
 			isTokenValid, err := validateJWTToken(sphjwtr.Token, sphjwtr.PasswordHash)
-			cError.CheckError(err)
+			errorhandler.CheckError(err)
 
 			if isTokenValid == true {
 				fmt.Println(sphjwtr.Token)
@@ -211,11 +211,11 @@ func PostRegister(c *gin.Context) {
 	if err := c.Bind(&form); err == nil {
 		// Generate password hash using bcrypt
 		passwordHash, err := hashPassword(form.Password)
-		cError.CheckError(err)
+		errorhandler.CheckError(err)
 
 		// Generate JWT token using the hash password above
 		token, err := generateJWTToken(passwordHash)
-		cError.CheckError(err)
+		errorhandler.CheckError(err)
 
 		db, ok := c.MustGet("db").(*sql.DB)
 		if !ok {
@@ -349,13 +349,13 @@ func PostCreateRepo(c *gin.Context) {
 
 		cmd := exec.Command("git", "init", "--bare", bareRepoDir)
 		err := cmd.Run()
-		cError.CheckError(err)
+		errorhandler.CheckError(err)
 
 		// Clone from the bare repository created above
 		repoDir := path.Join(conf.Paths.DataPath, "repositories/"+username+"/"+form.Name)
 		cmd = exec.Command("git", "clone", bareRepoDir, repoDir)
 		err = cmd.Run()
-		cError.CheckError(err)
+		errorhandler.CheckError(err)
 
 		c.Redirect(http.StatusMovedPermanently, "/")
 	} else {
