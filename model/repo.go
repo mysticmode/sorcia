@@ -58,3 +58,44 @@ func GetReposFromUserID(db *sql.DB, userID int) *GetReposFromUserIDResponse {
 
 	return &grfur
 }
+
+type RepoTypeStruct struct {
+	Username string
+	Reponame string
+}
+
+// GetRepoType ...
+func GetRepoType(db *sql.DB, rts *RepoTypeStruct) bool {
+	rows, err := db.Query("SELECT is_private FROM repository WHERE name = $1", rts.Reponame)
+	errorhandler.CheckError(err)
+
+	var isPrivate bool
+
+	if rows.Next() {
+		err := rows.Scan(&isPrivate)
+		errorhandler.CheckError(err)
+	}
+	rows.Close()
+
+	return isPrivate
+}
+
+// CheckRepoAccessFromUserID ...
+func CheckRepoAccessFromUserID(db *sql.DB, userID int) bool {
+	rows, err := db.Query("SELECT name FROM repository WHERE repo_from = $1", userID)
+	errorhandler.CheckError(err)
+
+	var reponame string
+
+	if rows.Next() {
+		err := rows.Scan(&reponame)
+		errorhandler.CheckError(err)
+	}
+	rows.Close()
+
+	if reponame != "" {
+		return true
+	}
+
+	return false
+}

@@ -368,24 +368,46 @@ func PostCreateRepo(c *gin.Context) {
 }
 
 func GetRepo(c *gin.Context) {
-	// username := c.Param("username")
-	// reponame := c.Param("reponame")
+	username := c.Param("username")
+	reponame := c.Param("reponame")
 
-	userPresent, ok := c.MustGet("userPresent").(bool)
+	db, ok := c.MustGet("db").(*sql.DB)
 	if !ok {
-		fmt.Println("Middleware user error")
+		fmt.Println("Middleware db error")
 	}
 
-	if userPresent {
-		// db, ok := c.MustGet("db").(*sql.DB)
-		// if !ok {
-		// 	fmt.Println("Middleware db error")
-		// }
+	rts := model.RepoTypeStruct{
+		Username: username,
+		Reponame: reponame,
+	}
 
-		// username := model.GetUsernameFromToken(db, token)
-
+	// Repository type
+	// 1 = Private repository
+	// 0 = Public repository
+	if isRepoType := model.GetRepoType(db, &rts); isRepoType {
 		c.HTML(http.StatusOK, "repo-summary.html", "")
 	} else {
-		c.Redirect(http.StatusMovedPermanently, "/login")
+		userPresent, ok := c.MustGet("userPresent").(bool)
+		if !ok {
+			fmt.Println("Middleware user error")
+		}
+
+		if userPresent {
+			token, _ := c.Cookie("sorcia-token")
+			userIDFromUsername := model.GetUserIDFromUsername(db, username)
+			userIDFromToken := model.GetUserIDFromToken(db, token)
+
+			if userIDFromToken == userIDFromUsername {
+				if hasRepoAccess := model.CheckRepoAccessFromUserID(db, userIDFromToken); hasRepoAccess {
+					c.HTML(http.StatusOK, "repo-summary.html", "")
+				} else {
+					c.HTML(http.StatusNotFound, "", "")
+				}
+			} else {
+				c.HTML(http.StatusNotFound, "", "")
+			}
+		} else {
+			c.Redirect(http.StatusMovedPermanently, "/")
+		}
 	}
 }
