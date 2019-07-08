@@ -62,6 +62,7 @@ func main() {
 	r.GET("/create", GetCreateRepo)
 	r.POST("/create", PostCreateRepo)
 	r.GET("/~:username", GetHome)
+	r.GET("/~:username/:reponame", GetRepo)
 	r.GET("/host", GetHostAddress)
 
 	// Listen and serve on 1937
@@ -363,5 +364,28 @@ func PostCreateRepo(c *gin.Context) {
 			Error: err.Error(),
 		}
 		c.JSON(http.StatusBadRequest, errorResponse)
+	}
+}
+
+func GetRepo(c *gin.Context) {
+	// username := c.Param("username")
+	// reponame := c.Param("reponame")
+
+	userPresent, ok := c.MustGet("userPresent").(bool)
+	if !ok {
+		fmt.Println("Middleware user error")
+	}
+
+	if userPresent {
+		// db, ok := c.MustGet("db").(*sql.DB)
+		// if !ok {
+		// 	fmt.Println("Middleware db error")
+		// }
+
+		// username := model.GetUsernameFromToken(db, token)
+
+		c.HTML(http.StatusOK, "repo-summary.html", "")
+	} else {
+		c.Redirect(http.StatusMovedPermanently, "/login")
 	}
 }
