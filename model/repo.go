@@ -49,7 +49,7 @@ func GetReposFromUserID(db *sql.DB, userID int) *GetReposFromUserIDResponse {
 	var rds ReposDetailStruct
 
 	for rows.Next() {
-		err := rows.Scan(&rds.Name, &rds.Description, &rds.IsPrivate)
+		err = rows.Scan(&rds.Name, &rds.Description, &rds.IsPrivate)
 		errorhandler.CheckError(err)
 
 		grfur.Repositories = append(grfur.Repositories, rds)
@@ -64,6 +64,25 @@ type RepoTypeStruct struct {
 	Reponame string
 }
 
+// CheckRepoExists ...
+func CheckRepoExists(db *sql.DB, reponame string) bool {
+	rows, err := db.Query("SELECT id FROM repository WHERE name = $1", reponame)
+	errorhandler.CheckError(err)
+
+	var repoID int
+
+	if rows.Next() {
+		err = rows.Scan(&repoID)
+		errorhandler.CheckError(err)
+	}
+
+	if repoID != 0 {
+		return true
+	}
+
+	return false
+}
+
 // GetRepoType ...
 func GetRepoType(db *sql.DB, rts *RepoTypeStruct) bool {
 	rows, err := db.Query("SELECT is_private FROM repository WHERE name = $1", rts.Reponame)
@@ -72,7 +91,7 @@ func GetRepoType(db *sql.DB, rts *RepoTypeStruct) bool {
 	var isPrivate bool
 
 	if rows.Next() {
-		err := rows.Scan(&isPrivate)
+		err = rows.Scan(&isPrivate)
 		errorhandler.CheckError(err)
 	}
 	rows.Close()
@@ -88,7 +107,7 @@ func CheckRepoAccessFromUserID(db *sql.DB, userID int) bool {
 	var reponame string
 
 	if rows.Next() {
-		err := rows.Scan(&reponame)
+		err = rows.Scan(&reponame)
 		errorhandler.CheckError(err)
 	}
 	rows.Close()
