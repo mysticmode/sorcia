@@ -381,10 +381,13 @@ func GetRepo(c *gin.Context) {
 		Reponame: reponame,
 	}
 
-	// Repository type
-	// 1 = Private repository
-	// 0 = Public repository
-	if isRepoType := model.GetRepoType(db, &rts); isRepoType {
+	if repoExists := model.CheckRepoExists(db, reponame); !repoExists {
+		c.HTML(http.StatusNotFound, "", "")
+		return
+	}
+
+	// Check if repository is not private
+	if isRepoPrivate := model.GetRepoType(db, &rts); !isRepoPrivate {
 		c.HTML(http.StatusOK, "repo-summary.html", "")
 	} else {
 		userPresent, ok := c.MustGet("userPresent").(bool)

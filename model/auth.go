@@ -37,7 +37,7 @@ func GetUserIDFromToken(db *sql.DB, token string) int {
 	var userID int
 
 	if rows.Next() {
-		err := rows.Scan(&userID)
+		err = rows.Scan(&userID)
 		errorhandler.CheckError(err)
 	}
 	rows.Close()
@@ -53,7 +53,7 @@ func GetUsernameFromToken(db *sql.DB, token string) string {
 	var username string
 
 	if rows.Next() {
-		err := rows.Scan(&username)
+		err = rows.Scan(&username)
 		errorhandler.CheckError(err)
 	}
 	rows.Close()
@@ -69,7 +69,7 @@ func GetUserIDFromUsername(db *sql.DB, username string) int {
 	var userID int
 
 	if rows.Next() {
-		err := rows.Scan(&userID)
+		err = rows.Scan(&userID)
 		errorhandler.CheckError(err)
 	}
 	rows.Close()
@@ -97,7 +97,7 @@ func SelectPasswordHashAndJWTToken(db *sql.DB, sphjwt SelectPasswordHashAndJWTTo
 	var sphjwtr SelectPasswordHashAndJWTTokenResponse
 
 	if rows.Next() {
-		err := rows.Scan(&sphjwtr.PasswordHash, &sphjwtr.Token)
+		err = rows.Scan(&sphjwtr.PasswordHash, &sphjwtr.Token)
 		errorhandler.CheckError(err)
 	}
 	rows.Close()
