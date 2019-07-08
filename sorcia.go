@@ -61,6 +61,7 @@ func main() {
 	r.POST("/register", PostRegister)
 	r.GET("/create", GetCreateRepo)
 	r.POST("/create", PostCreateRepo)
+	r.GET("/~:username", GetHome)
 	r.GET("/host", GetHostAddress)
 
 	// Listen and serve on 1937
@@ -161,7 +162,7 @@ func PostLogin(c *gin.Context) {
 		}
 
 		// Sorcia username identity
-		username := "~" + form.Username
+		username := form.Username
 
 		sphjwt := model.SelectPasswordHashAndJWTTokenStruct{
 			Username: username,
@@ -232,7 +233,7 @@ func PostRegister(c *gin.Context) {
 		}
 
 		// Sorcia username identity
-		username := "~" + form.Username
+		username := form.Username
 
 		rr := model.CreateAccountStruct{
 			Username:     username,
