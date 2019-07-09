@@ -397,15 +397,11 @@ func GetRepo(c *gin.Context) {
 
 		if userPresent {
 			token, _ := c.Cookie("sorcia-token")
-			userIDFromUsername := model.GetUserIDFromUsername(db, username)
 			userIDFromToken := model.GetUserIDFromToken(db, token)
 
-			if userIDFromToken == userIDFromUsername {
-				if hasRepoAccess := model.CheckRepoAccessFromUserID(db, userIDFromToken); hasRepoAccess {
-					c.HTML(http.StatusOK, "repo-summary.html", "")
-				} else {
-					c.HTML(http.StatusNotFound, "", "")
-				}
+			// Check if the logged in user has access to view the repository.
+			if hasRepoAccess := model.CheckRepoAccessFromUserID(db, userIDFromToken); hasRepoAccess {
+				c.HTML(http.StatusOK, "repo-summary.html", "")
 			} else {
 				c.HTML(http.StatusNotFound, "", "")
 			}
