@@ -64,6 +64,7 @@ func main() {
 	r.GET("/~:username", GetHome)
 	r.GET("/~:username/:reponame", GetRepo)
 	r.GET("/host", GetHostAddress)
+	r.GET("/~:username/:reponame/:gitRegex", GetGitRegex)
 
 	// Listen and serve on 1937
 	r.Run(fmt.Sprintf(":%s", conf.Server.HTTPPort))
@@ -367,6 +368,7 @@ func PostCreateRepo(c *gin.Context) {
 	}
 }
 
+// GetRepo ...
 func GetRepo(c *gin.Context) {
 	username := c.Param("username")
 	reponame := c.Param("reponame")
@@ -409,4 +411,47 @@ func GetRepo(c *gin.Context) {
 			c.Redirect(http.StatusMovedPermanently, "/")
 		}
 	}
+}
+
+// HandlerReqStruct struct
+type HandlerReqStruct struct {
+	c *gin.Context
+}
+
+// ServiceStruct struct
+type ServiceStruct struct {
+	Handler func(HandlerReqStruct)
+	RPC     string
+}
+
+var services = map[string]ServiceStruct{
+	"git-upload-pack$":  ServiceStruct{PostServiceRPC, "upload-pack"},
+	"git-receive-pack$": ServiceStruct{PostServiceRPC, "receive-pack"},
+	// "info/refs$":                             Service{"GET", getInfoRefs, ""},
+	// "HEAD$":                                  Service{"GET", getTextFile, ""},
+	// "objects/info/alternates$":               Service{"GET", getTextFile, ""},
+	// "objects/info/http-alternates$":          Service{"GET", getTextFile, ""},
+	// "objects/info/packs$":                    Service{"GET", getInfoPacks, ""},
+	// "objects/info/[^/]*$":                    Service{"GET", getTextFile, ""},
+	// "objects/[0-9a-f]{2}/[0-9a-f]{38}$":      Service{"GET", getLooseObject, ""},
+	// "objects/pack/pack-[0-9a-f]{40}\\.pack$": Service{"GET", getPackFile, ""},
+	// "objects/pack/pack-[0-9a-f]{40}\\.idx$":  Service{"GET", getIdxFile, ""},
+}
+
+// GetGitRegex ...
+func GetGitRegex(c *gin.Context) {
+	gitRegex := c.Param("gitRegex")
+
+	for match, service := range services {
+		if match == gitRegex {
+			hr := HandlerReqStruct{c}
+			service.Handler(hr)
+			return
+		}
+	}
+}
+
+// PostServiceRPC ...
+func PostServiceRPC(hr HandlerReqStruct) {
+
 }
