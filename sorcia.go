@@ -10,7 +10,9 @@ import (
 	"os/exec"
 	"path"
 	"regexp"
+	"strconv"
 	"strings"
+	"time"
 
 	errorhandler "sorcia/error"
 	"sorcia/middleware"
@@ -68,7 +70,8 @@ func main() {
 	r.GET("/host", GetHostAddress)
 
 	// Git http service handlers
-	r.GET("/~:username/:reponame/git-:rpc", PostServiceRPC)
+	r.POST("/~:username/:reponame/git-:rpc", PostServiceRPC)
+	r.GET("/~:username/:reponame/info/refs", GetInfoRefs)
 
 	// Listen and serve on 1937
 	r.Run(fmt.Sprintf(":%s", conf.Server.HTTPPort))
@@ -464,4 +467,101 @@ func PostServiceRPC(c *gin.Context) {
 		c.Writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+}
+
+func getServiceType(c *gin.Context) string {
+	q := c.Request.URL.Query()
+	serviceType := q["service"][0]
+	if !strings.HasPrefix(serviceType, "git-") {
+		return ""
+	}
+	return strings.TrimPrefix(serviceType, "git-")
+}
+
+func gitCommand(dir string, args ...string) []byte {
+	cmd := exec.Command("git", args...)
+	cmd.Dir = dir
+	out, err := cmd.Output()
+	errorhandler.CheckError(err)
+
+	return out
+}
+
+func updateServerInfo(dir string) []byte {
+	return gitCommand(dir, "update-server-info")
+}
+
+// HandlerReqStruct struct
+type HandlerReqStruct struct {
+	w    http.ResponseWriter
+	r    *http.Request
+	RPC  string
+	Dir  string
+	File string
+}
+
+func sendFile(c *gin.Context, contentType string, repoDir string, file string) {
+	reqFile := path.Join(repoDir, file)
+	fi, err := os.Stat(reqFile)
+	if os.IsNotExist(err) {
+		c.Writer.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	c.Writer.Header().Set("Content-Type", contentType)
+	c.Writer.Header().Set("Content-Length", fmt.Sprintf("%d", fi.Size()))
+	c.Writer.Header().Set("Last-Modified", fi.ModTime().Format(http.TimeFormat))
+	c.File(reqFile)
+}
+
+// GetInfoRefs ...
+func GetInfoRefs(c *gin.Context) {
+	hdrNocache(c)
+
+	service := getServiceType(c)
+	username := c.Param("username")
+	reponame := c.Param("reponame")
+	args := []string{service, "--stateless-rpc", "--advertise-refs", "."}
+
+	// Get config values
+	conf := setting.GetConf()
+
+	repoDir := path.Join(conf.Paths.DataPath, "repositories"+"/"+username+"/"+reponame)
+
+	file := c.Request.URL.Path
+
+	if service != "upload-pack" && service != "receive-pack" {
+		updateServerInfo(repoDir)
+		sendFile(c, "text/plain; charset=utf-8", repoDir, file)
+		return
+	}
+
+	refs := gitCommand(repoDir, args...)
+	c.Writer.Header().Set("Content-Type", fmt.Sprintf("application/x-git-%s-advertisement", service))
+	c.Writer.WriteHeader(http.StatusOK)
+	c.Writer.Write(packetWrite("# service=git-" + service + "\n"))
+	c.Writer.Write([]byte("0000"))
+	c.Writer.Write(refs)
+}
+
+func packetWrite(str string) []byte {
+	s := strconv.FormatInt(int64(len(str)+4), 16)
+	if len(s)%4 != 0 {
+		s = strings.Repeat("0", 4-len(s)%4) + s
+	}
+	return []byte(s + str)
+}
+
+func hdrNocache(c *gin.Context) {
+	c.Writer.Header().Set("Expires", "Fri, 01 Jan 1980 00:00:00 GMT")
+	c.Writer.Header().Set("Pragma", "no-cache")
+	c.Writer.Header().Set("Cache-Control", "no-cache, max-age=0, must-revalidate")
+}
+
+func hdrCacheForever(c *gin.Context) {
+	now := time.Now().Unix()
+	expires := now + 31536000
+	c.Writer.Header().Set("Date", fmt.Sprintf("%d", now))
+	c.Writer.Header().Set("Expires", fmt.Sprintf("%d", expires))
+	c.Writer.Header().Set("Cache-Control", "public, max-age=31536000")
 }
