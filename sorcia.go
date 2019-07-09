@@ -64,7 +64,10 @@ func main() {
 	r.GET("/~:username", GetHome)
 	r.GET("/~:username/:reponame", GetRepo)
 	r.GET("/host", GetHostAddress)
-	r.GET("/~:username/:reponame/:gitRegex", GetGitRegex)
+
+	// Git http service handlers
+	r.GET("/~:username/:reponame/git-upload-pack", PostServiceRPC)
+	r.GET("/~:username/:reponame/git-receive-pack", PostServiceRPC)
 
 	// Listen and serve on 1937
 	r.Run(fmt.Sprintf(":%s", conf.Server.HTTPPort))
@@ -176,8 +179,6 @@ func PostLogin(c *gin.Context) {
 			errorhandler.CheckError(err)
 
 			if isTokenValid == true {
-				fmt.Println(sphjwtr.Token)
-				fmt.Println("y")
 				c.SetCookie("sorcia-token", sphjwtr.Token, 0, "/", strings.Split(c.Request.Host, ":")[0], false, true)
 
 				c.Redirect(http.StatusMovedPermanently, "/")
@@ -413,45 +414,7 @@ func GetRepo(c *gin.Context) {
 	}
 }
 
-// HandlerReqStruct struct
-type HandlerReqStruct struct {
-	c *gin.Context
-}
-
-// ServiceStruct struct
-type ServiceStruct struct {
-	Handler func(HandlerReqStruct)
-	RPC     string
-}
-
-var services = map[string]ServiceStruct{
-	"git-upload-pack$":  ServiceStruct{PostServiceRPC, "upload-pack"},
-	"git-receive-pack$": ServiceStruct{PostServiceRPC, "receive-pack"},
-	// "info/refs$":                             Service{"GET", getInfoRefs, ""},
-	// "HEAD$":                                  Service{"GET", getTextFile, ""},
-	// "objects/info/alternates$":               Service{"GET", getTextFile, ""},
-	// "objects/info/http-alternates$":          Service{"GET", getTextFile, ""},
-	// "objects/info/packs$":                    Service{"GET", getInfoPacks, ""},
-	// "objects/info/[^/]*$":                    Service{"GET", getTextFile, ""},
-	// "objects/[0-9a-f]{2}/[0-9a-f]{38}$":      Service{"GET", getLooseObject, ""},
-	// "objects/pack/pack-[0-9a-f]{40}\\.pack$": Service{"GET", getPackFile, ""},
-	// "objects/pack/pack-[0-9a-f]{40}\\.idx$":  Service{"GET", getIdxFile, ""},
-}
-
-// GetGitRegex ...
-func GetGitRegex(c *gin.Context) {
-	gitRegex := c.Param("gitRegex")
-
-	for match, service := range services {
-		if match == gitRegex {
-			hr := HandlerReqStruct{c}
-			service.Handler(hr)
-			return
-		}
-	}
-}
-
 // PostServiceRPC ...
-func PostServiceRPC(hr HandlerReqStruct) {
-
+func PostServiceRPC(c *gin.Context) {
+	fmt.Println("yes")
 }
