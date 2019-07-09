@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"compress/gzip"
 	"database/sql"
 	"fmt"
 	"net/http"
@@ -66,8 +68,7 @@ func main() {
 	r.GET("/host", GetHostAddress)
 
 	// Git http service handlers
-	r.GET("/~:username/:reponame/git-upload-pack", PostServiceRPC)
-	r.GET("/~:username/:reponame/git-receive-pack", PostServiceRPC)
+	r.GET("/~:username/:reponame/git-:rpc", PostServiceRPC)
 
 	// Listen and serve on 1937
 	r.Run(fmt.Sprintf(":%s", conf.Server.HTTPPort))
@@ -416,5 +417,51 @@ func GetRepo(c *gin.Context) {
 
 // PostServiceRPC ...
 func PostServiceRPC(c *gin.Context) {
-	fmt.Println("yes")
+	username := c.Param("username")
+	reponame := c.Param("reponame")
+	rpc := c.Param("rpc")
+
+	if rpc != "upload-pack" && rpc != "receive-pack" {
+		return
+	}
+
+	c.Writer.Header().Set("Content-Type", fmt.Sprintf("application/x-git-%s-result", rpc))
+	c.Writer.Header().Set("Connection", "Keep-Alive")
+	c.Writer.Header().Set("Transfer-Encoding", "chunked")
+	c.Writer.Header().Set("X-Content-Type-Options", "nosniff")
+	c.Writer.WriteHeader(http.StatusOK)
+
+	// env := []string{"", "username=demo", "password=demo"}
+
+	reqBody := c.Request.Body
+	var err error
+
+	// Handle GZip
+	if c.Request.Header.Get("Content-Encoding") == "gzip" {
+		reqBody, err = gzip.NewReader(reqBody)
+		if err != nil {
+			errorhandler.CheckError(err)
+			c.Writer.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}
+
+	// Get config values
+	conf := setting.GetConf()
+
+	repoDir := path.Join(conf.Paths.DataPath, "repositories"+"/"+username+"/"+reponame)
+
+	cmd := exec.Command("git", rpc, "--stateless-rpc", repoDir)
+
+	var stderr bytes.Buffer
+
+	cmd.Dir = repoDir
+	cmd.Stdout = c.Writer
+	cmd.Stderr = &stderr
+	cmd.Stdin = reqBody
+	if err := cmd.Run(); err != nil {
+		errorhandler.CheckError(err)
+		c.Writer.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 }
