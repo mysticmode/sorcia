@@ -69,12 +69,20 @@ func main() {
 	r.GET("/~:username/:reponame", GetRepo)
 	r.GET("/host", GetHostAddress)
 
-	// Git http service handlers
+	// Git http backend service handlers
 	r.POST("/~:username/:reponame/git-:rpc", PostServiceRPC)
 	r.GET("/~:username/:reponame/info/refs", GetInfoRefs)
+	r.GET("/~:username/:reponame/HEAD", GetHEADFile)
+	r.GET("/~:username/:reponame/objects/:regex", GetGitRegexRequestHandler)
 
 	// Listen and serve on 1937
 	r.Run(fmt.Sprintf(":%s", conf.Server.HTTPPort))
+}
+
+// GetGitRegexRequestHandler ...
+func GetGitRegexRequestHandler(c *gin.Context) {
+	regex := c.Param("regex")
+	fmt.Println(regex)
 }
 
 func hashPassword(password string) (string, error) {
@@ -581,35 +589,37 @@ func GetInfoRefs(c *gin.Context) {
 }
 
 // GetInfoPacks ...
-func GetInfoPacks(c *gin.Context) {
-	hdrCacheForever(c)
-	ghrs := applyGitHandlerReq(c, "")
+func (ghrs *GitHandlerReqStruct) GetInfoPacks(c *gin.Context) {
+	hdrCacheForever(ghrs.c)
 	ghrs.sendFile("text/plain; charset=utf-8")
 }
 
 // GetLooseObject ...
-func GetLooseObject(c *gin.Context) {
-	hdrCacheForever(c)
-	ghrs := applyGitHandlerReq(c, "")
+func (ghrs *GitHandlerReqStruct) GetLooseObject(c *gin.Context) {
+	hdrCacheForever(ghrs.c)
 	ghrs.sendFile("application/x-git-loose-object")
 }
 
 // GetPackFile ...
-func GetPackFile(c *gin.Context) {
-	hdrCacheForever(c)
-	ghrs := applyGitHandlerReq(c, "")
+func (ghrs *GitHandlerReqStruct) GetPackFile(c *gin.Context) {
+	hdrCacheForever(ghrs.c)
 	ghrs.sendFile("application/x-git-packed-objects")
 }
 
 // GetIdxFile ...
-func GetIdxFile(c *gin.Context) {
-	hdrCacheForever(c)
-	ghrs := applyGitHandlerReq(c, "")
+func (ghrs *GitHandlerReqStruct) GetIdxFile() {
+	hdrCacheForever(ghrs.c)
 	ghrs.sendFile("application/x-git-packed-objects-toc")
 }
 
 // GetTextFile ...
-func GetTextFile(c *gin.Context) {
+func (ghrs *GitHandlerReqStruct) GetTextFile() {
+	hdrNocache(ghrs.c)
+	ghrs.sendFile("text/plain")
+}
+
+// GetHEADFile ...
+func GetHEADFile(c *gin.Context) {
 	hdrNocache(c)
 	ghrs := applyGitHandlerReq(c, "")
 	ghrs.sendFile("text/plain")
