@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -449,10 +450,9 @@ func PostServiceRPC(c *gin.Context) {
 		}
 	}
 
-	// Get config values
-	conf := setting.GetConf()
-
-	repoDir := path.Join(conf.Paths.DataPath, "repositories"+"/"+username+"/"+reponame)
+	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	errorhandler.CheckError(err)
+	repoDir := path.Join(dir, "repositories/"+username+"/"+reponame)
 
 	cmd := exec.Command("git", rpc, "--stateless-rpc", repoDir)
 
