@@ -555,11 +555,10 @@ func PostServiceRPC(c *gin.Context) {
 	c.Writer.WriteHeader(http.StatusOK)
 
 	reqBody := c.Request.Body
-	var err error
 
-	// Handle GZip
+	// Handle GZIP
 	if c.Request.Header.Get("Content-Encoding") == "gzip" {
-		reqBody, err = gzip.NewReader(reqBody)
+		_, err := gzip.NewReader(reqBody)
 		if err != nil {
 			errorhandler.CheckError(err)
 			c.Writer.WriteHeader(http.StatusInternalServerError)
@@ -573,6 +572,33 @@ func PostServiceRPC(c *gin.Context) {
 	repoDir := (path.Join(conf.Paths.DataPath, "repositories/"+username+"/"+reponame))
 
 	cmd := exec.Command("git", rpc, "--stateless-rpc", repoDir)
+	// if rpc == "receive-pack" {
+	// 	username, password, authOK := c.Request.BasicAuth()
+	// 	if authOK == false {
+	// 		http.Error(c.Writer, "Not authorized", 401)
+	// 		return
+	// 	}
+
+	// 	if username != "username" || password != "password" {
+	// 		http.Error(c.Writer, "Not authorized", 401)
+	// 		return
+	// 	}
+	// }
+
+	username, password, authOK := c.Request.BasicAuth()
+	if authOK == false {
+		c.Writer.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
+		c.Writer.WriteHeader(401)
+		c.Writer.Write([]byte("Unauthorised.\n"))
+		return
+	}
+
+	if username != "username" || password != "password" {
+		c.Writer.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
+		c.Writer.WriteHeader(401)
+		c.Writer.Write([]byte("Not authorized.\n"))
+		return
+	}
 
 	var stderr bytes.Buffer
 
@@ -580,11 +606,9 @@ func PostServiceRPC(c *gin.Context) {
 	cmd.Stdout = c.Writer
 	cmd.Stderr = &stderr
 	cmd.Stdin = reqBody
-	if err := cmd.Run(); err != nil {
-		errorhandler.CheckError(err)
-		c.Writer.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+	err := cmd.Run()
+	errorhandler.CheckError(err)
+	return
 }
 
 // GetInfoRefs ...
