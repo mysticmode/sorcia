@@ -57,12 +57,6 @@ func main() {
 		middleware.UserMiddleware(db),
 	)
 
-	// Git http backend service handlers
-	r.POST("/~:username/:reponame/git-:rpc", PostServiceRPC)
-	r.GET("/~:username/:reponame/info/refs", GetInfoRefs)
-	r.GET("/~:username/:reponame/HEAD", GetHEADFile)
-	r.GET("/~:username/:reponame/objects/:regex1/:regex2", GetGitRegexRequestHandler)
-
 	// Gin handlers
 	r.GET("/", GetHome)
 	r.GET("/login", GetLogin)
@@ -74,6 +68,12 @@ func main() {
 	r.GET("/~:username", GetHome)
 	r.GET("/~:username/:reponame", GetRepo)
 	r.GET("/host", GetHostAddress)
+
+	// Git http backend service handlers
+	r.POST("/~:username/:reponame/git-:rpc", PostServiceRPC)
+	r.GET("/~:username/:reponame/info/refs", GetInfoRefs)
+	r.GET("/~:username/:reponame/HEAD", GetHEADFile)
+	r.GET("/~:username/:reponame/objects/:regex1/:regex2", GetGitRegexRequestHandler)
 
 	// Listen and serve on 1937
 	r.Run(fmt.Sprintf(":%s", conf.Server.HTTPPort))
