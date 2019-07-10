@@ -57,6 +57,12 @@ func main() {
 		middleware.UserMiddleware(db),
 	)
 
+	// Git http backend service handlers
+	r.POST("/~:username/:reponame/git-:rpc", PostServiceRPC)
+	r.GET("/~:username/:reponame/info/refs", GetInfoRefs)
+	r.GET("/~:username/:reponame/HEAD", GetHEADFile)
+	r.GET("/~:username/:reponame/objects/:regex1/:regex2", GetGitRegexRequestHandler)
+
 	// Gin handlers
 	r.GET("/", GetHome)
 	r.GET("/login", GetLogin)
@@ -69,20 +75,39 @@ func main() {
 	r.GET("/~:username/:reponame", GetRepo)
 	r.GET("/host", GetHostAddress)
 
-	// Git http backend service handlers
-	r.POST("/~:username/:reponame/git-:rpc", PostServiceRPC)
-	r.GET("/~:username/:reponame/info/refs", GetInfoRefs)
-	r.GET("/~:username/:reponame/HEAD", GetHEADFile)
-	r.GET("/~:username/:reponame/objects/:regex", GetGitRegexRequestHandler)
-
 	// Listen and serve on 1937
 	r.Run(fmt.Sprintf(":%s", conf.Server.HTTPPort))
 }
 
 // GetGitRegexRequestHandler ...
 func GetGitRegexRequestHandler(c *gin.Context) {
-	regex := c.Param("regex")
-	fmt.Println(regex)
+	fmt.Println("\n\n\n\n\ncomingggg")
+	regex1 := c.Param("regex1")
+	regex2 := c.Param("regex2")
+	fmt.Println(regex1)
+	fmt.Println(regex2)
+
+	ghrs := applyGitHandlerReq(c, "")
+
+	if regex1 == "info" {
+		if regex2 == "alternates" || regex2 == "http-alternates" {
+			ghrs.GetTextFile()
+		} else if regex2 == "packs" {
+			ghrs.GetInfoPacks()
+		} else if match, _ := regexp.MatchString("[^/]*$", regex2); match {
+			ghrs.GetTextFile()
+		}
+	} else if regex1 == "pack" {
+		if match, _ := regexp.MatchString("pack-[0-9a-f]{40}\\.pack$", regex2); match {
+			ghrs.GetPackFile()
+		} else if match, _ = regexp.MatchString("pack-[0-9a-f]{40}\\.idx$", regex2); match {
+			ghrs.GetIdxFile()
+		}
+	} else if match, _ := regexp.MatchString("[0-9a-f]{2}", regex1); match {
+		if match, _ = regexp.MatchString("[0-9a-f]{38}$", regex2); match {
+			ghrs.GetLooseObject()
+		}
+	}
 }
 
 func hashPassword(password string) (string, error) {
@@ -589,19 +614,19 @@ func GetInfoRefs(c *gin.Context) {
 }
 
 // GetInfoPacks ...
-func (ghrs *GitHandlerReqStruct) GetInfoPacks(c *gin.Context) {
+func (ghrs *GitHandlerReqStruct) GetInfoPacks() {
 	hdrCacheForever(ghrs.c)
 	ghrs.sendFile("text/plain; charset=utf-8")
 }
 
 // GetLooseObject ...
-func (ghrs *GitHandlerReqStruct) GetLooseObject(c *gin.Context) {
+func (ghrs *GitHandlerReqStruct) GetLooseObject() {
 	hdrCacheForever(ghrs.c)
 	ghrs.sendFile("application/x-git-loose-object")
 }
 
 // GetPackFile ...
-func (ghrs *GitHandlerReqStruct) GetPackFile(c *gin.Context) {
+func (ghrs *GitHandlerReqStruct) GetPackFile() {
 	hdrCacheForever(ghrs.c)
 	ghrs.sendFile("application/x-git-packed-objects")
 }
