@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/exec"
 	"path"
-	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -419,53 +418,31 @@ func GetRepo(c *gin.Context) {
 	}
 }
 
-// PostServiceRPC ...
-func PostServiceRPC(c *gin.Context) {
+// GitHandlerReqStruct struct
+type GitHandlerReqStruct struct {
+	c    *gin.Context
+	RPC  string
+	Dir  string
+	File string
+}
+
+func applyGitHandlerReq(c *gin.Context, rpc string) *GitHandlerReqStruct {
 	username := c.Param("username")
 	reponame := c.Param("reponame")
-	rpc := c.Param("rpc")
 
-	if rpc != "upload-pack" && rpc != "receive-pack" {
-		return
-	}
+	// Get config values
+	conf := setting.GetConf()
 
-	c.Writer.Header().Set("Content-Type", fmt.Sprintf("application/x-git-%s-result", rpc))
-	c.Writer.Header().Set("Connection", "Keep-Alive")
-	c.Writer.Header().Set("Transfer-Encoding", "chunked")
-	c.Writer.Header().Set("X-Content-Type-Options", "nosniff")
-	c.Writer.WriteHeader(http.StatusOK)
+	repoDir := path.Join(conf.Paths.DataPath, "repositories"+"/"+username+"/"+reponame)
 
-	// env := []string{"", "username=demo", "password=demo"}
+	URLPath := c.Request.URL.Path
+	file := strings.Split(URLPath, "/~"+username+"/"+reponame)[1]
 
-	reqBody := c.Request.Body
-	var err error
-
-	// Handle GZip
-	if c.Request.Header.Get("Content-Encoding") == "gzip" {
-		reqBody, err = gzip.NewReader(reqBody)
-		if err != nil {
-			errorhandler.CheckError(err)
-			c.Writer.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-	}
-
-	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
-	errorhandler.CheckError(err)
-	repoDir := path.Join(dir, "repositories/"+username+"/"+reponame)
-
-	cmd := exec.Command("git", rpc, "--stateless-rpc", repoDir)
-
-	var stderr bytes.Buffer
-
-	cmd.Dir = repoDir
-	cmd.Stdout = c.Writer
-	cmd.Stderr = &stderr
-	cmd.Stdin = reqBody
-	if err := cmd.Run(); err != nil {
-		errorhandler.CheckError(err)
-		c.Writer.WriteHeader(http.StatusInternalServerError)
-		return
+	return &GitHandlerReqStruct{
+		c:    c,
+		RPC:  rpc,
+		Dir:  repoDir,
+		File: file,
 	}
 }
 
@@ -491,27 +468,67 @@ func updateServerInfo(dir string) []byte {
 	return gitCommand(dir, "update-server-info")
 }
 
-// HandlerReqStruct struct
-type HandlerReqStruct struct {
-	w    http.ResponseWriter
-	r    *http.Request
-	RPC  string
-	Dir  string
-	File string
-}
-
-func sendFile(c *gin.Context, contentType string, repoDir string, file string) {
-	reqFile := path.Join(repoDir, file)
+func (ghrs *GitHandlerReqStruct) sendFile(contentType string) {
+	reqFile := path.Join(ghrs.Dir, ghrs.File)
 	fi, err := os.Stat(reqFile)
 	if os.IsNotExist(err) {
-		c.Writer.WriteHeader(http.StatusNotFound)
+		ghrs.c.Writer.WriteHeader(http.StatusNotFound)
 		return
 	}
 
-	c.Writer.Header().Set("Content-Type", contentType)
-	c.Writer.Header().Set("Content-Length", fmt.Sprintf("%d", fi.Size()))
-	c.Writer.Header().Set("Last-Modified", fi.ModTime().Format(http.TimeFormat))
-	c.File(reqFile)
+	ghrs.c.Writer.Header().Set("Content-Type", contentType)
+	ghrs.c.Writer.Header().Set("Content-Length", fmt.Sprintf("%d", fi.Size()))
+	ghrs.c.Writer.Header().Set("Last-Modified", fi.ModTime().Format(http.TimeFormat))
+	ghrs.c.File(reqFile)
+}
+
+// PostServiceRPC ...
+func PostServiceRPC(c *gin.Context) {
+	username := c.Param("username")
+	reponame := c.Param("reponame")
+	rpc := c.Param("rpc")
+
+	if rpc != "upload-pack" && rpc != "receive-pack" {
+		return
+	}
+
+	c.Writer.Header().Set("Content-Type", fmt.Sprintf("application/x-git-%s-result", rpc))
+	c.Writer.Header().Set("Connection", "Keep-Alive")
+	c.Writer.Header().Set("Transfer-Encoding", "chunked")
+	c.Writer.Header().Set("X-Content-Type-Options", "nosniff")
+	c.Writer.WriteHeader(http.StatusOK)
+
+	reqBody := c.Request.Body
+	var err error
+
+	// Handle GZip
+	if c.Request.Header.Get("Content-Encoding") == "gzip" {
+		reqBody, err = gzip.NewReader(reqBody)
+		if err != nil {
+			errorhandler.CheckError(err)
+			c.Writer.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}
+
+	// Get config values
+	conf := setting.GetConf()
+
+	repoDir := (path.Join(conf.Paths.DataPath, "repositories/"+username+"/"+reponame))
+
+	cmd := exec.Command("git", rpc, "--stateless-rpc", repoDir)
+
+	var stderr bytes.Buffer
+
+	cmd.Dir = repoDir
+	cmd.Stdout = c.Writer
+	cmd.Stderr = &stderr
+	cmd.Stdin = reqBody
+	if err := cmd.Run(); err != nil {
+		errorhandler.CheckError(err)
+		c.Writer.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 }
 
 // GetInfoRefs ...
@@ -519,28 +536,22 @@ func GetInfoRefs(c *gin.Context) {
 	hdrNocache(c)
 
 	service := getServiceType(c)
-	username := c.Param("username")
-	reponame := c.Param("reponame")
 	args := []string{service, "--stateless-rpc", "--advertise-refs", "."}
 
-	// Get config values
-	conf := setting.GetConf()
-
-	repoDir := path.Join(conf.Paths.DataPath, "repositories"+"/"+username+"/"+reponame)
-
-	file := c.Request.URL.Path
+	ghrs := applyGitHandlerReq(c, "")
 
 	if service != "upload-pack" && service != "receive-pack" {
-		updateServerInfo(repoDir)
-		sendFile(c, "text/plain; charset=utf-8", repoDir, file)
+		updateServerInfo(ghrs.Dir)
+
+		ghrs.sendFile("text/plain; charset=utf-8")
 		return
 	}
 
-	refs := gitCommand(repoDir, args...)
+	refs := gitCommand(ghrs.Dir, args...)
 	c.Writer.Header().Set("Content-Type", fmt.Sprintf("application/x-git-%s-advertisement", service))
 	c.Writer.WriteHeader(http.StatusOK)
 	c.Writer.Write(packetWrite("# service=git-" + service + "\n"))
-	c.Writer.Write([]byte("0000"))
+	c.Writer.Write(packetFlush())
 	c.Writer.Write(refs)
 }
 
@@ -550,6 +561,10 @@ func packetWrite(str string) []byte {
 		s = strings.Repeat("0", 4-len(s)%4) + s
 	}
 	return []byte(s + str)
+}
+
+func packetFlush() []byte {
+	return []byte("0000")
 }
 
 func hdrNocache(c *gin.Context) {
@@ -564,4 +579,39 @@ func hdrCacheForever(c *gin.Context) {
 	c.Writer.Header().Set("Date", fmt.Sprintf("%d", now))
 	c.Writer.Header().Set("Expires", fmt.Sprintf("%d", expires))
 	c.Writer.Header().Set("Cache-Control", "public, max-age=31536000")
+}
+
+// GetInfoPacks ...
+func GetInfoPacks(c *gin.Context) {
+	hdrCacheForever(c)
+	ghrs := applyGitHandlerReq(c, "")
+	ghrs.sendFile("text/plain; charset=utf-8")
+}
+
+// GetLooseObject ...
+func GetLooseObject(c *gin.Context) {
+	hdrCacheForever(c)
+	ghrs := applyGitHandlerReq(c, "")
+	ghrs.sendFile("application/x-git-loose-object")
+}
+
+// GetPackFile ...
+func GetPackFile(c *gin.Context) {
+	hdrCacheForever(c)
+	ghrs := applyGitHandlerReq(c, "")
+	ghrs.sendFile("application/x-git-packed-objects")
+}
+
+// GetIdxFile ...
+func GetIdxFile(c *gin.Context) {
+	hdrCacheForever(c)
+	ghrs := applyGitHandlerReq(c, "")
+	ghrs.sendFile("application/x-git-packed-objects-toc")
+}
+
+// GetTextFile ...
+func GetTextFile(c *gin.Context) {
+	hdrNocache(c)
+	ghrs := applyGitHandlerReq(c, "")
+	ghrs.sendFile("text/plain")
 }
