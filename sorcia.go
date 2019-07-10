@@ -81,11 +81,8 @@ func main() {
 
 // GetGitRegexRequestHandler ...
 func GetGitRegexRequestHandler(c *gin.Context) {
-	fmt.Println("\n\n\n\n\ncomingggg")
 	regex1 := c.Param("regex1")
 	regex2 := c.Param("regex2")
-	fmt.Println(regex1)
-	fmt.Println(regex2)
 
 	ghrs := applyGitHandlerReq(c, "")
 
