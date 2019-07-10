@@ -482,6 +482,32 @@ func (ghrs *GitHandlerReqStruct) sendFile(contentType string) {
 	ghrs.c.File(reqFile)
 }
 
+func packetWrite(str string) []byte {
+	s := strconv.FormatInt(int64(len(str)+4), 16)
+	if len(s)%4 != 0 {
+		s = strings.Repeat("0", 4-len(s)%4) + s
+	}
+	return []byte(s + str)
+}
+
+func packetFlush() []byte {
+	return []byte("0000")
+}
+
+func hdrNocache(c *gin.Context) {
+	c.Writer.Header().Set("Expires", "Fri, 01 Jan 1980 00:00:00 GMT")
+	c.Writer.Header().Set("Pragma", "no-cache")
+	c.Writer.Header().Set("Cache-Control", "no-cache, max-age=0, must-revalidate")
+}
+
+func hdrCacheForever(c *gin.Context) {
+	now := time.Now().Unix()
+	expires := now + 31536000
+	c.Writer.Header().Set("Date", fmt.Sprintf("%d", now))
+	c.Writer.Header().Set("Expires", fmt.Sprintf("%d", expires))
+	c.Writer.Header().Set("Cache-Control", "public, max-age=31536000")
+}
+
 // PostServiceRPC ...
 func PostServiceRPC(c *gin.Context) {
 	username := c.Param("username")
@@ -542,7 +568,6 @@ func GetInfoRefs(c *gin.Context) {
 
 	if service != "upload-pack" && service != "receive-pack" {
 		updateServerInfo(ghrs.Dir)
-
 		ghrs.sendFile("text/plain; charset=utf-8")
 		return
 	}
@@ -553,32 +578,6 @@ func GetInfoRefs(c *gin.Context) {
 	c.Writer.Write(packetWrite("# service=git-" + service + "\n"))
 	c.Writer.Write(packetFlush())
 	c.Writer.Write(refs)
-}
-
-func packetWrite(str string) []byte {
-	s := strconv.FormatInt(int64(len(str)+4), 16)
-	if len(s)%4 != 0 {
-		s = strings.Repeat("0", 4-len(s)%4) + s
-	}
-	return []byte(s + str)
-}
-
-func packetFlush() []byte {
-	return []byte("0000")
-}
-
-func hdrNocache(c *gin.Context) {
-	c.Writer.Header().Set("Expires", "Fri, 01 Jan 1980 00:00:00 GMT")
-	c.Writer.Header().Set("Pragma", "no-cache")
-	c.Writer.Header().Set("Cache-Control", "no-cache, max-age=0, must-revalidate")
-}
-
-func hdrCacheForever(c *gin.Context) {
-	now := time.Now().Unix()
-	expires := now + 31536000
-	c.Writer.Header().Set("Date", fmt.Sprintf("%d", now))
-	c.Writer.Header().Set("Expires", fmt.Sprintf("%d", expires))
-	c.Writer.Header().Set("Cache-Control", "public, max-age=31536000")
 }
 
 // GetInfoPacks ...
