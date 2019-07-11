@@ -6,3 +6,8 @@ func CheckError(err error) {
 		panic(err)
 	}
 }
+
+// ErrorResponse struct
+type ErrorResponse struct {
+	Error string `json:"error"`
+}
