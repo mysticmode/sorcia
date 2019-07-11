@@ -50,7 +50,7 @@
             <ul class="repos">
                 {{ range .repos.Repositories }}
                 <li>
-                    <a href="">{{ $.username }}/{{ .Name }} {{ if eq .IsPrivate "true" }} <i>private</i>
+                    <a href="">~{{ $.username }}/{{ .Name }} {{ if eq .IsPrivate "true" }} <i>private</i>
                         {{ end }}</a>
                     <p>{{ .Description }}</p>
                 </li>
