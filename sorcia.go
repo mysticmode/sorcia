@@ -88,8 +88,6 @@ func GetHome(c *gin.Context) {
 		userID := model.GetUserIDFromToken(db, token)
 		username := model.GetUsernameFromToken(db, token)
 
-		username = "~" + username
-
 		repos := model.GetReposFromUserID(db, userID)
 
 		c.HTML(200, "index.html", gin.H{
