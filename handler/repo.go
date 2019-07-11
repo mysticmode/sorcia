@@ -123,7 +123,10 @@ func GetRepo(c *gin.Context) {
 
 	// Check if repository is not private
 	if isRepoPrivate := model.GetRepoType(db, &rts); !isRepoPrivate {
-		c.HTML(http.StatusOK, "repo-summary.html", "")
+		c.HTML(http.StatusOK, "repo-summary.html", gin.H{
+			"username": rts.Username,
+			"reponame": rts.Reponame,
+		})
 	} else {
 		userPresent, ok := c.MustGet("userPresent").(bool)
 		if !ok {
@@ -136,7 +139,10 @@ func GetRepo(c *gin.Context) {
 
 			// Check if the logged in user has access to view the repository.
 			if hasRepoAccess := model.CheckRepoAccessFromUserID(db, userIDFromToken); hasRepoAccess {
-				c.HTML(http.StatusOK, "repo-summary.html", "")
+				c.HTML(http.StatusOK, "repo-summary.html", gin.H{
+					"username": rts.Username,
+					"reponame": rts.Reponame,
+				})
 			} else {
 				c.HTML(http.StatusNotFound, "", "")
 			}

@@ -59,11 +59,6 @@ func GetReposFromUserID(db *sql.DB, userID int) *GetReposFromUserIDResponse {
 	return &grfur
 }
 
-type RepoTypeStruct struct {
-	Username string
-	Reponame string
-}
-
 // CheckRepoExists ...
 func CheckRepoExists(db *sql.DB, reponame string) bool {
 	rows, err := db.Query("SELECT id FROM repository WHERE name = $1", reponame)
@@ -81,6 +76,12 @@ func CheckRepoExists(db *sql.DB, reponame string) bool {
 	}
 
 	return false
+}
+
+// RepoTypeStruct struct
+type RepoTypeStruct struct {
+	Username string
+	Reponame string
 }
 
 // GetRepoType ...
