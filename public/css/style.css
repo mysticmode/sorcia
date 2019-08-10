@@ -82,6 +82,7 @@ pre {
 input[type="text"], input[type="email"], input[type="password"] {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   background: white;
+  color: #333333;
   border: 1px solid #e0e4e7;
   border-radius: 0;
   padding: 7px 10px;
