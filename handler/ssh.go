@@ -1,3 +1,18 @@
+package ssh
+
+import (
+	"fmt"
+	"io"
+	"io/ioutil"
+	"net"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
+
+	"golang.org/x/crypto/ssh"
+)
+
 func cleanCommand(cmd string) string {
 	i := strings.Index(cmd, "git")
 	if i == -1 {
