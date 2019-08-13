@@ -17,13 +17,13 @@ var SSHServe = cli.Command{
 }
 
 func runSSH(c *cli.Context) error {
-	out, err := exec.Command("/bin/bash", "-c", "./gitserve").Output()
+	out, err := exec.Command("./gitserve").Output()
 	if err != nil {
 		fmt.Printf("%s\n", err)
 	}
 	fmt.Printf("%s\n", out)
 
-	cmd := exec.Command("/bin/bash", "-c", "./gitserve")
+	cmd := exec.Command("./gitserve")
 	log.Printf("Running command and waiting for it to finish...")
 	err = cmd.Run()
 	log.Printf("Command finished with error: %v", err)
