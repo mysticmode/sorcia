@@ -14,6 +14,7 @@ import (
 	"sorcia/setting"
 
 	"github.com/gin-gonic/gin"
+	// Postgresql driver
 	_ "github.com/lib/pq"
 	"github.com/urfave/cli"
 )
