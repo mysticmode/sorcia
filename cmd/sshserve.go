@@ -17,7 +17,7 @@ var SSHServe = cli.Command{
 }
 
 func runSSH(c *cli.Context) error {
-	sshcmd := exec.Command("../gitserve")
+	sshcmd := exec.Command("./gitserve")
 	err := sshcmd.Run()
 	errorhandler.CheckError(err)
 
