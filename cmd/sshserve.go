@@ -1,8 +1,8 @@
 package cmd
 
 import (
+	"bytes"
 	"fmt"
-	"log"
 	"os/exec"
 
 	"github.com/urfave/cli"
@@ -17,11 +17,16 @@ var SSHServe = cli.Command{
 }
 
 func runSSH(c *cli.Context) error {
-	out, err := exec.Command("git-shell", "-c", "\"$SSH_ORIGINAL_COMMAND\"").Output()
+	cmdd := exec.Command("./gitserve")
+	var out bytes.Buffer
+	var stderr bytes.Buffer
+	cmdd.Stdout = &out
+	cmdd.Stderr = &stderr
+	err := cmdd.Run()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+		return nil
 	}
-	fmt.Printf("The date is %s\n", out)
-
+	fmt.Println("Result: " + out.String())
 	return nil
 }
