@@ -1,9 +1,8 @@
 package cmd
 
 import (
+	"log"
 	"os/exec"
-
-	errorhandler "sorcia/error"
 
 	"github.com/urfave/cli"
 )
@@ -19,7 +18,7 @@ var SSHServe = cli.Command{
 func runSSH(c *cli.Context) error {
 	sshcmd := exec.Command("./gitserve")
 	err := sshcmd.Run()
-	errorhandler.CheckError(err)
+	log.Printf("Command finished with error: %v", err)
 
 	return nil
 }
