@@ -18,6 +18,7 @@ func main() {
 	app.Version = Version
 	app.Commands = []cli.Command{
 		cmd.Web,
+		cmd.SSHServe,
 	}
 	app.Run(os.Args)
 }
