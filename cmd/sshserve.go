@@ -20,6 +20,7 @@ var SSHServe = cli.Command{
 
 func parseSSHCmd(cmd string) (string, string) {
 	ss := strings.SplitN(cmd, " ", 2)
+	fmt.Println(ss)
 	if len(ss) != 2 {
 		return "", ""
 	}
@@ -39,6 +40,7 @@ func runSSH(c *cli.Context) error {
 	}
 
 	_, args := parseSSHCmd(sshCmd)
+	fmt.Println(args)
 	repoFullName := strings.ToLower(strings.Trim(args, "'"))
 	repoFields := strings.SplitN(repoFullName, "/", 2)
 	if len(repoFields) != 2 {
