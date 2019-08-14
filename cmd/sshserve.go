@@ -29,12 +29,12 @@ func runSSH(c *cli.Context) error {
 		return nil
 	}
 
-	cmdd := exec.Command("git-shell", "-c", os.Getenv("SSH_ORIGINAL_COMMAND"))
-	cmdd.Dir = conf.Paths.DataPath // This should be repo root path
-	cmdd.Stdout = os.Stdout
-	cmdd.Stdin = os.Stdin
-	cmdd.Stderr = os.Stderr
-	if err := cmdd.Run(); err != nil {
+	cmdSSHServe := exec.Command("git-shell", "-c", os.Getenv("SSH_ORIGINAL_COMMAND"))
+	cmdSSHServe.Dir = conf.Paths.DataPath // This should be repo root path
+	cmdSSHServe.Stdout = os.Stdout
+	cmdSSHServe.Stdin = os.Stdin
+	cmdSSHServe.Stderr = os.Stderr
+	if err := cmdSSHServe.Run(); err != nil {
 		fmt.Printf("Fail to execute git command: %v", err)
 	}
 
