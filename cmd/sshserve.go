@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"sorcia/setting"
 
 	"github.com/urfave/cli"
 )
@@ -17,6 +18,10 @@ var SSHServe = cli.Command{
 }
 
 func runSSH(c *cli.Context) error {
+
+	// Get config values
+	conf := setting.GetConf()
+
 	sshCmd := os.Getenv("SSH_ORIGINAL_COMMAND")
 	if len(sshCmd) == 0 {
 		println("Hi there, You've successfully authenticated, but sorcia does not provide shell access.")
@@ -25,7 +30,7 @@ func runSSH(c *cli.Context) error {
 	}
 
 	cmdd := exec.Command("git-shell", "-c", os.Getenv("SSH_ORIGINAL_COMMAND"))
-	cmdd.Dir = "/home/git" // This should be repo root path
+	cmdd.Dir = conf.Paths.DataPath // This should be repo root path
 	cmdd.Stdout = os.Stdout
 	cmdd.Stdin = os.Stdin
 	cmdd.Stderr = os.Stderr
