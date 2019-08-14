@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
@@ -19,15 +18,12 @@ var SSHServe = cli.Command{
 
 func runSSH(c *cli.Context) error {
 	cmdd := exec.Command("git-shell", "-c", os.Getenv("SSH_ORIGINAL_COMMAND"))
-	var out bytes.Buffer
-	var stderr bytes.Buffer
-	cmdd.Stdout = &out
-	cmdd.Stderr = &stderr
-	err := cmdd.Run()
-	if err != nil {
-		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
-		return nil
+	cmdd.Stdout = os.Stdout
+	cmdd.Stdin = os.Stdin
+	cmdd.Stderr = os.Stderr
+	if err := cmdd.Run(); err != nil {
+		fmt.Printf("Fail to execute git command: %v", err)
 	}
-	fmt.Println("Result: " + out.String())
+
 	return nil
 }
