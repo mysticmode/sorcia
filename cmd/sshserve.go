@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"sorcia/setting"
+	"strings"
 
 	"github.com/urfave/cli"
 )
@@ -15,6 +16,14 @@ var SSHServe = cli.Command{
 	Usage:       "Start web server",
 	Description: `This serves git via SSH`,
 	Action:      runSSH,
+}
+
+func parseSSHCmd(cmd string) (string, string) {
+	ss := strings.SplitN(cmd, " ", 2)
+	if len(ss) != 2 {
+		return "", ""
+	}
+	return ss[0], strings.Replace(ss[1], "'/", "'", 1)
 }
 
 func runSSH(c *cli.Context) error {
@@ -29,8 +38,19 @@ func runSSH(c *cli.Context) error {
 		return nil
 	}
 
-	fmt.Println(sshCmd)
-	return nil
+	_, args := parseSSHCmd(sshCmd)
+	repoFullName := strings.ToLower(strings.Trim(args, "'"))
+	repoFields := strings.SplitN(repoFullName, "/", 2)
+	if len(repoFields) != 2 {
+		fmt.Printf("Invalid repository path", "Invalid repository path: %v", args)
+	}
+	ownerName := strings.ToLower(repoFields[0])
+	repoName := strings.TrimSuffix(strings.ToLower(repoFields[1]), ".git")
+	repoName = strings.TrimSuffix(repoName, ".wiki")
+
+	fmt.Println(repoFullName)
+	fmt.Println(ownerName)
+	fmt.Println(repoName)
 
 	cmdSSHServe := exec.Command("git-shell", "-c", sshCmd)
 	cmdSSHServe.Dir = conf.Paths.DataPath // This should be repo root path
