@@ -44,7 +44,12 @@ func init() {
 	cfg, err := ini.Load("config/app.ini")
 	if err != nil {
 		fmt.Printf("Fail to read file: %v", err)
-		os.Exit(1)
+		fmt.Println("Trying another path...")
+		cfg, err = ini.Load("/home/git/sorcia-core/config/app.ini")
+		if err != nil {
+			fmt.Printf("Fail to read file: %v", err)
+			os.Exit(1)
+		}
 	}
 
 	conf = BaseStruct{
