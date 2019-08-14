@@ -25,6 +25,8 @@ func parseSSHCmd(cmd string) (string, string) {
 	if len(ss) != 2 {
 		return "", ""
 	}
+	fmt.Println("\n\n\n")
+	fmt.Println(strings.Replace(ss[1], "'/", "'", 1))
 	return ss[0], strings.Replace(ss[1], "'/", "'", 1)
 }
 
@@ -57,6 +59,7 @@ func runSSH(c *cli.Context) error {
 
 	if gitVerb != "git-upload-pack" && gitVerb != "git-upload-archive" && gitVerb != "git-receive-pack" {
 		fmt.Println("Unknown git command")
+		return nil
 	}
 	return nil
 
