@@ -67,15 +67,15 @@ func runWeb(c *cli.Context) error {
 	r.POST("/register", handler.PostRegister)
 	r.GET("/create", handler.GetCreateRepo)
 	r.POST("/create", handler.PostCreateRepo)
-	r.GET("/~:username", GetHome)
-	r.GET("/~:username/:reponame", handler.GetRepo)
+	r.GET("/+:username", GetHome)
+	r.GET("/+:username/:reponame", handler.GetRepo)
 	r.GET("/host", GetHostAddress)
 
 	// Git http backend service handlers
-	r.POST("/~:username/:reponame/git-:rpc", handler.PostServiceRPC)
-	r.GET("/~:username/:reponame/info/refs", handler.GetInfoRefs)
-	r.GET("/~:username/:reponame/HEAD", handler.GetHEADFile)
-	r.GET("/~:username/:reponame/objects/:regex1/:regex2", handler.GetGitRegexRequestHandler)
+	r.POST("/+:username/:reponame/git-:rpc", handler.PostServiceRPC)
+	r.GET("/+:username/:reponame/info/refs", handler.GetInfoRefs)
+	r.GET("/+:username/:reponame/HEAD", handler.GetHEADFile)
+	r.GET("/+:username/:reponame/objects/:regex1/:regex2", handler.GetGitRegexRequestHandler)
 
 	// Listen and serve on 1937
 	r.Run(fmt.Sprintf(":%s", conf.Server.HTTPPort))

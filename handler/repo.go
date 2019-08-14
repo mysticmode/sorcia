@@ -80,7 +80,7 @@ func PostCreateRepo(c *gin.Context) {
 		username := model.GetUsernameFromToken(db, token)
 
 		// Create Git bare repository
-		bareRepoDir := path.Join(conf.Paths.DataPath, "repositories/"+username+"/"+form.Name+".git")
+		bareRepoDir := path.Join(conf.Paths.DataPath, "repositories/"+"+"+username+"/"+form.Name+".git")
 
 		cmd := exec.Command("git", "init", "--bare", bareRepoDir)
 		err := cmd.Run()
