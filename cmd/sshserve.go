@@ -42,7 +42,7 @@ func runSSH(c *cli.Context) error {
 	repoFullName := strings.ToLower(strings.Trim(args, "'"))
 	repoFields := strings.SplitN(repoFullName, "/", 2)
 	if len(repoFields) != 2 {
-		fmt.Printf("Invalid repository path", "Invalid repository path: %v", args)
+		fmt.Printf("Invalid repository path: %v", args)
 	}
 	ownerName := strings.ToLower(repoFields[0])
 	repoName := strings.TrimSuffix(strings.ToLower(repoFields[1]), ".git")
