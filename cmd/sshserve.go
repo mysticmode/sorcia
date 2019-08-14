@@ -17,6 +17,13 @@ var SSHServe = cli.Command{
 }
 
 func runSSH(c *cli.Context) error {
+	sshCmd := os.Getenv("SSH_ORIGINAL_COMMAND")
+	if len(sshCmd) == 0 {
+		println("Hi there, You've successfully authenticated, but Gogs does not provide shell access.")
+		println("If this is unexpected, please log in with password and setup Gogs under another user.")
+		return nil
+	}
+
 	cmdd := exec.Command("git-shell", "-c", os.Getenv("SSH_ORIGINAL_COMMAND"))
 	cmdd.Stdout = os.Stdout
 	cmdd.Stdin = os.Stdin
