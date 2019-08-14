@@ -19,6 +19,7 @@ var SSHServe = cli.Command{
 }
 
 func parseSSHCmd(cmd string) (string, string) {
+	fmt.Println(cmd)
 	ss := strings.SplitN(cmd, " ", 2)
 	fmt.Println(ss)
 	if len(ss) != 2 {
@@ -39,7 +40,7 @@ func runSSH(c *cli.Context) error {
 		return nil
 	}
 
-	_, args := parseSSHCmd(sshCmd)
+	gitVerb, args := parseSSHCmd(sshCmd)
 	fmt.Println(args)
 	repoFullName := strings.ToLower(strings.Trim(args, "'"))
 	repoFields := strings.SplitN(repoFullName, "/", 2)
@@ -54,6 +55,9 @@ func runSSH(c *cli.Context) error {
 	fmt.Println(ownerName)
 	fmt.Println(repoName)
 
+	if gitVerb != "git-upload-pack" && gitVerb != "git-upload-archive" && gitVerb != "git-receive-pack" {
+		fmt.Println("Unknown git command")
+	}
 	return nil
 
 	cmdSSHServe := exec.Command("git-shell", "-c", sshCmd)
