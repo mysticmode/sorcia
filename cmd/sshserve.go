@@ -19,15 +19,12 @@ var SSHServe = cli.Command{
 }
 
 func parseSSHCmd(cmd string) (string, string) {
-	fmt.Println(cmd)
 	ss := strings.SplitN(cmd, " ", 2)
-	fmt.Println(ss)
 	if len(ss) != 2 {
 		return "", ""
 	}
-	fmt.Println("\n\n\n")
-	fmt.Println(strings.Replace(ss[1], "'/", "'", 1))
-	return ss[0], strings.Replace(ss[1], "'/", "'", 1)
+
+	return ss[0], ss[1]
 }
 
 func runSSH(c *cli.Context) error {
@@ -43,7 +40,6 @@ func runSSH(c *cli.Context) error {
 	}
 
 	gitVerb, args := parseSSHCmd(sshCmd)
-	fmt.Println(args)
 	repoFullName := strings.ToLower(strings.Trim(args, "'"))
 	repoFields := strings.SplitN(repoFullName, "/", 2)
 	if len(repoFields) != 2 {
