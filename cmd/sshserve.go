@@ -19,8 +19,8 @@ var SSHServe = cli.Command{
 func runSSH(c *cli.Context) error {
 	sshCmd := os.Getenv("SSH_ORIGINAL_COMMAND")
 	if len(sshCmd) == 0 {
-		println("Hi there, You've successfully authenticated, but Gogs does not provide shell access.")
-		println("If this is unexpected, please log in with password and setup Gogs under another user.")
+		println("Hi there, You've successfully authenticated, but sorcia does not provide shell access.")
+		println("If this is unexpected, please log in with password and setup sorcia under another user.")
 		return nil
 	}
 
