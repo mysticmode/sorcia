@@ -9,17 +9,6 @@
         align-items: center;
     }
 
-    &__logo {
-        font-size: 18px;
-        color: $text-color;
-        outline: none;
-        margin-right: 50px;
-
-        &:hover {
-            color: $text-color;
-        }
-    }
-
     &__menu {
         display: flex;
         list-style: none;
