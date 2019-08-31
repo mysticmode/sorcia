@@ -188,8 +188,11 @@ input[type="text"], input[type="email"], input[type="password"] {
     align-items: center; }
   .header__logo {
     font-size: 18px;
+    color: #333333;
     outline: none;
     margin-right: 50px; }
+    .header__logo:hover {
+      color: #333333; }
   .header__menu {
     display: -webkit-box;
     display: -ms-flexbox;
