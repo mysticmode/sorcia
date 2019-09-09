@@ -89,19 +89,3 @@ pre {
         }
     }
 }
-
-.footer {
-    margin-top: 30px;
-
-    & div {
-        margin-bottom: 5px;
-    }
-
-    & a {
-        &:hover {
-            & path {
-                fill: darken($color: $brand-primary, $amount: 15%);
-            }
-        }
-    }
-}

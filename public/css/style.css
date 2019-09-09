@@ -67,13 +67,6 @@ pre {
     .create-repo .form__input, .create-repo .form__label {
       width: 100%; }
 
-.footer {
-  margin-top: 30px; }
-  .footer div {
-    margin-bottom: 5px; }
-  .footer a:hover path {
-    fill: #185066; }
-
 .button {
   background: #2680a4;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
@@ -186,6 +179,14 @@ input[type="text"], input[type="email"], input[type="password"] {
     -webkit-box-align: center;
     -ms-flex-align: center;
     align-items: center; }
+  .header__logo {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    margin-right: 50px; }
   .header__menu {
     display: -webkit-box;
     display: -ms-flexbox;
@@ -200,12 +201,12 @@ input[type="text"], input[type="email"], input[type="password"] {
       color: #8d8d8d; }
       .header__menu__item:hover, .header__menu__item--active {
         color: #333333; }
-  .header__profile {
+  .header__right {
     color: #333333; }
-    .header__profile a {
+    .header__right a {
       text-decoration: none;
       color: #8d8d8d; }
-      .header__profile a:hover {
+      .header__right a:hover {
         color: #333333; }
 
 .onboard {
