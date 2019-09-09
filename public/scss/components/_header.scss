@@ -9,6 +9,12 @@
         align-items: center;
     }
 
+    &__logo {
+        display: flex;
+        justify-content: center;
+        margin-right: 50px;
+    }
+
     &__menu {
         display: flex;
         list-style: none;
@@ -31,7 +37,7 @@
         }
     }
 
-    &__profile {
+    &__right {
         
         color: $text-color;
 
