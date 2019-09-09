@@ -293,11 +293,30 @@ input[type="text"], input[type="email"], input[type="password"] {
 .repo__description {
   margin-top: 5px; }
 
+.repo__clone {
+  margin-top: 20px; }
+  .repo__clone__title {
+    font-weight: bold; }
+  .repo__clone__item {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: justify;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    width: 340px;
+    margin-top: 5px; }
+    .repo__clone__item input[type="text"] {
+      width: 300px; }
+
 .repo__menu {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
-  margin-top: 15px;
+  margin-top: 25px;
   border-bottom: 1px solid #edf0f2; }
   .repo__menu__item {
     color: #333333;

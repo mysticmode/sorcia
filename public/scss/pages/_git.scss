@@ -40,9 +40,29 @@
         margin-top: 5px;
     }
 
+    &__clone {
+        margin-top: 20px;
+
+        &__title {
+            font-weight: bold;
+        }
+
+        &__item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 340px;
+            margin-top: 5px;
+
+            & input[type="text"] {
+                width: 300px;
+            }
+        }
+    }
+
     &__menu {
         display: flex;
-        margin-top: 15px;
+        margin-top: 25px;
         border-bottom: 1px solid $brand-bg-1;
         
         &__item {
