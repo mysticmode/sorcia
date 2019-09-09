@@ -44,6 +44,11 @@
     <main class="container repo">
         <div class="repo__title"><a href="">+{{ .username }}</a> / {{ .reponame }}</div>
         <div class="repo__description">Self-hosted multi-user free(libre) ebook reader.</div>
+        <div class="repo__clone">
+            <div class="repo__clone__title">clone</div>
+            <div class="repo__clone__item"><span>ssh </span><input type="text" onclick="this.select()" value="git@sorcia.io:+{{ .username }}/{{ .reponame }}" readonly="" /></div>
+            <div class="repo__clone__item"><span>https </span><input type="text" onclick="this.select()" value="https://sorcia.io/+{{ .username }}/{{ .reponame }}" readonly="" /></div>
+        </div>
         <div class="repo__menu">
             <a href="" class="repo__menu__item repo__menu__item--active">summary</a>
             <a href="" class="repo__menu__item">tree</a>
@@ -56,7 +61,7 @@
         <div class="repo__sub-menu">
             <a href="" class="repo__sub-menu__item">127 commits</a>
             <select>
-                <option value="master" selected>master</option>
+                <option value="master" selected="">master</option>
                 <option value="devel">devel</option>
             </select>
         </div>
