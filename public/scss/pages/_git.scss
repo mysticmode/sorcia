@@ -91,6 +91,19 @@
 
         &__item {
             margin-right: 20px;
+
+            &:last-child {
+                margin-right: 0;
+            }
+        }
+
+        & .branch {
+            display: flex;
+            align-items: center;
+
+            & p {
+                margin-right: 5px;
+            }
         }
     }
 
