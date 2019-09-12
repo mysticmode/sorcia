@@ -50,6 +50,10 @@
             padding: 10px;
             margin-bottom: 10px;
 
+            &:last-child {
+                margin-bottom: 0;
+            }
+
             & div {
                 display: flex;
                 justify-content: space-between;
@@ -148,6 +152,22 @@
 
 .readme, .repo-tree, .file-viewer {
     margin-top: 20px;
+}
+
+.readme {
+    & h2 {
+        font-size: 18px;
+        margin-bottom: 5px;
+    }
+
+    & h3 {
+        font-size: 16px;
+        margin-bottom: 5px;
+    }
+    
+    & p {
+        margin-bottom: 15px;
+    }
 }
 
 .repo-tree {

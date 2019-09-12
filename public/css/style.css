@@ -300,6 +300,8 @@ input[type="text"], input[type="email"], input[type="password"] {
     background: #edf0f2;
     padding: 10px;
     margin-bottom: 10px; }
+    .repo__summary li:last-child {
+      margin-bottom: 0; }
     .repo__summary li div {
       display: -webkit-box;
       display: -ms-flexbox;
@@ -386,6 +388,17 @@ input[type="text"], input[type="email"], input[type="password"] {
 
 .readme, .repo-tree, .file-viewer {
   margin-top: 20px; }
+
+.readme h2 {
+  font-size: 18px;
+  margin-bottom: 5px; }
+
+.readme h3 {
+  font-size: 16px;
+  margin-bottom: 5px; }
+
+.readme p {
+  margin-bottom: 15px; }
 
 .repo-tree a {
   display: block;
