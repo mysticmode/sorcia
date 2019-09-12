@@ -288,24 +288,47 @@ input[type="text"], input[type="email"], input[type="password"] {
 .repo__description {
   margin-top: 5px; }
 
-.repo__clone {
+.repo__summary {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
   margin-top: 20px; }
-  .repo__clone__title {
-    font-weight: bold; }
-  .repo__clone__item {
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: flex;
-    -webkit-box-pack: justify;
-    -ms-flex-pack: justify;
-    justify-content: space-between;
-    -webkit-box-align: center;
-    -ms-flex-align: center;
-    align-items: center;
-    width: 340px;
-    margin-top: 5px; }
-    .repo__clone__item input[type="text"] {
-      width: 300px; }
+  .repo__summary li {
+    background: #edf0f2;
+    padding: 10px;
+    margin-bottom: 10px; }
+    .repo__summary li div {
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+      justify-content: space-between;
+      margin-bottom: 5px; }
+
+.repo__latest-commits {
+  width: 470px; }
+
+.repo__clone__title {
+  font-weight: bold; }
+
+.repo__clone__item {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  width: 340px;
+  margin-top: 5px; }
+  .repo__clone__item input[type="text"] {
+    width: 300px; }
 
 .repo__menu {
   display: -webkit-box;
@@ -322,6 +345,8 @@ input[type="text"], input[type="email"], input[type="password"] {
       color: #333333; }
     .repo__menu__item--active {
       background: #edf0f2; }
+    .repo__menu__item:last-child {
+      margin-right: 0; }
 
 .repo__sub-menu {
   display: -webkit-box;
