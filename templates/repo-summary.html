@@ -81,7 +81,11 @@
             <h2>Joyread</h2>
             <p>This is the core service of sorcia. A self-hosted and modular services for your Git projects. Under development.</p>
             <h3>Easy installation and updates</h3>
-            <p>This is the core service of sorcia. A self-hosted and modular services for your Git projects. Under development.</p>
+            <p>This is the core service of sorcia. A self-hosted and modular <code>go get -d ./...</code> services for your Git projects. Under development.</p>
+            <pre><code>CREATE ROLE joyreaduser WITH LOGIN PASSWORD 'jellyfish' VALID UNTIL 'infinity';
+
+CREATE DATABASE joyreaddb WITH ENCODING='UTF8' OWNER=joyreaduser CONNECTION LIMIT=-1;
+</code></pre>
         </div>
     </main>
 </body>
