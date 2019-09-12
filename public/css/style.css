@@ -399,6 +399,17 @@ input[type="text"], input[type="email"], input[type="password"] {
 
 .readme p {
   margin-bottom: 15px; }
+  .readme p code {
+    font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 14px;
+    background: #edf0f2;
+    padding: 5px; }
+
+.readme pre {
+  font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 14px;
+  background: #edf0f2;
+  padding: 10px; }
 
 .repo-tree a {
   display: block;

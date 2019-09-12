@@ -167,6 +167,20 @@
     
     & p {
         margin-bottom: 15px;
+
+        & code {
+            font-family: $font-source-code;
+            font-size: 14px;
+            background: $brand-bg-1;
+            padding: 5px;
+        }
+    }
+
+    & pre {
+        font-family: $font-source-code;
+        font-size: 14px;
+        background: $brand-bg-1;
+        padding: 10px;
     }
 }
 
