@@ -69,7 +69,7 @@ func runWeb(c *cli.Context) error {
 	r.POST("/create", handler.PostCreateRepo)
 	r.GET("/+:username", GetHome)
 	r.GET("/+:username/:reponame", handler.GetRepo)
-	r.GET("/host", GetHostAddress)
+	r.GET("/+:username/:reponame/tree", handler.GetRepoTree)
 
 	// Git http backend service handlers
 	r.POST("/+:username/:reponame/git-:rpc", handler.PostServiceRPC)
@@ -109,9 +109,4 @@ func GetHome(c *gin.Context) {
 	} else {
 		c.Redirect(http.StatusMovedPermanently, "/login")
 	}
-}
-
-// GetHostAddress returns the URL address
-func GetHostAddress(c *gin.Context) {
-	c.String(200, fmt.Sprintf("%s", c.Request.Host))
 }

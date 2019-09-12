@@ -31,7 +31,6 @@
 }
 
 .repo {
-
     &__title {
         font-weight: bold;
     }
@@ -184,8 +183,7 @@
     }
 }
 
-.repo-tree {
-    
+.repo-tree {  
     & a {
         display: block;
         padding: 5px;
