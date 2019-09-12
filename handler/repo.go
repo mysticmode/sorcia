@@ -151,3 +151,54 @@ func GetRepo(c *gin.Context) {
 		}
 	}
 }
+
+// GetRepoTree ...
+func GetRepoTree(c *gin.Context) {
+	username := c.Param("username")
+	reponame := c.Param("reponame")
+
+	db, ok := c.MustGet("db").(*sql.DB)
+	if !ok {
+		fmt.Println("Middleware db error")
+	}
+
+	rts := model.RepoTypeStruct{
+		Username: username,
+		Reponame: reponame,
+	}
+
+	if repoExists := model.CheckRepoExists(db, reponame); !repoExists {
+		c.HTML(http.StatusNotFound, "", "")
+		return
+	}
+
+	// Check if repository is not private
+	if isRepoPrivate := model.GetRepoType(db, &rts); !isRepoPrivate {
+		c.HTML(http.StatusOK, "repo-tree.html", gin.H{
+			"username": rts.Username,
+			"reponame": rts.Reponame,
+		})
+	} else {
+		userPresent, ok := c.MustGet("userPresent").(bool)
+		if !ok {
+			fmt.Println("Middleware user error")
+		}
+
+		if userPresent {
+			token, _ := c.Cookie("sorcia-token")
+			userIDFromToken := model.GetUserIDFromToken(db, token)
+
+			// Check if the logged in user has access to view the repository.
+			if hasRepoAccess := model.CheckRepoAccessFromUserID(db, userIDFromToken); hasRepoAccess {
+				c.HTML(http.StatusOK, "repo-tree.html", gin.H{
+					"username": rts.Username,
+					"reponame": rts.Reponame,
+				})
+			} else {
+				c.HTML(http.StatusNotFound, "", "")
+			}
+		} else {
+			c.Redirect(http.StatusMovedPermanently, "/")
+		}
+	}
+}
