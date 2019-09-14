@@ -187,6 +187,13 @@ input[type="text"], input[type="email"], input[type="password"] {
     -ms-flex-pack: center;
     justify-content: center;
     margin-right: 50px; }
+  .header__menu__item {
+    margin-right: 20px;
+    color: #8d8d8d; }
+    .header__menu__item:hover, .header__menu__item--active {
+      color: #333333; }
+    .header__menu__item:last-child {
+      margin-right: 0; }
   .header__right {
     display: -webkit-box;
     display: -ms-flexbox;
