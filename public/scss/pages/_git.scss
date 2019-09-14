@@ -136,16 +136,15 @@
                 height: 20px;
             }
         }
-    }
 
-    &__branch {
-        font-family: $font-default;
-        font-size: 14px;
-        margin-right: 20px;
-    }
+        & .path {
+            display: flex;
+            align-items: center;
 
-    &__path {
-        line-height: 20px;
+            & p {
+                margin-right: 5px;
+            }
+        }
     }
 }
 
