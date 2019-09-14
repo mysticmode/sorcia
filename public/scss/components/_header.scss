@@ -15,6 +15,21 @@
         margin-right: 50px;
     }
 
+    &__menu {
+        &__item {
+            margin-right: 20px;
+            color: $text-color-2;
+            
+            &:hover, &--active {
+                color: $text-color;
+            }
+
+            &:last-child {
+                margin-right: 0;
+            }
+        }
+    }
+
     &__right {
         display: flex;
         align-items: center;
