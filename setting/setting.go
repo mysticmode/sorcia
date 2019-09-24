@@ -23,6 +23,7 @@ type PathsStruct struct {
 	TemplatePath string
 	DataPath     string
 	ProjectRoot  string
+	RepoPath     string
 }
 
 // ServerStruct struct
@@ -57,6 +58,7 @@ func init() {
 			TemplatePath: cfg.Section("paths").Key("template_path").String(),
 			DataPath:     cfg.Section("paths").Key("data_path").String(),
 			ProjectRoot:  cfg.Section("paths").Key("project_root").String(),
+			RepoPath:     cfg.Section("paths").Key("repo_path").String(),
 		},
 		Server: ServerStruct{
 			HTTPPort: cfg.Section("server").Key("http_port").String(),
