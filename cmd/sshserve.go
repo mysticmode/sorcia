@@ -59,6 +59,7 @@ func runSSH(c *cli.Context) error {
 	}
 
 	cmdSSHServe := exec.Command("git-shell", "-c", repoFullName)
+	fmt.Println(conf.Paths.RepoPath)
 	cmdSSHServe.Dir = conf.Paths.RepoPath // This should be repo root path
 	cmdSSHServe.Stdout = os.Stdout
 	cmdSSHServe.Stdin = os.Stdin
