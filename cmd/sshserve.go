@@ -57,7 +57,6 @@ func runSSH(c *cli.Context) error {
 		fmt.Println("Unknown git command")
 		return nil
 	}
-	return nil
 
 	cmdSSHServe := exec.Command("git-shell", "-c", sshCmd)
 	cmdSSHServe.Dir = conf.Paths.DataPath // This should be repo root path
