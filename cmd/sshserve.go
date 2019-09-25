@@ -13,7 +13,7 @@ import (
 // SSHServe ...
 var SSHServe = cli.Command{
 	Name:        "sshserve",
-	Usage:       "Start web server",
+	Usage:       "Start ssh server",
 	Description: `This serves git via SSH`,
 	Action:      runSSH,
 }
