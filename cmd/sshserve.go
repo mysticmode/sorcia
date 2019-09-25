@@ -40,6 +40,8 @@ func runSSH(c *cli.Context) error {
 	}
 
 	gitVerb, args := parseSSHCmd(sshCmd)
+	fmt.Println(gitVerb)
+	fmt.Println(args)
 	fmt.Println(sshCmd)
 	repoFullName := strings.ToLower(strings.Trim(args, "'"))
 	repoFields := strings.SplitN(repoFullName, "/", 2)
