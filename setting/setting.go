@@ -21,6 +21,7 @@ type BaseStruct struct {
 type PathsStruct struct {
 	AssetPath    string
 	TemplatePath string
+	CaptchaPath  string
 	DataPath     string
 	ProjectRoot  string
 	RepoPath     string
@@ -56,6 +57,7 @@ func init() {
 		Paths: PathsStruct{
 			AssetPath:    cfg.Section("paths").Key("asset_path").String(),
 			TemplatePath: cfg.Section("paths").Key("template_path").String(),
+			CaptchaPath:  cfg.Section("paths").Key("captcha_path").String(),
 			DataPath:     cfg.Section("paths").Key("data_path").String(),
 			ProjectRoot:  cfg.Section("paths").Key("project_root").String(),
 			RepoPath:     cfg.Section("paths").Key("repo_path").String(),
