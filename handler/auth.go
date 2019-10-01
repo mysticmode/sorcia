@@ -91,7 +91,7 @@ func PostLogin(c *gin.Context) {
 			errorhandler.CheckError(err)
 
 			if isTokenValid == true {
-				c.SetCookie("sorcia-token", sphjwtr.Token, 0, "/", strings.Split(c.Request.Host, ":")[0], false, true)
+				c.SetCookie("sorcia-token", sphjwtr.Token, 5259492, "/", strings.Split(c.Request.Host, ":")[0], true, true)
 
 				c.Redirect(http.StatusMovedPermanently, "/")
 			} else {
