@@ -184,7 +184,7 @@ func PostRegister(c *gin.Context) {
 // GetLogout ...
 func GetLogout(c *gin.Context) {
 	// Clear the cookie
-	c.SetCookie("sorcia-token", "", -1, "/", "", true, true)
+	c.SetCookie("sorcia-token", "", -1, "/", strings.Split(c.Request.Host, ":")[0], true, true)
 
 	c.Redirect(http.StatusTemporaryRedirect, "/login")
 }
