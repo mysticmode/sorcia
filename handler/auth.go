@@ -170,7 +170,7 @@ func PostRegister(c *gin.Context) {
 			os.MkdirAll(repoDir, 0755)
 		}
 
-		c.SetCookie("sorcia-token", token, 0, "/", strings.Split(c.Request.Host, ":")[0], false, true)
+		c.SetCookie("sorcia-token", token, 5259492, "/", strings.Split(c.Request.Host, ":")[0], false, true)
 
 		c.Redirect(http.StatusMovedPermanently, "/")
 	} else {
