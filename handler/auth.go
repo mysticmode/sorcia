@@ -170,7 +170,7 @@ func PostRegister(c *gin.Context) {
 			os.MkdirAll(repoDir, 0755)
 		}
 
-		c.SetCookie("sorcia-token", token, 5259492, "/", strings.Split(c.Request.Host, ":")[0], false, true)
+		c.SetCookie("sorcia-token", token, 5259492, "/", strings.Split(c.Request.Host, ":")[0], true, true)
 
 		c.Redirect(http.StatusMovedPermanently, "/")
 	} else {
@@ -184,7 +184,7 @@ func PostRegister(c *gin.Context) {
 // GetLogout ...
 func GetLogout(c *gin.Context) {
 	// Clear the cookie
-	c.SetCookie("sorcia-token", "", -1, "", "", false, true)
+	c.SetCookie("sorcia-token", "", -1, "/", "", true, true)
 
 	c.Redirect(http.StatusTemporaryRedirect, "/login")
 }
