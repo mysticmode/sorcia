@@ -19,9 +19,9 @@ import (
 	"github.com/urfave/cli"
 )
 
-// Web ...
-var Web = cli.Command{
-	Name:        "web",
+// Core ...
+var Core = cli.Command{
+	Name:        "core",
 	Usage:       "Start web server",
 	Description: `This starts the core sorica web server`,
 	Action:      runWeb,

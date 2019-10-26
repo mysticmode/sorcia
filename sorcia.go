@@ -17,7 +17,7 @@ func main() {
 	app.Usage = "Self-hosted and modular services for your Git projects"
 	app.Version = Version
 	app.Commands = []cli.Command{
-		cmd.Web,
+		cmd.Core,
 		cmd.SSHServe,
 	}
 	app.Run(os.Args)
