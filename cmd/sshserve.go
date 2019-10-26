@@ -41,8 +41,11 @@ func runSSH(c *cli.Context) error {
 
 	gitVerb, args := parseSSHCmd(sshCmd)
 	fmt.Println(gitVerb)
-	gitVerb = strings.Replace(gitVerb, "-", " ", 1)
-	fmt.Println(gitVerb)
+
+	// For Windows
+	// gitVerb = strings.Replace(gitVerb, "-", " ", 1)
+	// fmt.Println(gitVerb)
+
 	fmt.Println(args)
 	fmt.Println(sshCmd)
 	repoFullName := strings.ToLower(strings.Trim(args, "'"))
@@ -67,9 +70,9 @@ func runSSH(c *cli.Context) error {
 	cmdSSHServe = exec.Command("git-shell", "-c", gitVerb)
 	fmt.Println(conf.Paths.RepoPath)
 	// cmdSSHServe.Dir = conf.Paths.RepoPath // This should be repo root path
-	cmdSSHServe.Stdout = os.Stdout
-	cmdSSHServe.Stdin = os.Stdin
-	cmdSSHServe.Stderr = os.Stderr
+	// cmdSSHServe.Stdout = os.Stdout
+	// cmdSSHServe.Stdin = os.Stdin
+	// cmdSSHServe.Stderr = os.Stderr
 	if err := cmdSSHServe.Run(); err != nil {
 		fmt.Printf("Fail to execute git command: %v", err)
 	}
