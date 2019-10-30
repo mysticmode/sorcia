@@ -30,4 +30,4 @@ jobs:
       # - run: go test -v ./...
       - run: go get
       - run: go build sorcia.go
-      - run: ./sorcia-core core
+      - run: ./sorcia core
