@@ -30,7 +30,4 @@ jobs:
       # - run: go test -v ./...
       - run: go get
       - run: go build sorcia.go
-      - run:
-        name: Start sorcia core service
-        command: ./sorcia-core core
-        background: true
+      - run: ./sorcia-core core
