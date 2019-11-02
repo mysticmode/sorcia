@@ -1,53 +1,60 @@
 package middleware
 
 import (
+	"database/sql"
+	"fmt"
 	"net/http"
+
+	"sorcia/setting"
+
+	_ "github.com/lib/pq"
 )
 
-func loggingMiddleware(next http.Handler) http.Handler {
+var middlewareDB *sql.DB
+
+func init() {
+	// Get config values
+	conf := setting.GetConf()
+
+	// Open postgres database
+	db := conf.DBConn
+
+	middlewareDB = db
+}
+
+// Middleware ...
+func Middleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Call the next handler, which can be another middleware in the chain, or the final handler.
-		next.ServeHTTP(w, r)
+		w = userMiddleware(w, r, middlewareDB)
+		h.ServeHTTP(w, r)
 	})
 }
 
-// Adapter type
-type Adapter func(http.Handler) http.Handler
+func userMiddleware(w http.ResponseWriter, r *http.Request, db *sql.DB) http.ResponseWriter {
+	// cookie, err := r.Cookie("sorcia-token")
+	// errorhandler.CheckError(err)
 
-// Adapt ...
-func Adapt(h http.Handler, adapters ...Adapter) http.Handler {
-	for _, adapter := range adapters {
-		h = adapter(h)
+	// fmt.Println("\n\n\n")
+	// fmt.Println(cookie)
+
+	// token, err := url.QueryUnescape(cookie.Value)
+	// errorhandler.CheckError(err)
+
+	// fmt.Println("\n\n\n")
+	// fmt.Println(token)
+
+	// userID := model.GetUserIDFromToken(db, token)
+
+	// userPresent := "false"
+	// if userID != 0 {
+	// 	userPresent = "true"
+	// }
+
+	for _, cookie := range r.Cookies() {
+		fmt.Println("Found a cookie named:", cookie.Name)
 	}
-	return h
+
+	w.Header().Set("user-present", "ttt")
+
+	return w
 }
-
-// // APIMiddleware ...
-// func APIMiddleware(db *sql.DB) gin.HandlerFunc {
-// 	return func(c *gin.Context) {
-// 		c.Set("db", db)
-// 		c.Next()
-// 	}
-// }
-
-// // UserMiddleware ...
-// func UserMiddleware(db *sql.DB) gin.HandlerFunc {
-// 	return func(c *gin.Context) {
-// 		db, ok := c.MustGet("db").(*sql.DB)
-// 		if !ok {
-// 			fmt.Println("Middleware db error")
-// 		}
-
-// 		token, _ := c.Cookie("sorcia-token")
-
-// 		userID := model.GetUserIDFromToken(db, token)
-
-// 		userPresent := false
-// 		if userID != 0 {
-// 			userPresent = true
-// 		}
-
-// 		c.Set("userPresent", userPresent)
-// 		c.Next()
-// 	}
-// }
