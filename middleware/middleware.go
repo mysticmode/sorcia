@@ -1,59 +1,53 @@
 package middleware
 
 import (
-	"database/sql"
-	"fmt"
-
-	"sorcia/model"
-
-	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
-// CORSMiddleware ...
-func CORSMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		if origin := c.Request.Header.Get("Origin"); origin != "" {
-			c.Writer.Header().Set("Content-Type", "text/plain; charset=utf-8")
-			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
-			c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-			c.Writer.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
-
-			if c.Request.Method == "OPTIONS" {
-				c.AbortWithStatus(204)
-				return
-			}
-		}
-
-		c.Next()
-	}
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Call the next handler, which can be another middleware in the chain, or the final handler.
+		next.ServeHTTP(w, r)
+	})
 }
 
-// APIMiddleware ...
-func APIMiddleware(db *sql.DB) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Set("db", db)
-		c.Next()
+// Adapter type
+type Adapter func(http.Handler) http.Handler
+
+// Adapt ...
+func Adapt(h http.Handler, adapters ...Adapter) http.Handler {
+	for _, adapter := range adapters {
+		h = adapter(h)
 	}
+	return h
 }
 
-// UserMiddleware ...
-func UserMiddleware(db *sql.DB) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		db, ok := c.MustGet("db").(*sql.DB)
-		if !ok {
-			fmt.Println("Middleware db error")
-		}
+// // APIMiddleware ...
+// func APIMiddleware(db *sql.DB) gin.HandlerFunc {
+// 	return func(c *gin.Context) {
+// 		c.Set("db", db)
+// 		c.Next()
+// 	}
+// }
 
-		token, _ := c.Cookie("sorcia-token")
+// // UserMiddleware ...
+// func UserMiddleware(db *sql.DB) gin.HandlerFunc {
+// 	return func(c *gin.Context) {
+// 		db, ok := c.MustGet("db").(*sql.DB)
+// 		if !ok {
+// 			fmt.Println("Middleware db error")
+// 		}
 
-		userID := model.GetUserIDFromToken(db, token)
+// 		token, _ := c.Cookie("sorcia-token")
 
-		userPresent := false
-		if userID != 0 {
-			userPresent = true
-		}
+// 		userID := model.GetUserIDFromToken(db, token)
 
-		c.Set("userPresent", userPresent)
-		c.Next()
-	}
-}
+// 		userPresent := false
+// 		if userID != 0 {
+// 			userPresent = true
+// 		}
+
+// 		c.Set("userPresent", userPresent)
+// 		c.Next()
+// 	}
+// }
