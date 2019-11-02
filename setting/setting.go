@@ -1,13 +1,20 @@
 package setting
 
 import (
+	"database/sql"
 	"fmt"
 	"os"
 
+	errorhandler "sorcia/error"
+
 	"gopkg.in/ini.v1"
+	// Postgresql driver
+	_ "github.com/lib/pq"
 )
 
 var conf BaseStruct
+
+var env Env
 
 // BaseStruct struct
 type BaseStruct struct {
@@ -42,6 +49,11 @@ type PostgresStruct struct {
 	SSLMode  string
 }
 
+// Env struct
+type Env struct {
+	DB *sql.DB
+}
+
 func init() {
 	cfg, err := ini.Load("config/app.ini")
 	if err != nil {
@@ -74,9 +86,27 @@ func init() {
 			SSLMode:  cfg.Section("postgres").Key("sslmode").String(),
 		},
 	}
+
+	env = Env{
+		DB: newDB(),
+	}
 }
 
 // GetConf ...
 func GetConf() *BaseStruct {
 	return &conf
+}
+
+// NewDB ...
+func newDB() (db *sql.DB) {
+	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s", conf.Postgres.Username, conf.Postgres.Password, conf.Postgres.Hostname, conf.Postgres.Port, conf.Postgres.Name, conf.Postgres.SSLMode)
+	db, err := sql.Open("postgres", connStr)
+	errorhandler.CheckError(err)
+
+	return db
+}
+
+// GetEnv ...
+func GetEnv() *Env {
+	return &env
 }
