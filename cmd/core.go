@@ -8,7 +8,6 @@ import (
 	"os"
 	"path"
 	"text/template"
-	"time"
 
 	errorhandler "sorcia/error"
 	"sorcia/model"
@@ -55,11 +54,8 @@ func runWeb(c *cli.Context) error {
 	// 	middleware.UserMiddleware(db),
 	// )
 
-	const staticDir = "/public/"
-
 	// Gin handlers
-	r.HandleFunc("/", GetHome)
-	r.PathPrefix(staticDir).Handler(http.FileServer(http.Dir("." + staticDir)))
+	r.HandleFunc("/", GetHome).Methods("GET")
 	// r.GET("/login", handler.GetLogin)
 	// r.POST("/login", handler.PostLogin)
 	// r.GET("/logout", handler.GetLogout)
@@ -75,12 +71,26 @@ func runWeb(c *cli.Context) error {
 	// r.GET("/+:username/:reponame/info/refs", handler.GetInfoRefs)
 	// r.GET("/+:username/:reponame/HEAD", handler.GetHEADFile)
 	// r.GET("/+:username/:reponame/objects/:regex1/:regex2", handler.GetGitRegexRequestHandler)
+
+	staticFileDirectory := http.Dir(conf.Paths.AssetPath)
+	// Declare the handler, that routes requests to their respective filename.
+	// The fileserver is wrapped in the `stripPrefix` method, because we want to
+	// remove the "/public/" prefix when looking for files.
+	// For example, if we type "/public/index.html" in our browser, the file server
+	// will look for only "index.html" inside the directory declared above.
+	// If we did not strip the prefix, the file server would look for
+	// "./public/public/index.html", and yield an error
+	staticFileHandler := http.StripPrefix("/public/", http.FileServer(staticFileDirectory))
+	// The "PathPrefix" method acts as a matcher, and matches all routes starting
+	// with "/public/", instead of the absolute route itself
+	r.PathPrefix("/public/").Handler(staticFileHandler).Methods("GET")
+
 	srv := &http.Server{
 		Handler: r,
 		Addr:    "127.0.0.1:1937",
 		// Good practice: enforce timeouts for servers you create!
-		WriteTimeout: 15 * time.Second,
-		ReadTimeout:  15 * time.Second,
+		// WriteTimeout: 15 * time.Second,
+		// ReadTimeout:  15 * time.Second,
 	}
 
 	log.Fatal(srv.ListenAndServe())
