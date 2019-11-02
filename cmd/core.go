@@ -10,7 +10,6 @@ import (
 
 	"sorcia/config"
 	errorhandler "sorcia/error"
-	"sorcia/middleware"
 	"sorcia/model"
 	"sorcia/setting"
 
@@ -86,7 +85,7 @@ func runWeb(c *cli.Context) error {
 	// The "PathPrefix" method acts as a matcher, and matches all routes starting
 	// with "/public/", instead of the absolute route itself
 	r.PathPrefix("/public/").Handler(staticFileHandler).Methods("GET")
-	http.Handle("/", middleware.APIMiddleware(r, db))
+	http.Handle("/", r)
 
 	allowedOrigins := []string{"*"}
 	allowedMethods := []string{"POST", "GET"}
