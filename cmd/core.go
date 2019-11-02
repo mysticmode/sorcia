@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -8,15 +9,11 @@ import (
 	"path"
 	"text/template"
 
-	"sorcia/config"
-	errorhandler "sorcia/error"
 	"sorcia/model"
 	"sorcia/setting"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-
-	// Postgresql driver
 	_ "github.com/lib/pq"
 	"github.com/urfave/cli"
 )
@@ -35,15 +32,14 @@ func runWeb(c *cli.Context) error {
 
 	// Get config values
 	conf := setting.GetConf()
+	env := setting.GetEnv()
 
 	// Create repositories directory
 	// 0755 - The owner can read, write, execute. Everyone else can read and execute but not modify the file.
 	os.MkdirAll(path.Join(conf.Paths.DataPath, "repositories"), 0755)
 
 	// Open postgres database
-	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s", conf.Postgres.Username, conf.Postgres.Password, conf.Postgres.Hostname, conf.Postgres.Port, conf.Postgres.Name, conf.Postgres.SSLMode)
-	db, err := config.NewDB(connStr)
-	errorhandler.CheckError(err)
+	db := env.DB
 	defer db.Close()
 
 	model.CreateAccount(db)
@@ -56,7 +52,9 @@ func runWeb(c *cli.Context) error {
 	// )
 
 	// Gin handlers
-	r.HandleFunc("/", GetHome).Methods("GET")
+	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		GetHome(w, r, db)
+	}).Methods("GET")
 	// r.GET("/login", handler.GetLogin)
 	// r.POST("/login", handler.PostLogin)
 	// r.GET("/logout", handler.GetLogout)
@@ -85,6 +83,7 @@ func runWeb(c *cli.Context) error {
 	// The "PathPrefix" method acts as a matcher, and matches all routes starting
 	// with "/public/", instead of the absolute route itself
 	r.PathPrefix("/public/").Handler(staticFileHandler).Methods("GET")
+
 	http.Handle("/", r)
 
 	allowedOrigins := []string{"*"}
@@ -105,7 +104,7 @@ type IndexPageData struct {
 }
 
 // GetHome ...
-func GetHome(w http.ResponseWriter, r *http.Request) {
+func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	// db, ok := c.MustGet("db").(*sql.DB)
 	// if !ok {
 	// 	fmt.Println("Middleware db error")
