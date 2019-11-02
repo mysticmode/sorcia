@@ -3,17 +3,19 @@ package cmd
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"path"
+	"text/template"
+	"time"
 
 	errorhandler "sorcia/error"
-	"sorcia/handler"
-	"sorcia/middleware"
 	"sorcia/model"
 	"sorcia/setting"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gorilla/mux"
+
 	// Postgresql driver
 	_ "github.com/lib/pq"
 	"github.com/urfave/cli"
@@ -29,16 +31,10 @@ var Core = cli.Command{
 
 func runWeb(c *cli.Context) error {
 	// Gin initiate
-	r := gin.Default()
+	r := mux.NewRouter()
 
 	// Get config values
 	conf := setting.GetConf()
-
-	// HTML rendering
-	r.LoadHTMLGlob(path.Join(conf.Paths.TemplatePath, "templates/*"))
-
-	// Serve static files
-	r.Static("/public", path.Join(conf.Paths.AssetPath, "public"))
 
 	// Create repositories directory
 	// 0755 - The owner can read, write, execute. Everyone else can read and execute but not modify the file.
@@ -53,60 +49,89 @@ func runWeb(c *cli.Context) error {
 	model.CreateAccount(db)
 	model.CreateRepo(db)
 
-	r.Use(
-		middleware.CORSMiddleware(),
-		middleware.APIMiddleware(db),
-		middleware.UserMiddleware(db),
-	)
+	// r.Use(
+	// 	middleware.CORSMiddleware(),
+	// 	middleware.APIMiddleware(db),
+	// 	middleware.UserMiddleware(db),
+	// )
+
+	const staticDir = "/public/"
 
 	// Gin handlers
-	r.GET("/", GetHome)
-	r.GET("/login", handler.GetLogin)
-	r.POST("/login", handler.PostLogin)
-	r.GET("/logout", handler.GetLogout)
-	r.POST("/register", handler.PostRegister)
-	r.GET("/create", handler.GetCreateRepo)
-	r.POST("/create", handler.PostCreateRepo)
-	r.GET("/+:username", GetHome)
-	r.GET("/+:username/:reponame", handler.GetRepo)
-	r.GET("/+:username/:reponame/tree", handler.GetRepoTree)
+	r.HandleFunc("/", GetHome)
+	r.PathPrefix(staticDir).Handler(http.FileServer(http.Dir("." + staticDir)))
+	// r.GET("/login", handler.GetLogin)
+	// r.POST("/login", handler.PostLogin)
+	// r.GET("/logout", handler.GetLogout)
+	// r.POST("/register", handler.PostRegister)
+	// r.GET("/create", handler.GetCreateRepo)
+	// r.POST("/create", handler.PostCreateRepo)
+	// r.GET("/+:username", GetHome)
+	// r.GET("/+:username/:reponame", handler.GetRepo)
+	// r.GET("/+:username/:reponame/tree", handler.GetRepoTree)
 
-	// Git http backend service handlers
-	r.POST("/+:username/:reponame/git-:rpc", handler.PostServiceRPC)
-	r.GET("/+:username/:reponame/info/refs", handler.GetInfoRefs)
-	r.GET("/+:username/:reponame/HEAD", handler.GetHEADFile)
-	r.GET("/+:username/:reponame/objects/:regex1/:regex2", handler.GetGitRegexRequestHandler)
+	// // Git http backend service handlers
+	// r.POST("/+:username/:reponame/git-:rpc", handler.PostServiceRPC)
+	// r.GET("/+:username/:reponame/info/refs", handler.GetInfoRefs)
+	// r.GET("/+:username/:reponame/HEAD", handler.GetHEADFile)
+	// r.GET("/+:username/:reponame/objects/:regex1/:regex2", handler.GetGitRegexRequestHandler)
+	srv := &http.Server{
+		Handler: r,
+		Addr:    "127.0.0.1:1937",
+		// Good practice: enforce timeouts for servers you create!
+		WriteTimeout: 15 * time.Second,
+		ReadTimeout:  15 * time.Second,
+	}
+
+	log.Fatal(srv.ListenAndServe())
 
 	// Listen and serve on 1937
-	r.Run(fmt.Sprintf(":%s", conf.Server.HTTPPort))
+	// http.ListenAndServe(fmt.Sprintf(":%s", conf.Server.HTTPPort), nil)
 
 	return nil
 }
 
+// IndexPageData struct
+type IndexPageData struct {
+	Username string
+	repos    []string
+}
+
 // GetHome ...
-func GetHome(c *gin.Context) {
-	db, ok := c.MustGet("db").(*sql.DB)
-	if !ok {
-		fmt.Println("Middleware db error")
+func GetHome(w http.ResponseWriter, r *http.Request) {
+	// db, ok := c.MustGet("db").(*sql.DB)
+	// if !ok {
+	// 	fmt.Println("Middleware db error")
+	// }
+
+	// userPresent, ok := c.MustGet("userPresent").(bool)
+	// if !ok {
+	// 	fmt.Println("Middleware user error")
+	// }
+
+	// if userPresent {
+	// 	token, _ := c.Cookie("sorcia-token")
+	// 	userID := model.GetUserIDFromToken(db, token)
+	// 	username := model.GetUsernameFromToken(db, token)
+
+	// 	repos := model.GetReposFromUserID(db, userID)
+
+	// 	c.HTML(200, "index.html", gin.H{
+	// 		"username": username,
+	// 		"repos":    repos,
+	// 	})
+	// } else {
+	// 	c.Redirect(http.StatusMovedPermanently, "/login")
+	// }
+
+	tmpl := template.Must(template.ParseFiles("./templates/index.html"))
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	data := IndexPageData{
+		Username: "mysticmode",
+		repos:    nil,
 	}
 
-	userPresent, ok := c.MustGet("userPresent").(bool)
-	if !ok {
-		fmt.Println("Middleware user error")
-	}
-
-	if userPresent {
-		token, _ := c.Cookie("sorcia-token")
-		userID := model.GetUserIDFromToken(db, token)
-		username := model.GetUsernameFromToken(db, token)
-
-		repos := model.GetReposFromUserID(db, userID)
-
-		c.HTML(200, "index.html", gin.H{
-			"username": username,
-			"repos":    repos,
-		})
-	} else {
-		c.Redirect(http.StatusMovedPermanently, "/login")
-	}
+	tmpl.Execute(w, data)
 }
