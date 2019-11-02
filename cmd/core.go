@@ -9,6 +9,7 @@ import (
 	"path"
 	"text/template"
 
+	"sorcia/middleware"
 	"sorcia/model"
 	"sorcia/setting"
 
@@ -32,14 +33,13 @@ func runWeb(c *cli.Context) error {
 
 	// Get config values
 	conf := setting.GetConf()
-	env := setting.GetEnv()
 
 	// Create repositories directory
 	// 0755 - The owner can read, write, execute. Everyone else can read and execute but not modify the file.
 	os.MkdirAll(path.Join(conf.Paths.DataPath, "repositories"), 0755)
 
 	// Open postgres database
-	db := env.DB
+	db := conf.DBConn
 	defer db.Close()
 
 	model.CreateAccount(db)
@@ -50,6 +50,8 @@ func runWeb(c *cli.Context) error {
 	// 	middleware.APIMiddleware(db),
 	// 	middleware.UserMiddleware(db),
 	// )
+
+	r.Use(middleware.Middleware)
 
 	// Gin handlers
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -91,53 +93,42 @@ func runWeb(c *cli.Context) error {
 
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", conf.Server.HTTPPort), handlers.CORS(handlers.AllowedOrigins(allowedOrigins), handlers.AllowedMethods(allowedMethods))(r)))
 
-	// Listen and serve on 1937
-	// http.ListenAndServe(fmt.Sprintf(":%s", conf.Server.HTTPPort), nil)
-
 	return nil
 }
 
-// IndexPageData struct
-type IndexPageData struct {
+// IndexPageResponse struct
+type IndexPageResponse struct {
 	Username string
-	repos    []string
+	repos    *model.GetReposFromUserIDResponse
 }
 
 // GetHome ...
 func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB) {
-	// db, ok := c.MustGet("db").(*sql.DB)
-	// if !ok {
-	// 	fmt.Println("Middleware db error")
-	// }
+	userPresent := w.Header().Get("user-present")
+	fmt.Println(userPresent)
 
-	// userPresent, ok := c.MustGet("userPresent").(bool)
-	// if !ok {
-	// 	fmt.Println("Middleware user error")
-	// }
+	if userPresent == "true" {
+		token := r.Header.Get("sorcia-token")
+		userID := model.GetUserIDFromToken(db, token)
+		username := model.GetUsernameFromToken(db, token)
+		repos := model.GetReposFromUserID(db, userID)
 
-	// if userPresent {
-	// 	token, _ := c.Cookie("sorcia-token")
-	// 	userID := model.GetUserIDFromToken(db, token)
-	// 	username := model.GetUsernameFromToken(db, token)
+		tmpl := template.Must(template.ParseFiles("./templates/index.html"))
 
-	// 	repos := model.GetReposFromUserID(db, userID)
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	// 	c.HTML(200, "index.html", gin.H{
-	// 		"username": username,
-	// 		"repos":    repos,
-	// 	})
-	// } else {
-	// 	c.Redirect(http.StatusMovedPermanently, "/login")
-	// }
+		data := IndexPageResponse{
+			Username: username,
+			repos:    repos,
+		}
 
-	tmpl := template.Must(template.ParseFiles("./templates/index.html"))
-
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
-	data := IndexPageData{
-		Username: "mysticmode",
-		repos:    nil,
+		tmpl.Execute(w, data)
+	} else {
+		http.Redirect(w, r, "/login", http.StatusMovedPermanently)
 	}
 
-	tmpl.Execute(w, data)
+	// Set cookie example
+	// expiration := time.Now().Add(365 * 24 * time.Hour)
+	// c := &http.Cookie{Name: "sorcia-token", Value: "abcd", Path: "/", Domain: strings.Split(r.Host, ":")[0], Expires: expiration}
+	// http.SetCookie(w, c)
 }
