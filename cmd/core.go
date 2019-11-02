@@ -1,14 +1,16 @@
 package cmd
 
 import (
-	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"path"
 	"text/template"
 
+	"sorcia/config"
 	errorhandler "sorcia/error"
+	"sorcia/middleware"
 	"sorcia/model"
 	"sorcia/setting"
 
@@ -41,7 +43,7 @@ func runWeb(c *cli.Context) error {
 
 	// Open postgres database
 	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s", conf.Postgres.Username, conf.Postgres.Password, conf.Postgres.Hostname, conf.Postgres.Port, conf.Postgres.Name, conf.Postgres.SSLMode)
-	db, err := sql.Open("postgres", connStr)
+	db, err := config.NewDB(connStr)
 	errorhandler.CheckError(err)
 	defer db.Close()
 
@@ -84,9 +86,12 @@ func runWeb(c *cli.Context) error {
 	// The "PathPrefix" method acts as a matcher, and matches all routes starting
 	// with "/public/", instead of the absolute route itself
 	r.PathPrefix("/public/").Handler(staticFileHandler).Methods("GET")
+	http.Handle("/", middleware.APIMiddleware(r, db))
 
 	allowedOrigins := []string{"*"}
-	http.ListenAndServe(fmt.Sprintf(":%s", conf.Server.HTTPPort), handlers.CORS(handlers.AllowedOrigins(allowedOrigins))(r))
+	allowedMethods := []string{"POST", "GET"}
+
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", conf.Server.HTTPPort), handlers.CORS(handlers.AllowedOrigins(allowedOrigins), handlers.AllowedMethods(allowedMethods))(r)))
 
 	// Listen and serve on 1937
 	// http.ListenAndServe(fmt.Sprintf(":%s", conf.Server.HTTPPort), nil)
