@@ -3,7 +3,6 @@ package cmd
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"path"
@@ -13,6 +12,7 @@ import (
 	"sorcia/model"
 	"sorcia/setting"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 
 	// Postgresql driver
@@ -85,15 +85,8 @@ func runWeb(c *cli.Context) error {
 	// with "/public/", instead of the absolute route itself
 	r.PathPrefix("/public/").Handler(staticFileHandler).Methods("GET")
 
-	srv := &http.Server{
-		Handler: r,
-		Addr:    "127.0.0.1:1937",
-		// Good practice: enforce timeouts for servers you create!
-		// WriteTimeout: 15 * time.Second,
-		// ReadTimeout:  15 * time.Second,
-	}
-
-	log.Fatal(srv.ListenAndServe())
+	allowedOrigins := []string{"*"}
+	http.ListenAndServe(fmt.Sprintf(":%s", conf.Server.HTTPPort), handlers.CORS(handlers.AllowedOrigins(allowedOrigins))(r))
 
 	// Listen and serve on 1937
 	// http.ListenAndServe(fmt.Sprintf(":%s", conf.Server.HTTPPort), nil)
