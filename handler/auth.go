@@ -16,8 +16,11 @@ import (
 	"sorcia/model"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/gorilla/schema"
 	"golang.org/x/crypto/bcrypt"
 )
+
+var decoder = schema.NewDecoder()
 
 func hashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
@@ -98,10 +101,9 @@ func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		w.Write(errorJSON)
 	}
 
-	loginRequest := &LoginRequest{
-		Username: r.FormValue("username"),
-		Password: r.FormValue("password"),
-	}
+	var loginRequest = &LoginRequest{}
+	err := decoder.Decode(loginRequest, r.PostForm)
+	errorhandler.CheckError(err)
 
 	sphjwt := model.SelectPasswordHashAndJWTTokenStruct{
 		Username: loginRequest.Username,
@@ -114,8 +116,10 @@ func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 		if isTokenValid == true {
 			// Set cookie
-			expiration := time.Now().Add(365 * 24 * time.Hour)
-			c := &http.Cookie{Name: "sorcia-token", Value: sphjwtr.Token, Path: "/", Domain: strings.Split(r.Host, ":")[0], Expires: expiration}
+			now := time.Now()
+			duration := now.Add(365 * 24 * time.Hour).Sub(now)
+			maxAge := int(duration.Seconds())
+			c := &http.Cookie{Name: "sorcia-token", Value: sphjwtr.Token, Path: "/", Domain: strings.Split(r.Host, ":")[0], MaxAge: maxAge}
 			http.SetCookie(w, c)
 
 			http.Redirect(w, r, "/", http.StatusFound)
@@ -166,11 +170,9 @@ func PostRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath s
 		w.Write(errorJSON)
 	}
 
-	registerRequest := &RegisterRequest{
-		Username: r.FormValue("username"),
-		Email:    r.FormValue("email"),
-		Password: r.FormValue("password"),
-	}
+	var registerRequest = &RegisterRequest{}
+	err := decoder.Decode(registerRequest, r.PostForm)
+	errorhandler.CheckError(err)
 
 	if registerRequest.Username != "" && registerRequest.Email != "" && registerRequest.Password != "" {
 		// Generate password hash using bcrypt
@@ -217,8 +219,10 @@ func PostRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath s
 		}
 
 		// Set cookie
-		expiration := time.Now().Add(365 * 24 * time.Hour)
-		c := &http.Cookie{Name: "sorcia-token", Value: token, Path: "/", Domain: strings.Split(r.Host, ":")[0], Expires: expiration}
+		now := time.Now()
+		duration := now.Add(365 * 24 * time.Hour).Sub(now)
+		maxAge := int(duration.Seconds())
+		c := &http.Cookie{Name: "sorcia-token", Value: token, Path: "/", Domain: strings.Split(r.Host, ":")[0], MaxAge: maxAge}
 		http.SetCookie(w, c)
 
 		http.Redirect(w, r, "/", http.StatusFound)
@@ -228,8 +232,7 @@ func PostRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath s
 // GetLogout ...
 func GetLogout(w http.ResponseWriter, r *http.Request) {
 	// Clear the cookie
-	expiration := time.Now().Add(365 * 24 * time.Hour)
-	c := &http.Cookie{Name: "sorcia-token", Value: "", MaxAge: -1, Path: "/", Domain: strings.Split(r.Host, ":")[0], Expires: expiration}
+	c := &http.Cookie{Name: "sorcia-token", Value: "", Path: "/", Domain: strings.Split(r.Host, ":")[0], MaxAge: -1}
 	http.SetCookie(w, c)
 
 	http.Redirect(w, r, "/login", http.StatusFound)
