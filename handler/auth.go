@@ -59,7 +59,7 @@ func GetLogin(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	userPresent := w.Header().Get("user-present")
 
 	if userPresent == "true" {
-		http.Redirect(w, r, "/login", http.StatusMovedPermanently)
+		http.Redirect(w, r, "/login", http.StatusFound)
 	} else {
 		tmpl := template.Must(template.ParseFiles("./templates/login.html"))
 

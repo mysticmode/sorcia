@@ -72,8 +72,12 @@ func runWeb(c *cli.Context) error {
 	r.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
 		handler.PostRegister(w, r, db)
 	}).Methods("POST")
-	// r.GET("/create", handler.GetCreateRepo)
-	// r.POST("/create", handler.PostCreateRepo)
+	r.HandleFunc("/create-repo", func(w http.ResponseWriter, r *http.Request) {
+		handler.GetCreateRepo(w, r, db)
+	}).Methods("GET")
+	r.HandleFunc("/create-repo", func(w http.ResponseWriter, r *http.Request) {
+		handler.PostCreateRepo(w, r, db)
+	}).Methods("POST")
 	// r.GET("/+:username", GetHome)
 	// r.GET("/+:username/:reponame", handler.GetRepo)
 	// r.GET("/+:username/:reponame/tree", handler.GetRepoTree)
