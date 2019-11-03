@@ -2,7 +2,9 @@ package handler
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"html/template"
 	"net/http"
 	"os/exec"
 	"path"
@@ -14,28 +16,31 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// GetCreateRepoResponse struct
+type GetCreateRepoResponse struct {
+	Username string
+}
+
 // GetCreateRepo ...
-func GetCreateRepo(c *gin.Context) {
-	userPresent, ok := c.MustGet("userPresent").(bool)
-	if !ok {
-		fmt.Println("Middleware user error")
-	}
+func GetCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	userPresent := w.Header().Get("user-present")
 
-	if userPresent {
-		db, ok := c.MustGet("db").(*sql.DB)
-		if !ok {
-			fmt.Println("Middleware db error")
-		}
-
-		token, _ := c.Cookie("sorcia-token")
-
+	if userPresent == "true" {
+		token := r.Header.Get("sorcia-token")
 		username := model.GetUsernameFromToken(db, token)
 
-		c.HTML(http.StatusOK, "create-repo.html", gin.H{
-			"username": username,
-		})
+		tmpl := template.Must(template.ParseFiles("./templates/create-repo.html"))
+
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
+
+		data := GetCreateRepoResponse{
+			Username: username,
+		}
+
+		tmpl.Execute(w, data)
 	} else {
-		c.Redirect(http.StatusMovedPermanently, "/login")
+		http.Redirect(w, r, "/login", http.StatusFound)
 	}
 }
 
@@ -47,58 +52,65 @@ type CreateRepoRequest struct {
 }
 
 // PostCreateRepo ...
-func PostCreateRepo(c *gin.Context) {
-	var form CreateRepoRequest
-
-	if err := c.Bind(&form); err == nil {
-		db, ok := c.MustGet("db").(*sql.DB)
-		if !ok {
-			fmt.Println("Middleware db error")
-		}
-
-		token, _ := c.Cookie("sorcia-token")
-
-		userID := model.GetUserIDFromToken(db, token)
-
-		var isPrivate int
-		if isPrivate = 0; form.IsPrivate == "1" {
-			isPrivate = 1
-		}
-
-		crs := model.CreateRepoStruct{
-			Name:        form.Name,
-			Description: form.Description,
-			IsPrivate:   isPrivate,
-			UserID:      userID,
-		}
-
-		model.InsertRepo(db, crs)
-
-		// Get config values
-		conf := setting.GetConf()
-
-		username := model.GetUsernameFromToken(db, token)
-
-		// Create Git bare repository
-		bareRepoDir := path.Join(conf.Paths.DataPath, "repositories/"+"+"+username+"/"+form.Name+".git")
-
-		cmd := exec.Command("git", "init", "--bare", bareRepoDir)
-		err := cmd.Run()
-		errorhandler.CheckError(err)
-
-		// Clone from the bare repository created above
-		repoDir := path.Join(conf.Paths.DataPath, "repositories/"+username+"/"+form.Name)
-		cmd = exec.Command("git", "clone", bareRepoDir, repoDir)
-		err = cmd.Run()
-		errorhandler.CheckError(err)
-
-		c.Redirect(http.StatusMovedPermanently, "/")
-	} else {
+func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	// NOTE: Invoke ParseForm or ParseMultipartForm before reading form values
+	if err := r.ParseForm(); err != nil {
+		fmt.Fprintf(w, "ParseForm() err: %v", err)
 		errorResponse := &errorhandler.ErrorResponse{
 			Error: err.Error(),
 		}
-		c.JSON(http.StatusBadRequest, errorResponse)
+
+		errorJSON, err := json.Marshal(errorResponse)
+		errorhandler.CheckError(err)
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+
+		w.Write(errorJSON)
 	}
+
+	createRepoRequest := &CreateRepoRequest{
+		Name:        r.FormValue("username"),
+		Description: r.FormValue("description"),
+		IsPrivate:   r.FormValue("is_private"),
+	}
+
+	token := r.Header.Get("sorcia-token")
+
+	userID := model.GetUserIDFromToken(db, token)
+
+	var isPrivate int
+	if isPrivate = 0; createRepoRequest.IsPrivate == "1" {
+		isPrivate = 1
+	}
+
+	crs := model.CreateRepoStruct{
+		Name:        createRepoRequest.Name,
+		Description: createRepoRequest.Description,
+		IsPrivate:   isPrivate,
+		UserID:      userID,
+	}
+
+	model.InsertRepo(db, crs)
+
+	username := model.GetUsernameFromToken(db, token)
+
+	conf := setting.GetConf()
+
+	// Create Git bare repository
+	bareRepoDir := path.Join(conf.Paths.DataPath, "repositories/"+"+"+username+"/"+createRepoRequest.Name+".git")
+
+	cmd := exec.Command("git", "init", "--bare", bareRepoDir)
+	err := cmd.Run()
+	errorhandler.CheckError(err)
+
+	// Clone from the bare repository created above
+	repoDir := path.Join(conf.Paths.DataPath, "repositories/"+username+"/"+createRepoRequest.Name)
+	cmd = exec.Command("git", "clone", bareRepoDir, repoDir)
+	err = cmd.Run()
+	errorhandler.CheckError(err)
+
+	http.Redirect(w, r, "/", http.StatusFound)
 }
 
 // GetRepo ...

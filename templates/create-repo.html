@@ -32,12 +32,12 @@
         </div>
     </header>
     <main class="container create-repo">
-        <form method="post" action="/create" class="form create-repo__form">
+        <form method="post" action="/create-repo" class="form create-repo__form">
             <div class="form__title">create new repository</div>
             <div class="form__group">
                 <label for="repoName">Name<i>*</i></label>
                 <div class="form__group-sub">
-                    <div class="form__username-tag">+{{ .username }} /</div>
+                    <div class="form__username-tag">+{{ .Username }}</div>
                     <input type="text" class="form__input" id="repoName" name="name" required />
                 </div>
             </div>
