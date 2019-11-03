@@ -9,16 +9,17 @@ import (
 	"path"
 	"text/template"
 
+	"sorcia/handler"
 	"sorcia/middleware"
 	"sorcia/model"
 	"sorcia/setting"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/urfave/cli"
 
 	// Postgresql driver
 	_ "github.com/lib/pq"
-	"github.com/urfave/cli"
 )
 
 // Core ...
@@ -59,10 +60,18 @@ func runWeb(c *cli.Context) error {
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		GetHome(w, r, db)
 	}).Methods("GET")
-	// r.GET("/login", handler.GetLogin)
-	// r.POST("/login", handler.PostLogin)
-	// r.GET("/logout", handler.GetLogout)
-	// r.POST("/register", handler.PostRegister)
+	r.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+		handler.GetLogin(w, r, db)
+	}).Methods("GET")
+	r.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+		handler.PostLogin(w, r, db)
+	}).Methods("POST")
+	r.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
+		handler.GetLogout(w, r)
+	}).Methods("GET")
+	r.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
+		handler.PostRegister(w, r, db)
+	}).Methods("POST")
 	// r.GET("/create", handler.GetCreateRepo)
 	// r.POST("/create", handler.PostCreateRepo)
 	// r.GET("/+:username", GetHome)
@@ -125,12 +134,6 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 		tmpl.Execute(w, data)
 	} else {
-		// http.Redirect(w, r, "/login", http.StatusMovedPermanently)
-		fmt.Println("token not present")
+		http.Redirect(w, r, "/login", http.StatusFound)
 	}
-
-	// Set cookie example
-	// expiration := time.Now().Add(365 * 24 * time.Hour)
-	// c := &http.Cookie{Name: "sorcia-token", Value: "abcd", Path: "/", Domain: strings.Split(r.Host, ":")[0], Expires: expiration}
-	// http.SetCookie(w, c)
 }

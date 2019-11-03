@@ -2,19 +2,21 @@ package handler
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"html/template"
 	"net/http"
 	"os"
 	"path"
 	"regexp"
 	"strings"
+	"time"
 
 	errorhandler "sorcia/error"
 	"sorcia/model"
 	"sorcia/setting"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -46,19 +48,30 @@ func validateJWTToken(tokenString string, passwordHash string) (bool, error) {
 	return token.Valid, err
 }
 
-// GetLogin ...
-func GetLogin(c *gin.Context) {
-	userPresent, ok := c.MustGet("userPresent").(bool)
-	if !ok {
-		fmt.Println("Middleware user error")
-	}
+// LoginPageResponse struct
+type LoginPageResponse struct {
+	LoginErrMessage    string
+	RegisterErrMessage string
+}
 
-	if userPresent {
-		c.Redirect(http.StatusMovedPermanently, "/")
+// GetLogin ...
+func GetLogin(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	userPresent := w.Header().Get("user-present")
+
+	if userPresent == "true" {
+		http.Redirect(w, r, "/login", http.StatusMovedPermanently)
 	} else {
-		c.HTML(http.StatusOK, "login.html", gin.H{
-			"loginErrMessage": "",
-		})
+		tmpl := template.Must(template.ParseFiles("./templates/login.html"))
+
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
+
+		data := LoginPageResponse{
+			LoginErrMessage:    "",
+			RegisterErrMessage: "",
+		}
+
+		tmpl.Execute(w, data)
 	}
 }
 
@@ -69,46 +82,69 @@ type LoginRequest struct {
 }
 
 // PostLogin ...
-func PostLogin(c *gin.Context) {
-	var form LoginRequest
-
-	if err := c.Bind(&form); err == nil {
-		db, ok := c.MustGet("db").(*sql.DB)
-		if !ok {
-			fmt.Println("Middleware db error")
-		}
-
-		// Sorcia username identity
-		username := form.Username
-
-		sphjwt := model.SelectPasswordHashAndJWTTokenStruct{
-			Username: username,
-		}
-		sphjwtr := model.SelectPasswordHashAndJWTToken(db, sphjwt)
-
-		if isPasswordValid := checkPasswordHash(form.Password, sphjwtr.PasswordHash); isPasswordValid == true {
-			isTokenValid, err := validateJWTToken(sphjwtr.Token, sphjwtr.PasswordHash)
-			errorhandler.CheckError(err)
-
-			if isTokenValid == true {
-				c.SetCookie("sorcia-token", sphjwtr.Token, 5259492, "/", strings.Split(c.Request.Host, ":")[0], true, true)
-
-				c.Redirect(http.StatusMovedPermanently, "/")
-			} else {
-				c.HTML(http.StatusOK, "login.html", gin.H{
-					"loginErrMessage": "Your username or password is incorrect.",
-				})
-			}
-		} else {
-			c.HTML(http.StatusOK, "login.html", gin.H{
-				"loginErrMessage": "Your username or password is incorrect.",
-			})
-		}
-	} else {
+func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	// NOTE: Invoke ParseForm or ParseMultipartForm before reading form values
+	if err := r.ParseForm(); err != nil {
+		fmt.Fprintf(w, "ParseForm() err: %v", err)
 		errorResponse := &errorhandler.ErrorResponse{
 			Error: err.Error(),
 		}
-		c.JSON(http.StatusBadRequest, errorResponse)
+
+		errorJSON, err := json.Marshal(errorResponse)
+		errorhandler.CheckError(err)
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+
+		w.Write(errorJSON)
+	}
+
+	loginRequest := &LoginRequest{
+		Username: r.FormValue("username"),
+		Password: r.FormValue("password"),
+	}
+
+	sphjwt := model.SelectPasswordHashAndJWTTokenStruct{
+		Username: loginRequest.Username,
+	}
+	sphjwtr := model.SelectPasswordHashAndJWTToken(db, sphjwt)
+
+	if isPasswordValid := checkPasswordHash(loginRequest.Password, sphjwtr.PasswordHash); isPasswordValid == true {
+		isTokenValid, err := validateJWTToken(sphjwtr.Token, sphjwtr.PasswordHash)
+		errorhandler.CheckError(err)
+
+		if isTokenValid == true {
+			// Set cookie
+			expiration := time.Now().Add(365 * 24 * time.Hour)
+			c := &http.Cookie{Name: "sorcia-token", Value: sphjwtr.Token, Path: "/", Domain: strings.Split(r.Host, ":")[0], Expires: expiration}
+			http.SetCookie(w, c)
+
+			http.Redirect(w, r, "/", http.StatusFound)
+		} else {
+			tmpl := template.Must(template.ParseFiles("./templates/login.html"))
+
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			w.WriteHeader(http.StatusOK)
+
+			data := LoginPageResponse{
+				LoginErrMessage:    "Your username or password is incorrect.",
+				RegisterErrMessage: "",
+			}
+
+			tmpl.Execute(w, data)
+		}
+	} else {
+		tmpl := template.Must(template.ParseFiles("./templates/login.html"))
+
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
+
+		data := LoginPageResponse{
+			LoginErrMessage:    "Your username or password is incorrect.",
+			RegisterErrMessage: "",
+		}
+
+		tmpl.Execute(w, data)
 	}
 }
 
@@ -120,39 +156,59 @@ type RegisterRequest struct {
 }
 
 // PostRegister ...
-func PostRegister(c *gin.Context) {
-	var form RegisterRequest
+func PostRegister(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	// NOTE: Invoke ParseForm or ParseMultipartForm before reading form values
+	if err := r.ParseForm(); err != nil {
+		fmt.Fprintf(w, "ParseForm() err: %v", err)
+		errorResponse := &errorhandler.ErrorResponse{
+			Error: err.Error(),
+		}
 
-	if err := c.Bind(&form); err == nil {
+		errorJSON, err := json.Marshal(errorResponse)
+		errorhandler.CheckError(err)
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+
+		w.Write(errorJSON)
+	}
+
+	registerRequest := &RegisterRequest{
+		Username: r.FormValue("username"),
+		Email:    r.FormValue("email"),
+		Password: r.FormValue("password"),
+	}
+
+	if registerRequest.Username != "" && registerRequest.Email != "" && registerRequest.Password != "" {
 		// Generate password hash using bcrypt
-		passwordHash, err := hashPassword(form.Password)
+		passwordHash, err := hashPassword(registerRequest.Password)
 		errorhandler.CheckError(err)
 
 		// Generate JWT token using the hash password above
 		token, err := generateJWTToken(passwordHash)
 		errorhandler.CheckError(err)
 
-		db, ok := c.MustGet("db").(*sql.DB)
-		if !ok {
-			fmt.Println("Middleware db error")
-		}
-
 		usernameConvention := "^[a-zA-Z0-9_]*$"
 
-		if re := regexp.MustCompile(usernameConvention); !re.MatchString(form.Username) {
-			c.HTML(http.StatusOK, "login.html", gin.H{
-				"registerErrMessage": "Username is invalid. Supports only alphanumeric and underscore characters.",
-			})
+		if re := regexp.MustCompile(usernameConvention); !re.MatchString(registerRequest.Username) {
+			tmpl := template.Must(template.ParseFiles("./templates/login.html"))
+
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			w.WriteHeader(http.StatusOK)
+
+			data := LoginPageResponse{
+				LoginErrMessage:    "",
+				RegisterErrMessage: "Username is invalid. Supports only alphanumeric and underscore characters.",
+			}
+
+			tmpl.Execute(w, data)
 
 			return
 		}
 
-		// Sorcia username identity
-		username := form.Username
-
 		rr := model.CreateAccountStruct{
-			Username:     username,
-			Email:        form.Email,
+			Username:     registerRequest.Username,
+			Email:        registerRequest.Email,
 			PasswordHash: passwordHash,
 			Token:        token,
 			IsAdmin:      1,
@@ -165,26 +221,26 @@ func PostRegister(c *gin.Context) {
 
 		// Create repositories directory
 		// 0755 - The owner can read, write, execute. Everyone else can read and execute but not modify the file.
-		repoDir := path.Join(conf.Paths.DataPath, "repositories/"+username)
+		repoDir := path.Join(conf.Paths.DataPath, "repositories/"+registerRequest.Username)
 		if _, err := os.Stat(repoDir); os.IsNotExist(err) {
 			os.MkdirAll(repoDir, 0755)
 		}
 
-		c.SetCookie("sorcia-token", token, 5259492, "/", strings.Split(c.Request.Host, ":")[0], true, true)
+		// Set cookie
+		expiration := time.Now().Add(365 * 24 * time.Hour)
+		c := &http.Cookie{Name: "sorcia-token", Value: token, Path: "/", Domain: strings.Split(r.Host, ":")[0], Expires: expiration}
+		http.SetCookie(w, c)
 
-		c.Redirect(http.StatusMovedPermanently, "/")
-	} else {
-		errorResponse := &errorhandler.ErrorResponse{
-			Error: err.Error(),
-		}
-		c.JSON(http.StatusBadRequest, errorResponse)
+		http.Redirect(w, r, "/", http.StatusFound)
 	}
 }
 
 // GetLogout ...
-func GetLogout(c *gin.Context) {
+func GetLogout(w http.ResponseWriter, r *http.Request) {
 	// Clear the cookie
-	c.SetCookie("sorcia-token", "", -1, "/", strings.Split(c.Request.Host, ":")[0], true, true)
+	expiration := time.Now().Add(365 * 24 * time.Hour)
+	c := &http.Cookie{Name: "sorcia-token", Value: "", MaxAge: -1, Path: "/", Domain: strings.Split(r.Host, ":")[0], Expires: expiration}
+	http.SetCookie(w, c)
 
-	c.Redirect(http.StatusTemporaryRedirect, "/login")
+	http.Redirect(w, r, "/login", http.StatusFound)
 }

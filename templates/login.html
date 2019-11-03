@@ -23,7 +23,7 @@
     <main class="container onboard">
         <form method="post" action="/login" class="onboard__form">
             <div class="onboard__form__title">login</div>
-            <div class="onboard__form__error">{{ .loginErrMessage }}</div>
+            <div class="onboard__form__error">{{ .LoginErrMessage }}</div>
             <div class="onboard__form__group">
                 <label for="loginUsername">Username<i>*</i></label>
                 <div class="onboard__form__group-sub">
@@ -42,7 +42,7 @@
         </form>
         <form method="post" action="/register" class="onboard__form">
             <div class="onboard__form__title">create account</div>
-            <div class="onboard__form__error">{{ .registerErrMessage }}</div>
+            <div class="onboard__form__error">{{ .RegisterErrMessage }}</div>
             <div class="onboard__form__group">
                 <label for="registerUsername">Username<i>*</i></label>
                 <div class="onboard__form__group-sub">
