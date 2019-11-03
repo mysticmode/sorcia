@@ -126,6 +126,7 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		tmpl := template.Must(template.ParseFiles("./templates/index.html"))
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
 
 		data := IndexPageResponse{
 			Username: username,

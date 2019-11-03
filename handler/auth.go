@@ -121,31 +121,25 @@ func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 			http.Redirect(w, r, "/", http.StatusFound)
 		} else {
-			tmpl := template.Must(template.ParseFiles("./templates/login.html"))
-
-			w.Header().Set("Content-Type", "text/html; charset=utf-8")
-			w.WriteHeader(http.StatusOK)
-
-			data := LoginPageResponse{
-				LoginErrMessage:    "Your username or password is incorrect.",
-				RegisterErrMessage: "",
-			}
-
-			tmpl.Execute(w, data)
+			invalidLoginCredentials(w, r)
 		}
 	} else {
-		tmpl := template.Must(template.ParseFiles("./templates/login.html"))
-
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		w.WriteHeader(http.StatusOK)
-
-		data := LoginPageResponse{
-			LoginErrMessage:    "Your username or password is incorrect.",
-			RegisterErrMessage: "",
-		}
-
-		tmpl.Execute(w, data)
+		invalidLoginCredentials(w, r)
 	}
+}
+
+func invalidLoginCredentials(w http.ResponseWriter, r *http.Request) {
+	tmpl := template.Must(template.ParseFiles("./templates/login.html"))
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+
+	data := LoginPageResponse{
+		LoginErrMessage:    "Your username or password is incorrect.",
+		RegisterErrMessage: "",
+	}
+
+	tmpl.Execute(w, data)
 }
 
 // RegisterRequest struct
