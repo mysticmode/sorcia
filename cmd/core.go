@@ -70,13 +70,13 @@ func runWeb(c *cli.Context) error {
 		handler.GetLogout(w, r)
 	}).Methods("GET")
 	r.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
-		handler.PostRegister(w, r, db)
+		handler.PostRegister(w, r, db, conf.Paths.DataPath)
 	}).Methods("POST")
 	r.HandleFunc("/create-repo", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetCreateRepo(w, r, db)
 	}).Methods("GET")
 	r.HandleFunc("/create-repo", func(w http.ResponseWriter, r *http.Request) {
-		handler.PostCreateRepo(w, r, db)
+		handler.PostCreateRepo(w, r, db, conf.Paths.DataPath)
 	}).Methods("POST")
 	// r.GET("/+:username", GetHome)
 	// r.GET("/+:username/:reponame", handler.GetRepo)

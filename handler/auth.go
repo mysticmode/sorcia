@@ -14,7 +14,6 @@ import (
 
 	errorhandler "sorcia/error"
 	"sorcia/model"
-	"sorcia/setting"
 
 	"github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/bcrypt"
@@ -150,7 +149,7 @@ type RegisterRequest struct {
 }
 
 // PostRegister ...
-func PostRegister(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+func PostRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath string) {
 	// NOTE: Invoke ParseForm or ParseMultipartForm before reading form values
 	if err := r.ParseForm(); err != nil {
 		fmt.Fprintf(w, "ParseForm() err: %v", err)
@@ -210,12 +209,9 @@ func PostRegister(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 		model.InsertAccount(db, rr)
 
-		// Get config values
-		conf := setting.GetConf()
-
 		// Create repositories directory
 		// 0755 - The owner can read, write, execute. Everyone else can read and execute but not modify the file.
-		repoDir := path.Join(conf.Paths.DataPath, "repositories/"+registerRequest.Username)
+		repoDir := path.Join(dataPath, "repositories/"+registerRequest.Username)
 		if _, err := os.Stat(repoDir); os.IsNotExist(err) {
 			os.MkdirAll(repoDir, 0755)
 		}

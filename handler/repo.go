@@ -11,7 +11,6 @@ import (
 
 	errorhandler "sorcia/error"
 	"sorcia/model"
-	"sorcia/setting"
 
 	"github.com/gin-gonic/gin"
 )
@@ -52,7 +51,7 @@ type CreateRepoRequest struct {
 }
 
 // PostCreateRepo ...
-func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath string) {
 	// NOTE: Invoke ParseForm or ParseMultipartForm before reading form values
 	if err := r.ParseForm(); err != nil {
 		fmt.Fprintf(w, "ParseForm() err: %v", err)
@@ -95,17 +94,15 @@ func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 	username := model.GetUsernameFromToken(db, token)
 
-	conf := setting.GetConf()
-
 	// Create Git bare repository
-	bareRepoDir := path.Join(conf.Paths.DataPath, "repositories/"+"+"+username+"/"+createRepoRequest.Name+".git")
+	bareRepoDir := path.Join(dataPath, "repositories/"+"+"+username+"/"+createRepoRequest.Name+".git")
 
 	cmd := exec.Command("git", "init", "--bare", bareRepoDir)
 	err := cmd.Run()
 	errorhandler.CheckError(err)
 
 	// Clone from the bare repository created above
-	repoDir := path.Join(conf.Paths.DataPath, "repositories/"+username+"/"+createRepoRequest.Name)
+	repoDir := path.Join(dataPath, "repositories/"+username+"/"+createRepoRequest.Name)
 	cmd = exec.Command("git", "clone", bareRepoDir, repoDir)
 	err = cmd.Run()
 	errorhandler.CheckError(err)
