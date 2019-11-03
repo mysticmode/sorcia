@@ -107,7 +107,6 @@ type IndexPageResponse struct {
 // GetHome ...
 func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	userPresent := w.Header().Get("user-present")
-	fmt.Println(userPresent)
 
 	if userPresent == "true" {
 		token := r.Header.Get("sorcia-token")
@@ -126,7 +125,8 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 		tmpl.Execute(w, data)
 	} else {
-		http.Redirect(w, r, "/login", http.StatusMovedPermanently)
+		// http.Redirect(w, r, "/login", http.StatusMovedPermanently)
+		fmt.Println("token not present")
 	}
 
 	// Set cookie example

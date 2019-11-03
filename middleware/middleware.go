@@ -2,9 +2,9 @@ package middleware
 
 import (
 	"database/sql"
-	"fmt"
 	"net/http"
 
+	"sorcia/model"
 	"sorcia/setting"
 
 	_ "github.com/lib/pq"
@@ -31,30 +31,18 @@ func Middleware(h http.Handler) http.Handler {
 }
 
 func userMiddleware(w http.ResponseWriter, r *http.Request, db *sql.DB) http.ResponseWriter {
-	// cookie, err := r.Cookie("sorcia-token")
-	// errorhandler.CheckError(err)
-
-	// fmt.Println("\n\n\n")
-	// fmt.Println(cookie)
-
-	// token, err := url.QueryUnescape(cookie.Value)
-	// errorhandler.CheckError(err)
-
-	// fmt.Println("\n\n\n")
-	// fmt.Println(token)
-
-	// userID := model.GetUserIDFromToken(db, token)
-
-	// userPresent := "false"
-	// if userID != 0 {
-	// 	userPresent = "true"
-	// }
-
+	cookieName := "sorcia-token"
+	userPresent := "false"
 	for _, cookie := range r.Cookies() {
-		fmt.Println("Found a cookie named:", cookie.Name)
+		if cookie.Name == cookieName && cookie.Value != "" {
+			userID := model.GetUserIDFromToken(db, cookie.Value)
+			if userID != 0 {
+				userPresent = "true"
+			}
+		}
 	}
 
-	w.Header().Set("user-present", "ttt")
+	w.Header().Set("user-present", userPresent)
 
 	return w
 }
