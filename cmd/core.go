@@ -123,7 +123,7 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		username := model.GetUsernameFromToken(db, token)
 		repos := model.GetReposFromUserID(db, userID)
 
-		tmpl := template.Must(template.ParseFiles("./templates/index.html"))
+		tmpl := template.Must(template.ParseFiles("./templates/index.tmpl"))
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
