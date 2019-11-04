@@ -33,9 +33,11 @@ func Middleware(h http.Handler) http.Handler {
 
 func userMiddleware(w http.ResponseWriter, r *http.Request, db *sql.DB) http.ResponseWriter {
 	cookieName := "sorcia-token"
+	var cookieValue string
 	userPresent := "false"
 	for _, cookie := range r.Cookies() {
 		if cookie.Name == cookieName && cookie.Value != "" {
+			cookieValue = cookie.Value
 			userID := model.GetUserIDFromToken(db, cookie.Value)
 			if userID != 0 {
 				userPresent = "true"
@@ -43,6 +45,7 @@ func userMiddleware(w http.ResponseWriter, r *http.Request, db *sql.DB) http.Res
 		}
 	}
 
+	w.Header().Set("sorcia-cookie-token", cookieValue)
 	w.Header().Set("user-present", userPresent)
 
 	return w
