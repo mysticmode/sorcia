@@ -7,6 +7,7 @@ import (
 	"sorcia/model"
 	"sorcia/setting"
 
+	// PostgreSQL driver
 	_ "github.com/lib/pq"
 )
 

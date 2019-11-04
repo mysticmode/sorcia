@@ -18,7 +18,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/urfave/cli"
 
-	// Postgresql driver
+	// PostgreSQL driver
 	_ "github.com/lib/pq"
 )
 
