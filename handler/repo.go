@@ -25,7 +25,7 @@ func GetCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	userPresent := w.Header().Get("user-present")
 
 	if userPresent == "true" {
-		token := r.Header.Get("sorcia-token")
+		token := w.Header().Get("sorcia-cookie-token")
 		username := model.GetUsernameFromToken(db, token)
 
 		tmpl := template.Must(template.ParseFiles("./templates/create-repo.html"))
@@ -69,12 +69,12 @@ func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath
 	}
 
 	createRepoRequest := &CreateRepoRequest{
-		Name:        r.FormValue("username"),
+		Name:        r.FormValue("name"),
 		Description: r.FormValue("description"),
 		IsPrivate:   r.FormValue("is_private"),
 	}
 
-	token := r.Header.Get("sorcia-token")
+	token := w.Header().Get("sorcia-cookie-token")
 
 	userID := model.GetUserIDFromToken(db, token)
 
