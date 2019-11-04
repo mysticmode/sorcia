@@ -8,7 +8,7 @@ import (
 	errorhandler "sorcia/error"
 
 	"gopkg.in/ini.v1"
-	// Postgresql driver
+	// PostgreSQL driver
 	_ "github.com/lib/pq"
 )
 
