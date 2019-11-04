@@ -16,6 +16,7 @@ import (
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/schema"
 	"github.com/urfave/cli"
 
 	// PostgreSQL driver
@@ -29,6 +30,8 @@ var Core = cli.Command{
 	Description: `This starts the core sorica web server`,
 	Action:      runWeb,
 }
+
+var decoder = schema.NewDecoder()
 
 func runWeb(c *cli.Context) error {
 	// Gin initiate
@@ -64,21 +67,24 @@ func runWeb(c *cli.Context) error {
 		handler.GetLogin(w, r, db)
 	}).Methods("GET")
 	r.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-		handler.PostLogin(w, r, db)
+		handler.PostLogin(w, r, db, decoder)
 	}).Methods("POST")
 	r.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetLogout(w, r)
 	}).Methods("GET")
 	r.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
-		handler.PostRegister(w, r, db, conf.Paths.DataPath)
+		handler.PostRegister(w, r, db, conf.Paths.DataPath, decoder)
 	}).Methods("POST")
 	r.HandleFunc("/create-repo", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetCreateRepo(w, r, db)
 	}).Methods("GET")
 	r.HandleFunc("/create-repo", func(w http.ResponseWriter, r *http.Request) {
-		handler.PostCreateRepo(w, r, db, conf.Paths.DataPath)
+		handler.PostCreateRepo(w, r, db, conf.Paths.DataPath, decoder)
 	}).Methods("POST")
 	// r.GET("/+:username", GetHome)
+	// r.HandleFunc("/+{username}/{reponame}", func(w http.ResponseWriter, r *http.Request) {
+	// 	handler.GetRepo(w, r, db)
+	// }).Methods("GET")
 	// r.GET("/+:username/:reponame", handler.GetRepo)
 	// r.GET("/+:username/:reponame/tree", handler.GetRepoTree)
 
@@ -114,7 +120,7 @@ func runWeb(c *cli.Context) error {
 // IndexPageResponse struct
 type IndexPageResponse struct {
 	Username string
-	repos    *model.GetReposFromUserIDResponse
+	Repos    *model.GetReposFromUserIDResponse
 }
 
 // GetHome ...
@@ -122,7 +128,7 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	userPresent := w.Header().Get("user-present")
 
 	if userPresent == "true" {
-		token := r.Header.Get("sorcia-token")
+		token := w.Header().Get("sorcia-cookie-token")
 		userID := model.GetUserIDFromToken(db, token)
 		username := model.GetUsernameFromToken(db, token)
 		repos := model.GetReposFromUserID(db, userID)
@@ -134,7 +140,7 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 		data := IndexPageResponse{
 			Username: username,
-			repos:    repos,
+			Repos:    repos,
 		}
 
 		tmpl.Execute(w, data)

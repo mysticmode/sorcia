@@ -13,6 +13,7 @@ import (
 	"sorcia/model"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/schema"
 )
 
 // GetCreateRepoResponse struct
@@ -45,13 +46,13 @@ func GetCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 // CreateRepoRequest struct
 type CreateRepoRequest struct {
-	Name        string `form:"name" binding:"required"`
-	Description string `form:"description" binding:"required"`
-	IsPrivate   string `form:"is_private" binding:"required"`
+	Name        string `schema:"name"`
+	Description string `schema:"description"`
+	IsPrivate   string `schema:"is_private"`
 }
 
 // PostCreateRepo ...
-func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath string) {
+func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath string, decoder *schema.Decoder) {
 	// NOTE: Invoke ParseForm or ParseMultipartForm before reading form values
 	if err := r.ParseForm(); err != nil {
 		fmt.Fprintf(w, "ParseForm() err: %v", err)
@@ -68,11 +69,9 @@ func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath
 		w.Write(errorJSON)
 	}
 
-	createRepoRequest := &CreateRepoRequest{
-		Name:        r.FormValue("name"),
-		Description: r.FormValue("description"),
-		IsPrivate:   r.FormValue("is_private"),
-	}
+	var createRepoRequest = &CreateRepoRequest{}
+	err := decoder.Decode(createRepoRequest, r.PostForm)
+	errorhandler.CheckError(err)
 
 	token := w.Header().Get("sorcia-cookie-token")
 
@@ -98,7 +97,7 @@ func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath
 	bareRepoDir := path.Join(dataPath, "repositories/"+"+"+username+"/"+createRepoRequest.Name+".git")
 
 	cmd := exec.Command("git", "init", "--bare", bareRepoDir)
-	err := cmd.Run()
+	err = cmd.Run()
 	errorhandler.CheckError(err)
 
 	// Clone from the bare repository created above

@@ -40,9 +40,9 @@
         </div>
         <div class="git__repos">
             <ul class="repos">
-                {{ range .repos.Repositories }}
+                {{ range .Repos.Repositories }}
                 <li>
-                    <a href="/+{{ $.username }}/{{ .Name }}">+{{ $.username }} / {{ .Name }} {{ if eq .IsPrivate "true" }} <i>private</i>
+                    <a href="/+{{ $.Username }}/{{ .Name }}">+{{ $.Username }} / {{ .Name }} {{ if eq .IsPrivate "true" }} <i>private</i>
                         {{ end }}</a>
                     <p>{{ .Description }}</p>
                 </li>
