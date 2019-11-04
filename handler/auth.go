@@ -20,8 +20,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var decoder = schema.NewDecoder()
-
 func hashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 	return string(bytes), err
@@ -79,12 +77,12 @@ func GetLogin(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 // LoginRequest struct
 type LoginRequest struct {
-	Username string `form:"username" binding:"required"`
-	Password string `form:"password" binding:"required"`
+	Username string `schema:"username"`
+	Password string `schema:"password"`
 }
 
 // PostLogin ...
-func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder *schema.Decoder) {
 	// NOTE: Invoke ParseForm or ParseMultipartForm before reading form values
 	if err := r.ParseForm(); err != nil {
 		fmt.Fprintf(w, "ParseForm() err: %v", err)
@@ -147,13 +145,13 @@ func invalidLoginCredentials(w http.ResponseWriter, r *http.Request) {
 
 // RegisterRequest struct
 type RegisterRequest struct {
-	Username string `form:"username" binding:"required"`
-	Email    string `form:"email" binding:"required"`
-	Password string `form:"password" binding:"required"`
+	Username string `schema:"username"`
+	Email    string `schema:"email"`
+	Password string `schema:"password"`
 }
 
 // PostRegister ...
-func PostRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath string) {
+func PostRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath string, decoder *schema.Decoder) {
 	// NOTE: Invoke ParseForm or ParseMultipartForm before reading form values
 	if err := r.ParseForm(); err != nil {
 		fmt.Fprintf(w, "ParseForm() err: %v", err)
