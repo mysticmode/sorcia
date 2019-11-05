@@ -81,12 +81,12 @@ func runWeb(c *cli.Context) error {
 	r.HandleFunc("/create-repo", func(w http.ResponseWriter, r *http.Request) {
 		handler.PostCreateRepo(w, r, db, conf.Paths.DataPath, decoder)
 	}).Methods("POST")
-	// r.GET("/+:username", GetHome)
-	// r.HandleFunc("/+{username}/{reponame}", func(w http.ResponseWriter, r *http.Request) {
-	// 	handler.GetRepo(w, r, db)
-	// }).Methods("GET")
-	// r.GET("/+:username/:reponame", handler.GetRepo)
-	// r.GET("/+:username/:reponame/tree", handler.GetRepoTree)
+	r.HandleFunc("/+{username}/{reponame}", func(w http.ResponseWriter, r *http.Request) {
+		handler.GetRepo(w, r, db)
+	}).Methods("GET")
+	r.HandleFunc("/+{username}/{reponame}/tree", func(w http.ResponseWriter, r *http.Request) {
+		handler.GetRepoTree(w, r, db)
+	}).Methods("GET")
 
 	// // Git http backend service handlers
 	// r.POST("/+:username/:reponame/git-:rpc", handler.PostServiceRPC)

@@ -32,11 +32,11 @@
         </div>
     </header>
     <main class="container repo">
-        <div class="repo__title"><a href="">+{{ .username }}</a> / <a href="/+{{ .username }}/{{ .reponame }}">{{ .reponame }}</a></div>
+        <div class="repo__title"><a href="">+{{ .Username }}</a> / <a href="/+{{ .Username }}/{{ .Reponame }}">{{ .Reponame }}</a></div>
         <div class="repo__description">Self-hosted multi-user free(libre) ebook reader.</div>
         <div class="repo__menu">
             <a href="" class="repo__menu__item repo__menu__item--active">summary</a>
-            <a href="/+{{ .username }}/{{ .reponame }}/tree" class="repo__menu__item">tree</a>
+            <a href="/+{{ .Username }}/{{ .Reponame }}/tree" class="repo__menu__item">tree</a>
             <a href="" class="repo__menu__item">contributors (34)</a>
             <a href="" class="repo__menu__item">meta</a>
         </div>
@@ -76,8 +76,8 @@
             </ul>
             <div class="repo__clone">
                 <div class="repo__clone__title">clone</div>
-                <div class="repo__clone__item"><span>ssh </span><input type="text" onclick="this.select()" value="git@sorcia.io:+{{ .username }}/{{ .reponame }}" readonly="" /></div>
-                <div class="repo__clone__item"><span>https </span><input type="text" onclick="this.select()" value="https://sorcia.io/+{{ .username }}/{{ .reponame }}" readonly="" /></div>
+                <div class="repo__clone__item"><span>ssh </span><input type="text" onclick="this.select()" value="git@sorcia.io:+{{ .Username }}/{{ .Reponame }}" readonly="" /></div>
+                <div class="repo__clone__item"><span>https </span><input type="text" onclick="this.select()" value="https://sorcia.io/+{{ .Username }}/{{ .Reponame }}" readonly="" /></div>
             </div>
         </div>
         <div class="readme">
