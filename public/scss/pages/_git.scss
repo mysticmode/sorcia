@@ -31,12 +31,31 @@
 }
 
 .repo {
+    &__header {
+        display: flex;
+        justify-content: space-between;
+    }
+
     &__title {
         font-weight: bold;
     }
 
     &__description {
         margin-top: 5px;
+    }
+
+    &__stars {
+        display: flex;
+        height: 33px;
+
+        &__total {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            border: 1px solid $brand-border;
+            height: 33px;
+            padding: 0 10px;
+        }
     }
 
     &__summary {

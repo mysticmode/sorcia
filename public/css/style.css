@@ -290,11 +290,36 @@ input[type="text"], input[type="email"], input[type="password"] {
         padding: 2px;
         margin-left: 2px; }
 
+.repo__header {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+  -ms-flex-pack: justify;
+  justify-content: space-between; }
+
 .repo__title {
   font-weight: bold; }
 
 .repo__description {
   margin-top: 5px; }
+
+.repo__stars {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  height: 33px; }
+  .repo__stars__total {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    text-align: center;
+    border: 1px solid #e0e4e7;
+    height: 33px;
+    padding: 0 10px; }
 
 .repo__summary {
   display: -webkit-box;
