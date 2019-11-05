@@ -12,7 +12,7 @@ import (
 	errorhandler "sorcia/error"
 	"sorcia/model"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
 )
 
@@ -109,15 +109,17 @@ func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath
 	http.Redirect(w, r, "/", http.StatusFound)
 }
 
-// GetRepo ...
-func GetRepo(c *gin.Context) {
-	username := c.Param("username")
-	reponame := c.Param("reponame")
+// GetRepoResponse struct
+type GetRepoResponse struct {
+	Username string
+	Reponame string
+}
 
-	db, ok := c.MustGet("db").(*sql.DB)
-	if !ok {
-		fmt.Println("Middleware db error")
-	}
+// GetRepo ...
+func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	vars := mux.Vars(r)
+	username := vars["username"]
+	reponame := vars["reponame"]
 
 	rts := model.RepoTypeStruct{
 		Username: username,
@@ -125,50 +127,57 @@ func GetRepo(c *gin.Context) {
 	}
 
 	if repoExists := model.CheckRepoExists(db, reponame); !repoExists {
-		c.HTML(http.StatusNotFound, "", "")
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
 	// Check if repository is not private
 	if isRepoPrivate := model.GetRepoType(db, &rts); !isRepoPrivate {
-		c.HTML(http.StatusOK, "repo-summary.html", gin.H{
-			"username": rts.Username,
-			"reponame": rts.Reponame,
-		})
-	} else {
-		userPresent, ok := c.MustGet("userPresent").(bool)
-		if !ok {
-			fmt.Println("Middleware user error")
-		}
+		tmpl := template.Must(template.ParseFiles("./templates/repo-summary.html"))
 
-		if userPresent {
-			token, _ := c.Cookie("sorcia-token")
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
+
+		tmpl.Execute(w, rts)
+	} else {
+		userPresent := w.Header().Get("user-present")
+
+		if userPresent != "" {
+			token := w.Header().Get("sorcia-cookie-token")
 			userIDFromToken := model.GetUserIDFromToken(db, token)
 
 			// Check if the logged in user has access to view the repository.
 			if hasRepoAccess := model.CheckRepoAccessFromUserID(db, userIDFromToken); hasRepoAccess {
-				c.HTML(http.StatusOK, "repo-summary.html", gin.H{
-					"username": rts.Username,
-					"reponame": rts.Reponame,
-				})
+				tmpl := template.Must(template.ParseFiles("./templates/repo-summary.html"))
+
+				w.Header().Set("Content-Type", "text/html; charset=utf-8")
+				w.WriteHeader(http.StatusOK)
+
+				tmpl.Execute(w, rts)
 			} else {
-				c.HTML(http.StatusNotFound, "", "")
+				errorResponse := &errorhandler.ErrorResponse{
+					Error: "You don't have access to this repository.",
+				}
+
+				errorJSON, err := json.Marshal(errorResponse)
+				errorhandler.CheckError(err)
+
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusBadRequest)
+
+				w.Write(errorJSON)
 			}
 		} else {
-			c.Redirect(http.StatusMovedPermanently, "/")
+			http.Redirect(w, r, "/", http.StatusFound)
 		}
 	}
 }
 
 // GetRepoTree ...
-func GetRepoTree(c *gin.Context) {
-	username := c.Param("username")
-	reponame := c.Param("reponame")
-
-	db, ok := c.MustGet("db").(*sql.DB)
-	if !ok {
-		fmt.Println("Middleware db error")
-	}
+func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	vars := mux.Vars(r)
+	username := vars["username"]
+	reponame := vars["reponame"]
 
 	rts := model.RepoTypeStruct{
 		Username: username,
@@ -176,37 +185,48 @@ func GetRepoTree(c *gin.Context) {
 	}
 
 	if repoExists := model.CheckRepoExists(db, reponame); !repoExists {
-		c.HTML(http.StatusNotFound, "", "")
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
 	// Check if repository is not private
 	if isRepoPrivate := model.GetRepoType(db, &rts); !isRepoPrivate {
-		c.HTML(http.StatusOK, "repo-tree.html", gin.H{
-			"username": rts.Username,
-			"reponame": rts.Reponame,
-		})
-	} else {
-		userPresent, ok := c.MustGet("userPresent").(bool)
-		if !ok {
-			fmt.Println("Middleware user error")
-		}
+		tmpl := template.Must(template.ParseFiles("./templates/repo-tree.html"))
 
-		if userPresent {
-			token, _ := c.Cookie("sorcia-token")
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
+
+		tmpl.Execute(w, rts)
+	} else {
+		userPresent := w.Header().Get("user-present")
+
+		if userPresent != "" {
+			token := w.Header().Get("sorcia-cookie-token")
 			userIDFromToken := model.GetUserIDFromToken(db, token)
 
 			// Check if the logged in user has access to view the repository.
 			if hasRepoAccess := model.CheckRepoAccessFromUserID(db, userIDFromToken); hasRepoAccess {
-				c.HTML(http.StatusOK, "repo-tree.html", gin.H{
-					"username": rts.Username,
-					"reponame": rts.Reponame,
-				})
+				tmpl := template.Must(template.ParseFiles("./templates/repo-tree.html"))
+
+				w.Header().Set("Content-Type", "text/html; charset=utf-8")
+				w.WriteHeader(http.StatusOK)
+
+				tmpl.Execute(w, rts)
 			} else {
-				c.HTML(http.StatusNotFound, "", "")
+				errorResponse := &errorhandler.ErrorResponse{
+					Error: "You don't have access to this repository.",
+				}
+
+				errorJSON, err := json.Marshal(errorResponse)
+				errorhandler.CheckError(err)
+
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusBadRequest)
+
+				w.Write(errorJSON)
 			}
 		} else {
-			c.Redirect(http.StatusMovedPermanently, "/")
+			http.Redirect(w, r, "/", http.StatusFound)
 		}
 	}
 }
