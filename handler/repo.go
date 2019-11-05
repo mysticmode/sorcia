@@ -101,7 +101,7 @@ func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath
 	errorhandler.CheckError(err)
 
 	// Clone from the bare repository created above
-	repoDir := path.Join(dataPath, "repositories/"+username+"/"+createRepoRequest.Name)
+	repoDir := path.Join(dataPath, "repositories/"+"+"+username+"/"+createRepoRequest.Name)
 	cmd = exec.Command("git", "clone", bareRepoDir, repoDir)
 	err = cmd.Run()
 	errorhandler.CheckError(err)
