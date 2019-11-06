@@ -61,7 +61,7 @@ func GetLogin(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	if userPresent == "true" {
 		http.Redirect(w, r, "/login", http.StatusFound)
 	} else {
-		tmpl := template.Must(template.ParseFiles("./templates/login.html"))
+		tmpl := template.Must(template.ParseFiles("./templates/login.tmpl"))
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
@@ -130,7 +130,7 @@ func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder *sche
 }
 
 func invalidLoginCredentials(w http.ResponseWriter, r *http.Request) {
-	tmpl := template.Must(template.ParseFiles("./templates/login.html"))
+	tmpl := template.Must(template.ParseFiles("./templates/login.tmpl"))
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
@@ -184,7 +184,7 @@ func PostRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath s
 		usernameConvention := "^[a-zA-Z0-9_]*$"
 
 		if re := regexp.MustCompile(usernameConvention); !re.MatchString(registerRequest.Username) {
-			tmpl := template.Must(template.ParseFiles("./templates/login.html"))
+			tmpl := template.Must(template.ParseFiles("./templates/login.tmpl"))
 
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			w.WriteHeader(http.StatusOK)

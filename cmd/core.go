@@ -95,13 +95,6 @@ func runWeb(c *cli.Context) error {
 	// r.GET("/+:username/:reponame/objects/:regex1/:regex2", handler.GetGitRegexRequestHandler)
 
 	staticFileDirectory := http.Dir(conf.Paths.AssetPath)
-	// Declare the handler, that routes requests to their respective filename.
-	// The fileserver is wrapped in the `stripPrefix` method, because we want to
-	// remove the "/public/" prefix when looking for files.
-	// For example, if we type "/public/index.html" in our browser, the file server
-	// will look for only "index.html" inside the directory declared above.
-	// If we did not strip the prefix, the file server would look for
-	// "./public/public/index.html", and yield an error
 	staticFileHandler := http.StripPrefix("/public/", http.FileServer(staticFileDirectory))
 	// The "PathPrefix" method acts as a matcher, and matches all routes starting
 	// with "/public/", instead of the absolute route itself
@@ -133,7 +126,7 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		username := model.GetUsernameFromToken(db, token)
 		repos := model.GetReposFromUserID(db, userID)
 
-		tmpl := template.Must(template.ParseFiles("./templates/index.html"))
+		tmpl := template.Must(template.ParseFiles("./templates/index.tmpl"))
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
