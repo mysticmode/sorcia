@@ -19,7 +19,8 @@ a {
     color: #185066; }
 
 p {
-  line-height: 20px; }
+  line-height: 20px;
+  word-wrap: break-word; }
 
 ul {
   list-style: none; }
