@@ -39,12 +39,12 @@
                 <label for="repoName">Name<i>*</i></label>
                 <div class="form__group-sub">
                     <div class="form__username-tag">+{{ .Username }} /</div>
-                    <input type="text" class="form__input" id="repoName" name="name" required />
+                    <input type="text" class="form__input" id="repoName" name="name" maxlength="100" autocomplete="off" spellcheck="false" required="required" />
                 </div>
             </div>
             <div class="form__group">
                 <label for="repoDescription">Description</label>
-                <input type="text" class="form__input" id="repoDescription" name="description" required />
+                <input type="text" class="form__input" id="repoDescription" name="description" autocomplete="off" spellcheck="false" required="required" />
             </div>
             <div class="form__group form__radio-group">
                 <div class="form__radio">
