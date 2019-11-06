@@ -1,6 +1,8 @@
 const gulp = require('gulp');
 const sass = require('gulp-sass');
 const autoprefixer = require('gulp-autoprefixer');
+const minifyCSS = require("gulp-clean-css");
+const rename = require("gulp-rename");
 
 var paths = {
     style: {
@@ -17,6 +19,8 @@ function style() {
         browsers: ['last 2 versions'],
         cascade: false
     }))
+    .pipe(minifyCSS())
+    .pipe(rename('style.min.css'))
     .pipe(gulp.dest(paths.style.dest));
 }
 
@@ -25,4 +29,4 @@ function watch() {
 }
 
 gulp.task('default', gulp.series(watch));
-gulp.task('style', style)
+gulp.task('style', style);
