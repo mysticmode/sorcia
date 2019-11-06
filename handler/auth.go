@@ -192,7 +192,6 @@ func PostRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath s
 		s := registerRequest.Username
 
 		if len(s) > 39 || len(s) < 1 {
-			fmt.Println("coming")
 			tmpl := template.Must(template.ParseFiles("./templates/login.tmpl"))
 
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
