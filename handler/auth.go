@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"path"
-	"regexp"
 	"strings"
 	"time"
 
@@ -150,6 +149,15 @@ type RegisterRequest struct {
 	Password string `schema:"password"`
 }
 
+func isAlnumOrHyphen(s string) bool {
+	for _, r := range s {
+		if (r < 'a' || r > 'z') && (r < 'A' || r > 'Z') && (r < '0' || r > '9') && r != '-' {
+			return false
+		}
+	}
+	return true
+}
+
 // PostRegister ...
 func PostRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath string, decoder *schema.Decoder) {
 	// NOTE: Invoke ParseForm or ParseMultipartForm before reading form values
@@ -181,9 +189,10 @@ func PostRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath s
 		token, err := generateJWTToken(passwordHash)
 		errorhandler.CheckError(err)
 
-		usernameConvention := "^[a-zA-Z0-9_]*$"
+		s := registerRequest.Username
 
-		if re := regexp.MustCompile(usernameConvention); !re.MatchString(registerRequest.Username) {
+		if len(s) > 39 || len(s) < 1 {
+			fmt.Println("coming")
 			tmpl := template.Must(template.ParseFiles("./templates/login.tmpl"))
 
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -191,11 +200,23 @@ func PostRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath s
 
 			data := LoginPageResponse{
 				LoginErrMessage:    "",
-				RegisterErrMessage: "Username is invalid. Supports only alphanumeric and underscore characters.",
+				RegisterErrMessage: "Username is too long (maximum is 39 characters).",
 			}
 
 			tmpl.Execute(w, data)
+			return
+		} else if strings.HasPrefix(s, "-") || strings.Contains(s, "--") || strings.HasSuffix(s, "-") || !isAlnumOrHyphen(s) {
+			tmpl := template.Must(template.ParseFiles("./templates/login.tmpl"))
 
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			w.WriteHeader(http.StatusOK)
+
+			data := LoginPageResponse{
+				LoginErrMessage:    "",
+				RegisterErrMessage: "Username may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen.",
+			}
+
+			tmpl.Execute(w, data)
 			return
 		}
 
