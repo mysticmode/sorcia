@@ -81,7 +81,7 @@ type LoginRequest struct {
 }
 
 // PostLogin ...
-func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder *schema.Decoder) {
+func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath string, decoder *schema.Decoder) {
 	// NOTE: Invoke ParseForm or ParseMultipartForm before reading form values
 	if err := r.ParseForm(); err != nil {
 		fmt.Fprintf(w, "ParseForm() err: %v", err)
@@ -96,6 +96,12 @@ func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder *sche
 		w.WriteHeader(http.StatusBadRequest)
 
 		w.Write(errorJSON)
+	}
+
+	isRegisterForm := r.FormValue("register")
+	if isRegisterForm == "1" {
+		postRegister(w, r, db, dataPath, decoder)
+		return
 	}
 
 	var loginRequest = &LoginRequest{}
@@ -142,13 +148,6 @@ func invalidLoginCredentials(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, data)
 }
 
-// RegisterRequest struct
-type RegisterRequest struct {
-	Username string `schema:"username"`
-	Email    string `schema:"email"`
-	Password string `schema:"password"`
-}
-
 func isAlnumOrHyphen(s string) bool {
 	for _, r := range s {
 		if (r < 'a' || r > 'z') && (r < 'A' || r > 'Z') && (r < '0' || r > '9') && r != '-' {
@@ -158,8 +157,15 @@ func isAlnumOrHyphen(s string) bool {
 	return true
 }
 
+// RegisterRequest struct
+type RegisterRequest struct {
+	Username string `schema:"username"`
+	Email    string `schema:"email"`
+	Password string `schema:"password"`
+}
+
 // PostRegister ...
-func PostRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath string, decoder *schema.Decoder) {
+func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath string, decoder *schema.Decoder) {
 	// NOTE: Invoke ParseForm or ParseMultipartForm before reading form values
 	if err := r.ParseForm(); err != nil {
 		fmt.Fprintf(w, "ParseForm() err: %v", err)
