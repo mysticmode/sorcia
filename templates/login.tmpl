@@ -41,7 +41,7 @@
                 <a href="">forgot your password?</a>
             </div>
         </form>
-        <form method="post" action="/register" class="onboard__form">
+        <form method="post" action="/login" class="onboard__form">
             <div class="onboard__form__title">create account</div>
             <div class="onboard__form__error">{{ .RegisterErrMessage }}</div>
             <div class="onboard__form__group">
@@ -59,6 +59,7 @@
                 <label for="registerPassword">Password<i>*</i></label>
                 <input type="password" class="onboard__form__input" id="registerPassword" name="password" autocomplete="off" spellcheck="false" required="required" />
             </div>
+            <input type="hidden" name="register" value="1" />
             <input type="submit" class="button button--primary" value="Create account" />
         </form>
     </main>
