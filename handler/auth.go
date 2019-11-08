@@ -162,7 +162,7 @@ type RegisterRequest struct {
 	Username string `schema:"username"`
 	Email    string `schema:"email"`
 	Password string `schema:"password"`
-	Register string `schema: "register"`
+	Register string `schema:"register"`
 }
 
 // PostRegister ...
