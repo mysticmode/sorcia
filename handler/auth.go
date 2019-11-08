@@ -167,22 +167,6 @@ type RegisterRequest struct {
 
 // PostRegister ...
 func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath string, decoder *schema.Decoder) {
-	// NOTE: Invoke ParseForm or ParseMultipartForm before reading form values
-	if err := r.ParseForm(); err != nil {
-		fmt.Fprintf(w, "ParseForm() err: %v", err)
-		errorResponse := &errorhandler.ErrorResponse{
-			Error: err.Error(),
-		}
-
-		errorJSON, err := json.Marshal(errorResponse)
-		errorhandler.CheckError(err)
-
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-
-		w.Write(errorJSON)
-	}
-
 	var registerRequest = &RegisterRequest{}
 	err := decoder.Decode(registerRequest, r.PostForm)
 	errorhandler.CheckError(err)
