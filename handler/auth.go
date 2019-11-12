@@ -88,7 +88,7 @@ type LoginRequest struct {
 }
 
 // PostLogin ...
-func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath string, decoder *schema.Decoder) {
+func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath string, templatePath string, decoder *schema.Decoder) {
 	// NOTE: Invoke ParseForm or ParseMultipartForm before reading form values
 	if err := r.ParseForm(); err != nil {
 		fmt.Fprintf(w, "ParseForm() err: %v", err)
@@ -107,7 +107,7 @@ func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath stri
 
 	isRegisterForm := r.FormValue("register")
 	if isRegisterForm == "1" {
-		postRegister(w, r, db, dataPath, decoder)
+		postRegister(w, r, db, dataPath, templatePath, decoder)
 		return
 	}
 
@@ -173,7 +173,7 @@ type RegisterRequest struct {
 }
 
 // PostRegister ...
-func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath string, decoder *schema.Decoder) {
+func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath string, templatePath string, decoder *schema.Decoder) {
 	var registerRequest = &RegisterRequest{}
 	err := decoder.Decode(registerRequest, r.PostForm)
 	errorhandler.CheckError(err)
@@ -190,30 +190,47 @@ func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath s
 		s := registerRequest.Username
 
 		if len(s) > 39 || len(s) < 1 {
-			tmpl := template.Must(template.ParseFiles("./templates/login.html"))
+			layoutPage := path.Join(templatePath, "templates", "layout.html")
+			headerPage := path.Join(templatePath, "templates", "header.html")
+			loginPage := path.Join(templatePath, "templates", "login.html")
+
+			tmpl, err := template.ParseFiles(layoutPage, headerPage, loginPage)
+			errorhandler.CheckError(err)
 
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			w.WriteHeader(http.StatusOK)
 
 			data := LoginPageResponse{
+				IsHeaderLogin:      true,
 				LoginErrMessage:    "",
 				RegisterErrMessage: "Username is too long (maximum is 39 characters).",
 			}
 
+			tmpl.ExecuteTemplate(w, "layout", data)
+
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			w.WriteHeader(http.StatusOK)
+
 			tmpl.Execute(w, data)
 			return
 		} else if strings.HasPrefix(s, "-") || strings.Contains(s, "--") || strings.HasSuffix(s, "-") || !isAlnumOrHyphen(s) {
-			tmpl := template.Must(template.ParseFiles("./templates/login.html"))
+			layoutPage := path.Join(templatePath, "templates", "layout.html")
+			headerPage := path.Join(templatePath, "templates", "header.html")
+			loginPage := path.Join(templatePath, "templates", "login.html")
+
+			tmpl, err := template.ParseFiles(layoutPage, headerPage, loginPage)
+			errorhandler.CheckError(err)
 
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			w.WriteHeader(http.StatusOK)
 
 			data := LoginPageResponse{
+				IsHeaderLogin:      true,
 				LoginErrMessage:    "",
 				RegisterErrMessage: "Username may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen.",
 			}
 
-			tmpl.Execute(w, data)
+			tmpl.ExecuteTemplate(w, "layout", data)
 			return
 		}
 
