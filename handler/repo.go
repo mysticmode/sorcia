@@ -111,49 +111,66 @@ func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath
 
 // GetRepoResponse struct
 type GetRepoResponse struct {
-	Username string
-	Reponame string
+	IsHeaderLogin bool
+	Username      string
+	Reponame      string
 }
 
 // GetRepo ...
-func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, templatePath string) {
 	vars := mux.Vars(r)
 	username := vars["username"]
 	reponame := vars["reponame"]
-
-	rts := model.RepoTypeStruct{
-		Username: username,
-		Reponame: reponame,
-	}
 
 	if repoExists := model.CheckRepoExists(db, reponame); !repoExists {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
+	rts := model.RepoTypeStruct{
+		Username: username,
+		Reponame: reponame,
+	}
+
+	data := GetRepoResponse{
+		IsHeaderLogin: false,
+		Username:      username,
+		Reponame:      reponame,
+	}
+
 	// Check if repository is not private
 	if isRepoPrivate := model.GetRepoType(db, &rts); !isRepoPrivate {
-		tmpl := template.Must(template.ParseFiles("./templates/repo-summary.html"))
+		layoutPage := path.Join(templatePath, "templates", "layout.html")
+		headerPage := path.Join(templatePath, "templates", "header.html")
+		repoSummaryPage := path.Join(templatePath, "templates", "repo-summary.html")
+
+		tmpl, err := template.ParseFiles(layoutPage, headerPage, repoSummaryPage)
+		errorhandler.CheckError(err)
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
 
-		tmpl.Execute(w, rts)
+		tmpl.ExecuteTemplate(w, "layout", data)
 	} else {
 		userPresent := w.Header().Get("user-present")
 
-		if userPresent != "" {
+		if userPresent == "true" {
 			token := w.Header().Get("sorcia-cookie-token")
 			userIDFromToken := model.GetUserIDFromToken(db, token)
 
 			// Check if the logged in user has access to view the repository.
 			if hasRepoAccess := model.CheckRepoAccessFromUserID(db, userIDFromToken); hasRepoAccess {
-				tmpl := template.Must(template.ParseFiles("./templates/repo-summary.html"))
+				layoutPage := path.Join(templatePath, "templates", "layout.html")
+				headerPage := path.Join(templatePath, "templates", "header.html")
+				repoSummaryPage := path.Join(templatePath, "templates", "repo-summary.html")
+
+				tmpl, err := template.ParseFiles(layoutPage, headerPage, repoSummaryPage)
+				errorhandler.CheckError(err)
 
 				w.Header().Set("Content-Type", "text/html; charset=utf-8")
 				w.WriteHeader(http.StatusOK)
 
-				tmpl.Execute(w, rts)
+				tmpl.ExecuteTemplate(w, "layout", data)
 			} else {
 				errorResponse := &errorhandler.ErrorResponse{
 					Error: "You don't have access to this repository.",
