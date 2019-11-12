@@ -68,7 +68,7 @@ func runWeb(c *cli.Context) error {
 		handler.GetLogin(w, r, db, conf.Paths.TemplatePath)
 	}).Methods("GET")
 	r.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-		handler.PostLogin(w, r, db, conf.Paths.DataPath, decoder)
+		handler.PostLogin(w, r, db, conf.Paths.DataPath, conf.Paths.TemplatePath, decoder)
 	}).Methods("POST")
 	r.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetLogout(w, r)
