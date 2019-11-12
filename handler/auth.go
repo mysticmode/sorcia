@@ -49,28 +49,35 @@ func validateJWTToken(tokenString string, passwordHash string) (bool, error) {
 
 // LoginPageResponse struct
 type LoginPageResponse struct {
+	IsHeaderLogin      bool
 	LoginErrMessage    string
 	RegisterErrMessage string
 }
 
 // GetLogin ...
-func GetLogin(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+func GetLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, templatePath string) {
 	userPresent := w.Header().Get("user-present")
 
 	if userPresent == "true" {
 		http.Redirect(w, r, "/", http.StatusFound)
 	} else {
-		tmpl := template.Must(template.ParseFiles("./templates/login.tmpl"))
+		layoutPage := path.Join(templatePath, "templates", "layout.html")
+		headerPage := path.Join(templatePath, "templates", "header.html")
+		loginPage := path.Join(templatePath, "templates", "login.html")
+
+		tmpl, err := template.ParseFiles(layoutPage, headerPage, loginPage)
+		errorhandler.CheckError(err)
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
 
 		data := LoginPageResponse{
+			IsHeaderLogin:      true,
 			LoginErrMessage:    "",
 			RegisterErrMessage: "",
 		}
 
-		tmpl.Execute(w, data)
+		tmpl.ExecuteTemplate(w, "layout", data)
 	}
 }
 
@@ -135,7 +142,7 @@ func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath stri
 }
 
 func invalidLoginCredentials(w http.ResponseWriter, r *http.Request) {
-	tmpl := template.Must(template.ParseFiles("./templates/login.tmpl"))
+	tmpl := template.Must(template.ParseFiles("./templates/login.html"))
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
@@ -183,7 +190,7 @@ func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath s
 		s := registerRequest.Username
 
 		if len(s) > 39 || len(s) < 1 {
-			tmpl := template.Must(template.ParseFiles("./templates/login.tmpl"))
+			tmpl := template.Must(template.ParseFiles("./templates/login.html"))
 
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			w.WriteHeader(http.StatusOK)
@@ -196,7 +203,7 @@ func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath s
 			tmpl.Execute(w, data)
 			return
 		} else if strings.HasPrefix(s, "-") || strings.Contains(s, "--") || strings.HasSuffix(s, "-") || !isAlnumOrHyphen(s) {
-			tmpl := template.Must(template.ParseFiles("./templates/login.tmpl"))
+			tmpl := template.Must(template.ParseFiles("./templates/login.html"))
 
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			w.WriteHeader(http.StatusOK)

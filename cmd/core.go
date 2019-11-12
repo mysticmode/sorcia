@@ -3,12 +3,13 @@ package cmd
 import (
 	"database/sql"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
 	"path"
-	"text/template"
 
+	errorhandler "sorcia/error"
 	"sorcia/handler"
 	"sorcia/middleware"
 	"sorcia/model"
@@ -61,10 +62,10 @@ func runWeb(c *cli.Context) error {
 
 	// Gin handlers
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		GetHome(w, r, db)
+		GetHome(w, r, db, conf.Paths.TemplatePath)
 	}).Methods("GET")
 	r.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-		handler.GetLogin(w, r, db)
+		handler.GetLogin(w, r, db, conf.Paths.TemplatePath)
 	}).Methods("GET")
 	r.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		handler.PostLogin(w, r, db, conf.Paths.DataPath, decoder)
@@ -109,12 +110,13 @@ func runWeb(c *cli.Context) error {
 
 // IndexPageResponse struct
 type IndexPageResponse struct {
-	Username string
-	Repos    *model.GetReposFromUserIDResponse
+	IsHeaderLogin bool
+	Username      string
+	Repos         *model.GetReposFromUserIDResponse
 }
 
 // GetHome ...
-func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, templatePath string) {
 	userPresent := w.Header().Get("user-present")
 
 	if userPresent == "true" {
@@ -123,17 +125,23 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		username := model.GetUsernameFromToken(db, token)
 		repos := model.GetReposFromUserID(db, userID)
 
-		tmpl := template.Must(template.ParseFiles("./templates/index.tmpl"))
+		lp := path.Join(templatePath, "templates", "layout.html")
+		hp := path.Join(templatePath, "templates", "header.html")
+		ip := path.Join(templatePath, "templates", "index.html")
+
+		tmpl, err := template.ParseFiles(lp, hp, ip)
+		errorhandler.CheckError(err)
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
 
 		data := IndexPageResponse{
-			Username: username,
-			Repos:    repos,
+			IsHeaderLogin: false,
+			Username:      username,
+			Repos:         repos,
 		}
 
-		tmpl.Execute(w, data)
+		tmpl.ExecuteTemplate(w, "layout", data)
 	} else {
 		http.Redirect(w, r, "/login", http.StatusFound)
 	}
