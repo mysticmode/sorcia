@@ -29,7 +29,7 @@ func GetCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		token := w.Header().Get("sorcia-cookie-token")
 		username := model.GetUsernameFromToken(db, token)
 
-		tmpl := template.Must(template.ParseFiles("./templates/create-repo.tmpl"))
+		tmpl := template.Must(template.ParseFiles("./templates/create-repo.html"))
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
@@ -133,7 +133,7 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 	// Check if repository is not private
 	if isRepoPrivate := model.GetRepoType(db, &rts); !isRepoPrivate {
-		tmpl := template.Must(template.ParseFiles("./templates/repo-summary.tmpl"))
+		tmpl := template.Must(template.ParseFiles("./templates/repo-summary.html"))
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
@@ -148,7 +148,7 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 			// Check if the logged in user has access to view the repository.
 			if hasRepoAccess := model.CheckRepoAccessFromUserID(db, userIDFromToken); hasRepoAccess {
-				tmpl := template.Must(template.ParseFiles("./templates/repo-summary.tmpl"))
+				tmpl := template.Must(template.ParseFiles("./templates/repo-summary.html"))
 
 				w.Header().Set("Content-Type", "text/html; charset=utf-8")
 				w.WriteHeader(http.StatusOK)
@@ -191,7 +191,7 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 	// Check if repository is not private
 	if isRepoPrivate := model.GetRepoType(db, &rts); !isRepoPrivate {
-		tmpl := template.Must(template.ParseFiles("./templates/repo-tree.tmpl"))
+		tmpl := template.Must(template.ParseFiles("./templates/repo-tree.html"))
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
@@ -206,7 +206,7 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 			// Check if the logged in user has access to view the repository.
 			if hasRepoAccess := model.CheckRepoAccessFromUserID(db, userIDFromToken); hasRepoAccess {
-				tmpl := template.Must(template.ParseFiles("./templates/repo-tree.tmpl"))
+				tmpl := template.Must(template.ParseFiles("./templates/repo-tree.html"))
 
 				w.Header().Set("Content-Type", "text/html; charset=utf-8")
 				w.WriteHeader(http.StatusOK)
