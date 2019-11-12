@@ -185,35 +185,46 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, templatePath st
 				w.Write(errorJSON)
 			}
 		} else {
-			http.Redirect(w, r, "/", http.StatusFound)
+			http.Redirect(w, r, "/login", http.StatusFound)
 		}
 	}
 }
 
 // GetRepoTree ...
-func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, templatePath string) {
 	vars := mux.Vars(r)
 	username := vars["username"]
 	reponame := vars["reponame"]
-
-	rts := model.RepoTypeStruct{
-		Username: username,
-		Reponame: reponame,
-	}
 
 	if repoExists := model.CheckRepoExists(db, reponame); !repoExists {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
+	rts := model.RepoTypeStruct{
+		Username: username,
+		Reponame: reponame,
+	}
+
+	data := GetRepoResponse{
+		IsHeaderLogin: false,
+		Username:      username,
+		Reponame:      reponame,
+	}
+
 	// Check if repository is not private
 	if isRepoPrivate := model.GetRepoType(db, &rts); !isRepoPrivate {
-		tmpl := template.Must(template.ParseFiles("./templates/repo-tree.html"))
+		layoutPage := path.Join(templatePath, "templates", "layout.html")
+		headerPage := path.Join(templatePath, "templates", "header.html")
+		repoTreePage := path.Join(templatePath, "templates", "repo-tree.html")
+
+		tmpl, err := template.ParseFiles(layoutPage, headerPage, repoTreePage)
+		errorhandler.CheckError(err)
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
 
-		tmpl.Execute(w, rts)
+		tmpl.ExecuteTemplate(w, "layout", data)
 	} else {
 		userPresent := w.Header().Get("user-present")
 
@@ -223,27 +234,36 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 			// Check if the logged in user has access to view the repository.
 			if hasRepoAccess := model.CheckRepoAccessFromUserID(db, userIDFromToken); hasRepoAccess {
-				tmpl := template.Must(template.ParseFiles("./templates/repo-tree.html"))
+				layoutPage := path.Join(templatePath, "templates", "layout.html")
+				headerPage := path.Join(templatePath, "templates", "header.html")
+				repoTreePage := path.Join(templatePath, "templates", "repo-tree.html")
+
+				tmpl, err := template.ParseFiles(layoutPage, headerPage, repoTreePage)
+				errorhandler.CheckError(err)
 
 				w.Header().Set("Content-Type", "text/html; charset=utf-8")
 				w.WriteHeader(http.StatusOK)
 
-				tmpl.Execute(w, rts)
+				tmpl.ExecuteTemplate(w, "layout", data)
 			} else {
-				errorResponse := &errorhandler.ErrorResponse{
-					Error: "You don't have access to this repository.",
-				}
-
-				errorJSON, err := json.Marshal(errorResponse)
-				errorhandler.CheckError(err)
-
-				w.Header().Set("Content-Type", "application/json")
-				w.WriteHeader(http.StatusBadRequest)
-
-				w.Write(errorJSON)
+				noRepoAccess(w)
 			}
 		} else {
-			http.Redirect(w, r, "/", http.StatusFound)
+			http.Redirect(w, r, "/login", http.StatusFound)
 		}
 	}
+}
+
+func noRepoAccess(w http.ResponseWriter) {
+	errorResponse := &errorhandler.ErrorResponse{
+		Error: "You don't have access to this repository.",
+	}
+
+	errorJSON, err := json.Marshal(errorResponse)
+	errorhandler.CheckError(err)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusBadRequest)
+
+	w.Write(errorJSON)
 }

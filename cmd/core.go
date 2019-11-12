@@ -83,7 +83,7 @@ func runWeb(c *cli.Context) error {
 		handler.GetRepo(w, r, db, conf.Paths.TemplatePath)
 	}).Methods("GET")
 	r.HandleFunc("/+{username}/{reponame}/tree", func(w http.ResponseWriter, r *http.Request) {
-		handler.GetRepoTree(w, r, db)
+		handler.GetRepoTree(w, r, db, conf.Paths.TemplatePath)
 	}).Methods("GET")
 
 	// // Git http backend service handlers
