@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -98,4 +98,75 @@ CREATE DATABASE joyreaddb WITH ENCODING='UTF8' OWNER=joyreaduser CONNECTION LIMI
     </main>
 </body>
 
-</html>
+</html> -->
+
+{{define "title"}}+{{ .Username }}/{{ .Reponame }}{{end}}
+{{define "content"}}
+<main class="container repo">
+        <div class="repo__header">
+            <div>
+                <div class="repo__title"><a href="">+{{ .Username }}</a> / <a href="/+{{ .Username }}/{{ .Reponame }}">{{ .Reponame }}</a></div>
+                <div class="repo__description">Self-hosted multi-user free(libre) ebook reader.</div>
+            </div>
+            <div>
+                <div class="repo__stars">
+                    <a href="/+{{ .Username }}/{{ .Reponame }}/star" class="button button--primary">Star</a>
+                    <div class="repo__stars__total">236</div>
+                </div>
+            </div>
+        </div>
+        <div class="repo__menu">
+            <a href="" class="repo__menu__item repo__menu__item--active">summary</a>
+            <a href="/+{{ .Username }}/{{ .Reponame }}/tree" class="repo__menu__item">tree</a>
+            <a href="" class="repo__menu__item">todo</a>
+            <a href="" class="repo__menu__item">dispatch</a>
+            <a href="" class="repo__menu__item">lists</a>
+            <a href="" class="repo__menu__item">man</a>
+            <a href="" class="repo__menu__item">contributors (238)</a>
+            <a href="" class="repo__menu__item">meta</a>
+        </div>
+        <div class="repo__sub-menu">
+            <a href="" class="repo__sub-menu__item">127 commits</a>
+        </div>
+        <div class="repo__summary">
+            <ul class="repo__latest-commits">
+                <li>
+                    <div>
+                        <p><a href="">6b3ffdfc</a> - <a href="">+mysticmode</a></p>
+                        <p>2 days ago</p>
+                    </div>
+                    <p class="repo__commit-message">Update release announcements link in README.md</p>
+                </li>
+                <li>
+                    <div>
+                        <p><a href="">6b3ffdfc</a> - <a href="">+mysticmode</a></p>
+                        <p>2 days ago</p>
+                    </div>
+                    <p class="repo__commit-message">Update release announcements link in README.md</p>
+                </li>
+                <li>
+                    <div>
+                        <p><a href="">6b3ffdfc</a> - <a href="">+mysticmode</a></p>
+                        <p>2 days ago</p>
+                    </div>
+                    <p class="repo__commit-message">Update release announcements link in README.md</p>
+                </li>
+            </ul>
+            <div class="repo__clone">
+                <div class="repo__clone__title">clone</div>
+                <div class="repo__clone__item"><span>ssh </span><input type="text" onclick="this.select()" value="git@sorcia.io:+{{ .Username }}/{{ .Reponame }}" readonly="" /></div>
+                <div class="repo__clone__item"><span>https </span><input type="text" onclick="this.select()" value="https://sorcia.io/+{{ .Username }}/{{ .Reponame }}" readonly="" /></div>
+            </div>
+        </div>
+        <div class="readme">
+            <h2>Joyread</h2>
+            <p>This is the core service of sorcia. A self-hosted and modular services for your Git projects. Under development.</p>
+            <h3>Easy installation and updates</h3>
+            <p>This is the core service of sorcia. A self-hosted and modular <code>go get -d ./...</code> services for your Git projects. Under development.</p>
+            <pre><code>CREATE ROLE joyreaduser WITH LOGIN PASSWORD 'jellyfish' VALID UNTIL 'infinity';
+
+CREATE DATABASE joyreaddb WITH ENCODING='UTF8' OWNER=joyreaduser CONNECTION LIMIT=-1;
+</code></pre>
+        </div>
+    </main>
+{{end}}

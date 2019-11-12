@@ -80,7 +80,7 @@ func runWeb(c *cli.Context) error {
 		handler.PostCreateRepo(w, r, db, conf.Paths.DataPath, decoder)
 	}).Methods("POST")
 	r.HandleFunc("/+{username}/{reponame}", func(w http.ResponseWriter, r *http.Request) {
-		handler.GetRepo(w, r, db)
+		handler.GetRepo(w, r, db, conf.Paths.TemplatePath)
 	}).Methods("GET")
 	r.HandleFunc("/+{username}/{reponame}/tree", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetRepoTree(w, r, db)
