@@ -90,7 +90,7 @@ type LoginRequest struct {
 }
 
 // PostLogin ...
-func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath string, templatePath string, decoder *schema.Decoder) {
+func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath, templatePath string, decoder *schema.Decoder) {
 	// NOTE: Invoke ParseForm or ParseMultipartForm before reading form values
 	if err := r.ParseForm(); err != nil {
 		fmt.Fprintf(w, "ParseForm() err: %v", err)

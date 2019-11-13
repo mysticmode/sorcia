@@ -18,27 +18,36 @@ import (
 
 // GetCreateRepoResponse struct
 type GetCreateRepoResponse struct {
-	Username string
+	IsHeaderLogin    bool
+	HeaderActiveMenu string
+	Username         string
 }
 
 // GetCreateRepo ...
-func GetCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+func GetCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, templatePath string) {
 	userPresent := w.Header().Get("user-present")
 
 	if userPresent == "true" {
 		token := w.Header().Get("sorcia-cookie-token")
 		username := model.GetUsernameFromToken(db, token)
 
-		tmpl := template.Must(template.ParseFiles("./templates/create-repo.tmpl"))
+		layoutPage := path.Join(templatePath, "templates", "layout.tmpl")
+		headerPage := path.Join(templatePath, "templates", "header.tmpl")
+		createRepoPage := path.Join(templatePath, "templates", "create-repo.tmpl")
+
+		tmpl, err := template.ParseFiles(layoutPage, headerPage, createRepoPage)
+		errorhandler.CheckError(err)
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
 
 		data := GetCreateRepoResponse{
-			Username: username,
+			IsHeaderLogin:    false,
+			HeaderActiveMenu: "",
+			Username:         username,
 		}
 
-		tmpl.Execute(w, data)
+		tmpl.ExecuteTemplate(w, "layout", data)
 	} else {
 		http.Redirect(w, r, "/login", http.StatusFound)
 	}
