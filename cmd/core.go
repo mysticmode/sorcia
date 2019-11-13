@@ -74,7 +74,7 @@ func runWeb(c *cli.Context) error {
 		handler.GetLogout(w, r)
 	}).Methods("GET")
 	r.HandleFunc("/create-repo", func(w http.ResponseWriter, r *http.Request) {
-		handler.GetCreateRepo(w, r, db)
+		handler.GetCreateRepo(w, r, db, conf.Paths.TemplatePath)
 	}).Methods("GET")
 	r.HandleFunc("/create-repo", func(w http.ResponseWriter, r *http.Request) {
 		handler.PostCreateRepo(w, r, db, conf.Paths.DataPath, decoder)
