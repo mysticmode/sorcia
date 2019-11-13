@@ -110,9 +110,10 @@ func runWeb(c *cli.Context) error {
 
 // IndexPageResponse struct
 type IndexPageResponse struct {
-	IsHeaderLogin bool
-	Username      string
-	Repos         *model.GetReposFromUserIDResponse
+	IsHeaderLogin    bool
+	HeaderActiveMenu string
+	Username         string
+	Repos            *model.GetReposFromUserIDResponse
 }
 
 // GetHome ...
@@ -125,9 +126,9 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, templatePath st
 		username := model.GetUsernameFromToken(db, token)
 		repos := model.GetReposFromUserID(db, userID)
 
-		lp := path.Join(templatePath, "templates", "layout.html")
-		hp := path.Join(templatePath, "templates", "header.html")
-		ip := path.Join(templatePath, "templates", "index.html")
+		lp := path.Join(templatePath, "templates", "layout.tmpl")
+		hp := path.Join(templatePath, "templates", "header.tmpl")
+		ip := path.Join(templatePath, "templates", "index.tmpl")
 
 		tmpl, err := template.ParseFiles(lp, hp, ip)
 		errorhandler.CheckError(err)
@@ -136,9 +137,10 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, templatePath st
 		w.WriteHeader(http.StatusOK)
 
 		data := IndexPageResponse{
-			IsHeaderLogin: false,
-			Username:      username,
-			Repos:         repos,
+			IsHeaderLogin:    false,
+			HeaderActiveMenu: "header__menu--dashboard",
+			Username:         username,
+			Repos:            repos,
 		}
 
 		tmpl.ExecuteTemplate(w, "layout", data)

@@ -61,9 +61,9 @@ func GetLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, templatePath s
 	if userPresent == "true" {
 		http.Redirect(w, r, "/", http.StatusFound)
 	} else {
-		layoutPage := path.Join(templatePath, "templates", "layout.html")
-		headerPage := path.Join(templatePath, "templates", "header.html")
-		loginPage := path.Join(templatePath, "templates", "login.html")
+		layoutPage := path.Join(templatePath, "templates", "layout.tmpl")
+		headerPage := path.Join(templatePath, "templates", "header.tmpl")
+		loginPage := path.Join(templatePath, "templates", "login.tmpl")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, loginPage)
 		errorhandler.CheckError(err)
@@ -142,7 +142,7 @@ func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath stri
 }
 
 func invalidLoginCredentials(w http.ResponseWriter, r *http.Request) {
-	tmpl := template.Must(template.ParseFiles("./templates/login.html"))
+	tmpl := template.Must(template.ParseFiles("./templates/login.tmpl"))
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
@@ -190,9 +190,9 @@ func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath s
 		s := registerRequest.Username
 
 		if len(s) > 39 || len(s) < 1 {
-			layoutPage := path.Join(templatePath, "templates", "layout.html")
-			headerPage := path.Join(templatePath, "templates", "header.html")
-			loginPage := path.Join(templatePath, "templates", "login.html")
+			layoutPage := path.Join(templatePath, "templates", "layout.tmpl")
+			headerPage := path.Join(templatePath, "templates", "header.tmpl")
+			loginPage := path.Join(templatePath, "templates", "login.tmpl")
 
 			tmpl, err := template.ParseFiles(layoutPage, headerPage, loginPage)
 			errorhandler.CheckError(err)
@@ -214,9 +214,9 @@ func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath s
 			tmpl.Execute(w, data)
 			return
 		} else if strings.HasPrefix(s, "-") || strings.Contains(s, "--") || strings.HasSuffix(s, "-") || !isAlnumOrHyphen(s) {
-			layoutPage := path.Join(templatePath, "templates", "layout.html")
-			headerPage := path.Join(templatePath, "templates", "header.html")
-			loginPage := path.Join(templatePath, "templates", "login.html")
+			layoutPage := path.Join(templatePath, "templates", "layout.tmpl")
+			headerPage := path.Join(templatePath, "templates", "header.tmpl")
+			loginPage := path.Join(templatePath, "templates", "login.tmpl")
 
 			tmpl, err := template.ParseFiles(layoutPage, headerPage, loginPage)
 			errorhandler.CheckError(err)
