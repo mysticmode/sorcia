@@ -20,12 +20,36 @@
             margin-right: 20px;
             color: $text-color-2;
             
-            &:hover, &--active {
+            &:hover {
                 color: $text-color;
             }
 
             &:last-child {
                 margin-right: 0;
+            }
+        }
+
+        &--dashboard {
+            & a:nth-child(1) {
+                color: $text-color;
+            }
+        }
+
+        &--explore {
+            & a:nth-child(2) {
+                color: $text-color;
+            }
+        }
+
+        &--man {
+            & a:nth-child(3) {
+                color: $text-color;
+            }
+        }
+
+        &--meta {
+            & a:nth-child(4) {
+                color: $text-color;
             }
         }
     }

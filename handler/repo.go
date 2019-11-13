@@ -29,7 +29,7 @@ func GetCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		token := w.Header().Get("sorcia-cookie-token")
 		username := model.GetUsernameFromToken(db, token)
 
-		tmpl := template.Must(template.ParseFiles("./templates/create-repo.html"))
+		tmpl := template.Must(template.ParseFiles("./templates/create-repo.tmpl"))
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
@@ -140,9 +140,9 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, templatePath st
 
 	// Check if repository is not private
 	if isRepoPrivate := model.GetRepoType(db, &rts); !isRepoPrivate {
-		layoutPage := path.Join(templatePath, "templates", "layout.html")
-		headerPage := path.Join(templatePath, "templates", "header.html")
-		repoSummaryPage := path.Join(templatePath, "templates", "repo-summary.html")
+		layoutPage := path.Join(templatePath, "templates", "layout.tmpl")
+		headerPage := path.Join(templatePath, "templates", "header.tmpl")
+		repoSummaryPage := path.Join(templatePath, "templates", "repo-summary.tmpl")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, repoSummaryPage)
 		errorhandler.CheckError(err)
@@ -160,9 +160,9 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, templatePath st
 
 			// Check if the logged in user has access to view the repository.
 			if hasRepoAccess := model.CheckRepoAccessFromUserID(db, userIDFromToken); hasRepoAccess {
-				layoutPage := path.Join(templatePath, "templates", "layout.html")
-				headerPage := path.Join(templatePath, "templates", "header.html")
-				repoSummaryPage := path.Join(templatePath, "templates", "repo-summary.html")
+				layoutPage := path.Join(templatePath, "templates", "layout.tmpl")
+				headerPage := path.Join(templatePath, "templates", "header.tmpl")
+				repoSummaryPage := path.Join(templatePath, "templates", "repo-summary.tmpl")
 
 				tmpl, err := template.ParseFiles(layoutPage, headerPage, repoSummaryPage)
 				errorhandler.CheckError(err)
@@ -214,9 +214,9 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, templatePat
 
 	// Check if repository is not private
 	if isRepoPrivate := model.GetRepoType(db, &rts); !isRepoPrivate {
-		layoutPage := path.Join(templatePath, "templates", "layout.html")
-		headerPage := path.Join(templatePath, "templates", "header.html")
-		repoTreePage := path.Join(templatePath, "templates", "repo-tree.html")
+		layoutPage := path.Join(templatePath, "templates", "layout.tmpl")
+		headerPage := path.Join(templatePath, "templates", "header.tmpl")
+		repoTreePage := path.Join(templatePath, "templates", "repo-tree.tmpl")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, repoTreePage)
 		errorhandler.CheckError(err)
@@ -234,9 +234,9 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, templatePat
 
 			// Check if the logged in user has access to view the repository.
 			if hasRepoAccess := model.CheckRepoAccessFromUserID(db, userIDFromToken); hasRepoAccess {
-				layoutPage := path.Join(templatePath, "templates", "layout.html")
-				headerPage := path.Join(templatePath, "templates", "header.html")
-				repoTreePage := path.Join(templatePath, "templates", "repo-tree.html")
+				layoutPage := path.Join(templatePath, "templates", "layout.tmpl")
+				headerPage := path.Join(templatePath, "templates", "header.tmpl")
+				repoTreePage := path.Join(templatePath, "templates", "repo-tree.tmpl")
 
 				tmpl, err := template.ParseFiles(layoutPage, headerPage, repoTreePage)
 				errorhandler.CheckError(err)
