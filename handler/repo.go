@@ -111,9 +111,10 @@ func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath
 
 // GetRepoResponse struct
 type GetRepoResponse struct {
-	IsHeaderLogin bool
-	Username      string
-	Reponame      string
+	IsHeaderLogin    bool
+	HeaderActiveMenu string
+	Username         string
+	Reponame         string
 }
 
 // GetRepo ...
@@ -133,9 +134,10 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, templatePath st
 	}
 
 	data := GetRepoResponse{
-		IsHeaderLogin: false,
-		Username:      username,
-		Reponame:      reponame,
+		IsHeaderLogin:    false,
+		HeaderActiveMenu: "",
+		Username:         username,
+		Reponame:         reponame,
 	}
 
 	// Check if repository is not private
@@ -207,9 +209,10 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, templatePat
 	}
 
 	data := GetRepoResponse{
-		IsHeaderLogin: false,
-		Username:      username,
-		Reponame:      reponame,
+		IsHeaderLogin:    false,
+		HeaderActiveMenu: "",
+		Username:         username,
+		Reponame:         reponame,
 	}
 
 	// Check if repository is not private

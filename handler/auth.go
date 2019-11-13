@@ -50,6 +50,7 @@ func validateJWTToken(tokenString string, passwordHash string) (bool, error) {
 // LoginPageResponse struct
 type LoginPageResponse struct {
 	IsHeaderLogin      bool
+	HeaderActiveMenu   string
 	LoginErrMessage    string
 	RegisterErrMessage string
 }
@@ -73,6 +74,7 @@ func GetLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, templatePath s
 
 		data := LoginPageResponse{
 			IsHeaderLogin:      true,
+			HeaderActiveMenu:   "",
 			LoginErrMessage:    "",
 			RegisterErrMessage: "",
 		}
@@ -226,6 +228,7 @@ func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath s
 
 			data := LoginPageResponse{
 				IsHeaderLogin:      true,
+				HeaderActiveMenu:   "",
 				LoginErrMessage:    "",
 				RegisterErrMessage: "Username may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen.",
 			}
