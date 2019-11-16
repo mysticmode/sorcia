@@ -24,11 +24,11 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// Core ...
-var Core = cli.Command{
-	Name:        "core",
+// Web ...
+var Web = cli.Command{
+	Name:        "web",
 	Usage:       "Start web server",
-	Description: `This starts the core sorica web server`,
+	Description: `This starts the sorica web server`,
 	Action:      runWeb,
 }
 
