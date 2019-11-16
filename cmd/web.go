@@ -36,7 +36,7 @@ var decoder = schema.NewDecoder()
 
 func runWeb(c *cli.Context) error {
 	// Gin initiate
-	r := mux.NewRouter()
+	m := mux.NewRouter()
 
 	// Get config values
 	conf := setting.GetConf()
@@ -58,45 +58,45 @@ func runWeb(c *cli.Context) error {
 	// 	middleware.UserMiddleware(db),
 	// )
 
-	r.Use(middleware.Middleware)
+	m.Use(middleware.Middleware)
 
 	// Web handlers
-	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	m.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		GetHome(w, r, db, conf.Paths.TemplatePath)
 	}).Methods("GET")
-	r.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+	m.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetLogin(w, r, db, conf.Paths.TemplatePath)
 	}).Methods("GET")
-	r.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+	m.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		handler.PostLogin(w, r, db, conf.Paths.DataPath, conf.Paths.TemplatePath, decoder)
 	}).Methods("POST")
-	r.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
+	m.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetLogout(w, r)
 	}).Methods("GET")
-	r.HandleFunc("/create-repo", func(w http.ResponseWriter, r *http.Request) {
+	m.HandleFunc("/create-repo", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetCreateRepo(w, r, db, conf.Paths.TemplatePath)
 	}).Methods("GET")
-	r.HandleFunc("/create-repo", func(w http.ResponseWriter, r *http.Request) {
+	m.HandleFunc("/create-repo", func(w http.ResponseWriter, r *http.Request) {
 		handler.PostCreateRepo(w, r, db, conf.Paths.DataPath, decoder)
 	}).Methods("POST")
-	r.HandleFunc("/+{username}/{reponame}", func(w http.ResponseWriter, r *http.Request) {
+	m.HandleFunc("/+{username}/{reponame}", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetRepo(w, r, db, conf.Paths.TemplatePath)
 	}).Methods("GET")
-	r.HandleFunc("/+{username}/{reponame}/tree", func(w http.ResponseWriter, r *http.Request) {
+	m.HandleFunc("/+{username}/{reponame}/tree", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetRepoTree(w, r, db, conf.Paths.TemplatePath)
 	}).Methods("GET")
 
 	// Git http backend service handlers
-	r.HandleFunc("/+:{username}/{reponame}/git-{rpc}", func(w http.ResponseWriter, r *http.Request) {
+	m.HandleFunc("/+:{username}/{reponame}/git-{rpc}", func(w http.ResponseWriter, r *http.Request) {
 		handler.PostServiceRPC(w, r, db, conf.Paths.RepoPath)
 	}).Methods("POST")
-	r.HandleFunc("/+:{username}/{reponame}/info/refs", func(w http.ResponseWriter, r *http.Request) {
+	m.HandleFunc("/+:{username}/{reponame}/info/refs", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetInfoRefs(w, r, db, conf.Paths.RepoPath)
 	}).Methods("GET")
-	r.HandleFunc("/+:{username}/{reponame}/HEAD", func(w http.ResponseWriter, r *http.Request) {
+	m.HandleFunc("/+:{username}/{reponame}/HEAD", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetHEADFile(w, r, db, conf.Paths.RepoPath)
 	}).Methods("GET")
-	r.HandleFunc("/+:{username}/{reponame}/objects/{regex1}/{regex2}", func(w http.ResponseWriter, r *http.Request) {
+	m.HandleFunc("/+:{username}/{reponame}/objects/{regex1}/{regex2}", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetGitRegexRequestHandler(w, r, db, conf.Paths.RepoPath)
 	}).Methods("GET")
 
@@ -104,14 +104,14 @@ func runWeb(c *cli.Context) error {
 	staticFileHandler := http.StripPrefix("/public/", http.FileServer(staticFileDirectory))
 	// The "PathPrefix" method acts as a matcher, and matches all routes starting
 	// with "/public/", instead of the absolute route itself
-	r.PathPrefix("/public/").Handler(staticFileHandler).Methods("GET")
+	m.PathPrefix("/public/").Handler(staticFileHandler).Methods("GET")
 
-	http.Handle("/", r)
+	http.Handle("/", m)
 
 	allowedOrigins := []string{"*"}
 	allowedMethods := []string{"GET", "POST"}
 
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", conf.Server.HTTPPort), handlers.CORS(handlers.AllowedOrigins(allowedOrigins), handlers.AllowedMethods(allowedMethods))(r)))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", conf.Server.HTTPPort), handlers.CORS(handlers.AllowedOrigins(allowedOrigins), handlers.AllowedMethods(allowedMethods))(m)))
 
 	return nil
 }
