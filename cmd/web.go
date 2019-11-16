@@ -60,7 +60,7 @@ func runWeb(c *cli.Context) error {
 
 	r.Use(middleware.Middleware)
 
-	// Gin handlers
+	// Web handlers
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		GetHome(w, r, db, conf.Paths.TemplatePath)
 	}).Methods("GET")
@@ -86,11 +86,19 @@ func runWeb(c *cli.Context) error {
 		handler.GetRepoTree(w, r, db, conf.Paths.TemplatePath)
 	}).Methods("GET")
 
-	// // Git http backend service handlers
-	// r.POST("/+:username/:reponame/git-:rpc", handler.PostServiceRPC)
-	// r.GET("/+:username/:reponame/info/refs", handler.GetInfoRefs)
-	// r.GET("/+:username/:reponame/HEAD", handler.GetHEADFile)
-	// r.GET("/+:username/:reponame/objects/:regex1/:regex2", handler.GetGitRegexRequestHandler)
+	// Git http backend service handlers
+	r.HandleFunc("/+:{username}/{reponame}/git-{rpc}", func(w http.ResponseWriter, r *http.Request) {
+		handler.PostServiceRPC(w, r, db, conf.Paths.RepoPath)
+	}).Methods("POST")
+	r.HandleFunc("/+:{username}/{reponame}/info/refs", func(w http.ResponseWriter, r *http.Request) {
+		handler.GetInfoRefs(w, r, db, conf.Paths.RepoPath)
+	}).Methods("GET")
+	r.HandleFunc("/+:{username}/{reponame}/HEAD", func(w http.ResponseWriter, r *http.Request) {
+		handler.GetHEADFile(w, r, db, conf.Paths.RepoPath)
+	}).Methods("GET")
+	r.HandleFunc("/+:{username}/{reponame}/objects/{regex1}/{regex2}", func(w http.ResponseWriter, r *http.Request) {
+		handler.GetGitRegexRequestHandler(w, r, db, conf.Paths.RepoPath)
+	}).Methods("GET")
 
 	staticFileDirectory := http.Dir(conf.Paths.AssetPath)
 	staticFileHandler := http.StripPrefix("/public/", http.FileServer(staticFileDirectory))
