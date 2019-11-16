@@ -3,6 +3,7 @@ package handler
 import (
 	"bytes"
 	"compress/gzip"
+	"database/sql"
 	"fmt"
 	"net/http"
 	"os"
@@ -14,42 +15,41 @@ import (
 	"time"
 
 	errorhandler "sorcia/error"
-	"sorcia/setting"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gorilla/mux"
 )
 
 // GitHandlerReqStruct struct
 type GitHandlerReqStruct struct {
-	c    *gin.Context
+	w    http.ResponseWriter
+	r    *http.Request
 	RPC  string
 	Dir  string
 	File string
 }
 
-func applyGitHandlerReq(c *gin.Context, rpc string) *GitHandlerReqStruct {
-	username := c.Param("username")
-	reponame := c.Param("reponame")
+func applyGitHandlerReq(w http.ResponseWriter, r *http.Request, rpc, repoPath string) *GitHandlerReqStruct {
+	vars := mux.Vars(r)
+	username := vars["username"]
+	reponame := vars["reponame"]
 
-	// Get config values
-	conf := setting.GetConf()
+	repoDir := path.Join(repoPath, "+"+username+"/"+reponame)
 
-	repoDir := path.Join(conf.Paths.DataPath, "repositories"+"/"+username+"/"+reponame)
-
-	URLPath := c.Request.URL.Path
-	file := strings.Split(URLPath, "/~"+username+"/"+reponame)[1]
+	URLPath := r.URL.Path
+	file := strings.Split(URLPath, "/+"+username+"/"+reponame)[1]
 
 	return &GitHandlerReqStruct{
-		c:    c,
+		w:    w,
+		r:    r,
 		RPC:  rpc,
 		Dir:  repoDir,
 		File: file,
 	}
 }
 
-func getServiceType(c *gin.Context) string {
-	q := c.Request.URL.Query()
-	serviceType := q["service"][0]
+func getServiceType(r *http.Request) string {
+	vars := r.URL.Query()
+	serviceType := vars["service"][0]
 	if !strings.HasPrefix(serviceType, "git-") {
 		return ""
 	}
@@ -73,14 +73,14 @@ func (ghrs *GitHandlerReqStruct) sendFile(contentType string) {
 	reqFile := path.Join(ghrs.Dir, ghrs.File)
 	fi, err := os.Stat(reqFile)
 	if os.IsNotExist(err) {
-		ghrs.c.Writer.WriteHeader(http.StatusNotFound)
+		ghrs.w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
-	ghrs.c.Writer.Header().Set("Content-Type", contentType)
-	ghrs.c.Writer.Header().Set("Content-Length", fmt.Sprintf("%d", fi.Size()))
-	ghrs.c.Writer.Header().Set("Last-Modified", fi.ModTime().Format(http.TimeFormat))
-	ghrs.c.File(reqFile)
+	ghrs.w.Header().Set("Content-Type", contentType)
+	ghrs.w.Header().Set("Content-Length", fmt.Sprintf("%d", fi.Size()))
+	ghrs.w.Header().Set("Last-Modified", fi.ModTime().Format(http.TimeFormat))
+	http.ServeFile(ghrs.w, ghrs.r, reqFile)
 }
 
 func packetWrite(str string) []byte {
@@ -95,101 +95,100 @@ func packetFlush() []byte {
 	return []byte("0000")
 }
 
-func hdrNocache(c *gin.Context) {
-	c.Writer.Header().Set("Expires", "Fri, 01 Jan 1980 00:00:00 GMT")
-	c.Writer.Header().Set("Pragma", "no-cache")
-	c.Writer.Header().Set("Cache-Control", "no-cache, max-age=0, must-revalidate")
+func hdrNocache(w http.ResponseWriter) {
+	w.Header().Set("Expires", "Fri, 01 Jan 1980 00:00:00 GMT")
+	w.Header().Set("Pragma", "no-cache")
+	w.Header().Set("Cache-Control", "no-cache, max-age=0, must-revalidate")
 }
 
-func hdrCacheForever(c *gin.Context) {
+func hdrCacheForever(w http.ResponseWriter) {
 	now := time.Now().Unix()
 	expires := now + 31536000
-	c.Writer.Header().Set("Date", fmt.Sprintf("%d", now))
-	c.Writer.Header().Set("Expires", fmt.Sprintf("%d", expires))
-	c.Writer.Header().Set("Cache-Control", "public, max-age=31536000")
+	w.Header().Set("Date", fmt.Sprintf("%d", now))
+	w.Header().Set("Expires", fmt.Sprintf("%d", expires))
+	w.Header().Set("Cache-Control", "public, max-age=31536000")
 }
 
 // PostServiceRPC ...
-func PostServiceRPC(c *gin.Context) {
-	username := c.Param("username")
-	reponame := c.Param("reponame")
-	rpc := c.Param("rpc")
+func PostServiceRPC(w http.ResponseWriter, r *http.Request, db *sql.DB, repoPath string) {
+	vars := mux.Vars(r)
+	username := vars["username"]
+	reponame := vars["reponame"]
+	rpc := vars["rpc"]
 
 	if rpc != "upload-pack" && rpc != "receive-pack" {
 		return
 	}
 
-	c.Writer.Header().Set("Content-Type", fmt.Sprintf("application/x-git-%s-result", rpc))
-	c.Writer.Header().Set("Connection", "Keep-Alive")
-	c.Writer.Header().Set("Transfer-Encoding", "chunked")
-	c.Writer.Header().Set("X-Content-Type-Options", "nosniff")
-	c.Writer.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", fmt.Sprintf("application/x-git-%s-result", rpc))
+	w.Header().Set("Connection", "Keep-Alive")
+	w.Header().Set("Transfer-Encoding", "chunked")
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.WriteHeader(http.StatusOK)
 
-	reqBody := c.Request.Body
+	reqBody, err := r.GetBody()
+	errorhandler.CheckError(err)
 
 	// Handle GZIP
-	if c.Request.Header.Get("Content-Encoding") == "gzip" {
+	if r.Header.Get("Content-Encoding") == "gzip" {
 		_, err := gzip.NewReader(reqBody)
 		if err != nil {
 			errorhandler.CheckError(err)
-			c.Writer.WriteHeader(http.StatusInternalServerError)
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 	}
 
-	// Get config values
-	conf := setting.GetConf()
-
-	repoDir := (path.Join(conf.Paths.DataPath, "repositories/"+username+"/"+reponame))
+	repoDir := path.Join(repoPath, "+"+username+"/"+reponame)
 
 	cmd := exec.Command("git", rpc, "--stateless-rpc", repoDir)
 	// if rpc == "receive-pack" {
 	// 	username, password, authOK := c.Request.BasicAuth()
 	// 	if authOK == false {
-	// 		http.Error(c.Writer, "Not authorized", 401)
+	// 		http.Error(w, "Not authorized", 401)
 	// 		return
 	// 	}
 
 	// 	if username != "username" || password != "password" {
-	// 		http.Error(c.Writer, "Not authorized", 401)
+	// 		http.Error(w, "Not authorized", 401)
 	// 		return
 	// 	}
 	// }
 
-	username, password, authOK := c.Request.BasicAuth()
+	username, password, authOK := r.BasicAuth()
 	if authOK == false {
-		c.Writer.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
-		c.Writer.WriteHeader(401)
-		c.Writer.Write([]byte("Unauthorised.\n"))
+		w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte("Unauthorised.\n"))
 		return
 	}
 
 	if username != "username" || password != "password" {
-		c.Writer.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
-		c.Writer.WriteHeader(401)
-		c.Writer.Write([]byte("Not authorized.\n"))
+		w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte("Not authorized.\n"))
 		return
 	}
 
 	var stderr bytes.Buffer
 
 	cmd.Dir = repoDir
-	cmd.Stdout = c.Writer
+	cmd.Stdout = w
 	cmd.Stderr = &stderr
 	cmd.Stdin = reqBody
-	err := cmd.Run()
+	err = cmd.Run()
 	errorhandler.CheckError(err)
 	return
 }
 
 // GetInfoRefs ...
-func GetInfoRefs(c *gin.Context) {
-	hdrNocache(c)
+func GetInfoRefs(w http.ResponseWriter, r *http.Request, db *sql.DB, repoPath string) {
+	hdrNocache(w)
 
-	service := getServiceType(c)
+	service := getServiceType(r)
 	args := []string{service, "--stateless-rpc", "--advertise-refs", "."}
 
-	ghrs := applyGitHandlerReq(c, "")
+	ghrs := applyGitHandlerReq(w, r, "", repoPath)
 
 	if service != "upload-pack" && service != "receive-pack" {
 		updateServerInfo(ghrs.Dir)
@@ -198,19 +197,20 @@ func GetInfoRefs(c *gin.Context) {
 	}
 
 	refs := gitCommand(ghrs.Dir, args...)
-	c.Writer.Header().Set("Content-Type", fmt.Sprintf("application/x-git-%s-advertisement", service))
-	c.Writer.WriteHeader(http.StatusOK)
-	c.Writer.Write(packetWrite("# service=git-" + service + "\n"))
-	c.Writer.Write(packetFlush())
-	c.Writer.Write(refs)
+	w.Header().Set("Content-Type", fmt.Sprintf("application/x-git-%s-advertisement", service))
+	w.WriteHeader(http.StatusOK)
+	w.Write(packetWrite("# service=git-" + service + "\n"))
+	w.Write(packetFlush())
+	w.Write(refs)
 }
 
 // GetGitRegexRequestHandler ...
-func GetGitRegexRequestHandler(c *gin.Context) {
-	regex1 := c.Param("regex1")
-	regex2 := c.Param("regex2")
+func GetGitRegexRequestHandler(w http.ResponseWriter, r *http.Request, db *sql.DB, repoPath string) {
+	vars := mux.Vars(r)
+	regex1 := vars["regex1"]
+	regex2 := vars["regex2"]
 
-	ghrs := applyGitHandlerReq(c, "")
+	ghrs := applyGitHandlerReq(w, r, "", repoPath)
 
 	if regex1 == "info" {
 		if regex2 == "alternates" || regex2 == "http-alternates" {
@@ -235,37 +235,37 @@ func GetGitRegexRequestHandler(c *gin.Context) {
 
 // GetInfoPacks ...
 func (ghrs *GitHandlerReqStruct) GetInfoPacks() {
-	hdrCacheForever(ghrs.c)
+	hdrCacheForever(ghrs.w)
 	ghrs.sendFile("text/plain; charset=utf-8")
 }
 
 // GetLooseObject ...
 func (ghrs *GitHandlerReqStruct) GetLooseObject() {
-	hdrCacheForever(ghrs.c)
+	hdrCacheForever(ghrs.w)
 	ghrs.sendFile("application/x-git-loose-object")
 }
 
 // GetPackFile ...
 func (ghrs *GitHandlerReqStruct) GetPackFile() {
-	hdrCacheForever(ghrs.c)
+	hdrCacheForever(ghrs.w)
 	ghrs.sendFile("application/x-git-packed-objects")
 }
 
 // GetIdxFile ...
 func (ghrs *GitHandlerReqStruct) GetIdxFile() {
-	hdrCacheForever(ghrs.c)
+	hdrCacheForever(ghrs.w)
 	ghrs.sendFile("application/x-git-packed-objects-toc")
 }
 
 // GetTextFile ...
 func (ghrs *GitHandlerReqStruct) GetTextFile() {
-	hdrNocache(ghrs.c)
+	hdrNocache(ghrs.w)
 	ghrs.sendFile("text/plain")
 }
 
 // GetHEADFile ...
-func GetHEADFile(c *gin.Context) {
-	hdrNocache(c)
-	ghrs := applyGitHandlerReq(c, "")
+func GetHEADFile(w http.ResponseWriter, r *http.Request, db *sql.DB, repoPath string) {
+	hdrNocache(w)
+	ghrs := applyGitHandlerReq(w, r, "", repoPath)
 	ghrs.sendFile("text/plain")
 }
