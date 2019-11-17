@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -33,8 +34,6 @@ func applyGitHandlerReq(w http.ResponseWriter, r *http.Request, rpc, repoPath st
 	username := vars["username"]
 	reponame := vars["reponame"]
 
-	repoDir := path.Join(repoPath, "+"+username+"/"+reponame)
-
 	URLPath := r.URL.Path
 	file := strings.Split(URLPath, "/+"+username+"/"+reponame)[1]
 
@@ -42,7 +41,7 @@ func applyGitHandlerReq(w http.ResponseWriter, r *http.Request, rpc, repoPath st
 		w:    w,
 		r:    r,
 		RPC:  rpc,
-		Dir:  repoDir,
+		Dir:  repoPath,
 		File: file,
 	}
 }
@@ -126,8 +125,7 @@ func PostServiceRPC(w http.ResponseWriter, r *http.Request, db *sql.DB, repoPath
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.WriteHeader(http.StatusOK)
 
-	reqBody, err := r.GetBody()
-	errorhandler.CheckError(err)
+	reqBody := r.Body
 
 	// Handle GZIP
 	if r.Header.Get("Content-Encoding") == "gzip" {
@@ -139,7 +137,13 @@ func PostServiceRPC(w http.ResponseWriter, r *http.Request, db *sql.DB, repoPath
 		}
 	}
 
-	repoDir := path.Join(repoPath, "+"+username+"/"+reponame)
+	// dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// fmt.Println(dir)
+	repoDir := filepath.Join(repoPath, `\+`+username+`\`+reponame)
+	fmt.Println(repoDir)
 
 	cmd := exec.Command("git", rpc, "--stateless-rpc", repoDir)
 	// if rpc == "receive-pack" {
@@ -155,20 +159,20 @@ func PostServiceRPC(w http.ResponseWriter, r *http.Request, db *sql.DB, repoPath
 	// 	}
 	// }
 
-	username, password, authOK := r.BasicAuth()
-	if authOK == false {
-		w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
-		w.WriteHeader(http.StatusUnauthorized)
-		w.Write([]byte("Unauthorised.\n"))
-		return
-	}
+	// username, password, authOK := r.BasicAuth()
+	// if authOK == false {
+	// 	w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
+	// 	w.WriteHeader(http.StatusUnauthorized)
+	// 	w.Write([]byte("Unauthorised.\n"))
+	// 	return
+	// }
 
-	if username != "username" || password != "password" {
-		w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
-		w.WriteHeader(http.StatusUnauthorized)
-		w.Write([]byte("Not authorized.\n"))
-		return
-	}
+	// if username != "username" || password != "password" {
+	// 	w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
+	// 	w.WriteHeader(http.StatusUnauthorized)
+	// 	w.Write([]byte("Not authorized.\n"))
+	// 	return
+	// }
 
 	var stderr bytes.Buffer
 
@@ -176,19 +180,32 @@ func PostServiceRPC(w http.ResponseWriter, r *http.Request, db *sql.DB, repoPath
 	cmd.Stdout = w
 	cmd.Stderr = &stderr
 	cmd.Stdin = reqBody
-	err = cmd.Run()
-	errorhandler.CheckError(err)
-	return
+	if err := cmd.Run(); err != nil {
+		fmt.Println(fmt.Sprintf("Fail to serve RPC(%s): %v - %s", rpc, err, stderr.String()))
+		return
+	}
 }
 
 // GetInfoRefs ...
 func GetInfoRefs(w http.ResponseWriter, r *http.Request, db *sql.DB, repoPath string) {
+	vars := mux.Vars(r)
+	username := vars["username"]
+	reponame := vars["reponame"]
+
 	hdrNocache(w)
 
 	service := getServiceType(r)
 	args := []string{service, "--stateless-rpc", "--advertise-refs", "."}
 
-	ghrs := applyGitHandlerReq(w, r, "", repoPath)
+	// dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// fmt.Println(dir)
+	repoDir := filepath.Join(repoPath, `\+`+username+`\`+reponame)
+	fmt.Println(repoDir)
+
+	ghrs := applyGitHandlerReq(w, r, "", repoDir)
 
 	if service != "upload-pack" && service != "receive-pack" {
 		updateServerInfo(ghrs.Dir)
