@@ -87,16 +87,16 @@ func runWeb(c *cli.Context) error {
 	}).Methods("GET")
 
 	// Git http backend service handlers
-	m.HandleFunc("/+:{username}/{reponame}/git-{rpc}", func(w http.ResponseWriter, r *http.Request) {
+	m.HandleFunc("/+{username}/{reponame}/git-{rpc}", func(w http.ResponseWriter, r *http.Request) {
 		handler.PostServiceRPC(w, r, db, conf.Paths.RepoPath)
 	}).Methods("POST")
-	m.HandleFunc("/+:{username}/{reponame}/info/refs", func(w http.ResponseWriter, r *http.Request) {
+	m.HandleFunc("/+{username}/{reponame}/info/refs", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetInfoRefs(w, r, db, conf.Paths.RepoPath)
 	}).Methods("GET")
-	m.HandleFunc("/+:{username}/{reponame}/HEAD", func(w http.ResponseWriter, r *http.Request) {
+	m.HandleFunc("/+{username}/{reponame}/HEAD", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetHEADFile(w, r, db, conf.Paths.RepoPath)
 	}).Methods("GET")
-	m.HandleFunc("/+:{username}/{reponame}/objects/{regex1}/{regex2}", func(w http.ResponseWriter, r *http.Request) {
+	m.HandleFunc("/+{username}/{reponame}/objects/{regex1}/{regex2}", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetGitRegexRequestHandler(w, r, db, conf.Paths.RepoPath)
 	}).Methods("GET")
 
