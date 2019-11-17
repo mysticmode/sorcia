@@ -11,6 +11,7 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -19,6 +20,9 @@ import (
 
 	"github.com/gorilla/mux"
 )
+
+const windowsPathSeparator string = "\\"
+const linuxPathSeparator string = "/"
 
 // GitHandlerReqStruct struct
 type GitHandlerReqStruct struct {
@@ -115,6 +119,8 @@ func PostServiceRPC(w http.ResponseWriter, r *http.Request, db *sql.DB, repoPath
 	reponame := vars["reponame"]
 	rpc := vars["rpc"]
 
+	username = fmt.Sprintf("+%s", username)
+
 	if rpc != "upload-pack" && rpc != "receive-pack" {
 		return
 	}
@@ -137,13 +143,24 @@ func PostServiceRPC(w http.ResponseWriter, r *http.Request, db *sql.DB, repoPath
 		}
 	}
 
-	// dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// fmt.Println(dir)
-	repoDir := filepath.Join(repoPath, `\+`+username+`\`+reponame)
-	fmt.Println(repoDir)
+	var repoDir string
+
+	if repoPath == "." || repoPath == "" {
+		projectRootDir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+		errorhandler.CheckError(err)
+
+		if runtime.GOOS == "windows" {
+			repoDir = filepath.Join(projectRootDir, windowsPathSeparator+"repositories"+windowsPathSeparator+username+windowsPathSeparator+reponame)
+		} else {
+			repoDir = filepath.Join(projectRootDir, linuxPathSeparator+"repositories"+linuxPathSeparator+username+linuxPathSeparator+reponame)
+		}
+	} else {
+		if runtime.GOOS == "windows" {
+			repoDir = filepath.Join(repoPath, windowsPathSeparator+username+windowsPathSeparator+reponame)
+		} else {
+			repoDir = filepath.Join(repoPath, linuxPathSeparator+username+linuxPathSeparator+reponame)
+		}
+	}
 
 	cmd := exec.Command("git", rpc, "--stateless-rpc", repoDir)
 	// if rpc == "receive-pack" {
@@ -189,21 +206,34 @@ func PostServiceRPC(w http.ResponseWriter, r *http.Request, db *sql.DB, repoPath
 // GetInfoRefs ...
 func GetInfoRefs(w http.ResponseWriter, r *http.Request, db *sql.DB, repoPath string) {
 	vars := mux.Vars(r)
-	username := vars["username"]
-	reponame := vars["reponame"]
+	var username string = vars["username"]
+	var reponame string = vars["reponame"]
+
+	username = fmt.Sprintf("+%s", username)
 
 	hdrNocache(w)
 
 	service := getServiceType(r)
 	args := []string{service, "--stateless-rpc", "--advertise-refs", "."}
 
-	// dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// fmt.Println(dir)
-	repoDir := filepath.Join(repoPath, `\+`+username+`\`+reponame)
-	fmt.Println(repoDir)
+	var repoDir string
+
+	if repoPath == "." || repoPath == "" {
+		projectRootDir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+		errorhandler.CheckError(err)
+
+		if runtime.GOOS == "windows" {
+			repoDir = filepath.Join(projectRootDir, windowsPathSeparator+"repositories"+windowsPathSeparator+username+windowsPathSeparator+reponame)
+		} else {
+			repoDir = filepath.Join(projectRootDir, linuxPathSeparator+"repositories"+linuxPathSeparator+username+linuxPathSeparator+reponame)
+		}
+	} else {
+		if runtime.GOOS == "windows" {
+			repoDir = filepath.Join(repoPath, windowsPathSeparator+username+windowsPathSeparator+reponame)
+		} else {
+			repoDir = filepath.Join(repoPath, linuxPathSeparator+username+linuxPathSeparator+reponame)
+		}
+	}
 
 	ghrs := applyGitHandlerReq(w, r, "", repoDir)
 
