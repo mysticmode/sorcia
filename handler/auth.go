@@ -249,7 +249,7 @@ func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath s
 
 		// Create repositories directory
 		// 0755 - The owner can read, write, execute. Everyone else can read and execute but not modify the file.
-		repoDir := path.Join(dataPath, "repositories/"+registerRequest.Username)
+		repoDir := path.Join(dataPath, "repositories/"+"+"+registerRequest.Username)
 		if _, err := os.Stat(repoDir); os.IsNotExist(err) {
 			os.MkdirAll(repoDir, 0755)
 		}
