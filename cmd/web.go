@@ -18,6 +18,7 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
+	gitviahttp "gopkg.in/mysticmode/gitviahttp.v1"
 	"github.com/urfave/cli"
 
 	// PostgreSQL driver
@@ -85,20 +86,27 @@ func runWeb(c *cli.Context) error {
 	m.HandleFunc("/+{username}/{reponame}/tree", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetRepoTree(w, r, db, conf.Paths.TemplatePath)
 	}).Methods("GET")
+	m.PathPrefix("/+{username}/{reponame[\\d\\w-_\\.]+\\.git$}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gitviahttp.Context(w, r, "D:\\Work\\sorcia\\repositories")
+	}).Methods("GET", "POST")
 
 	// Git http backend service handlers
-	m.HandleFunc("/+{username}/{reponame}/git-{rpc}", func(w http.ResponseWriter, r *http.Request) {
-		handler.PostServiceRPC(w, r, db, conf.Paths.RepoPath)
-	}).Methods("POST")
-	m.HandleFunc("/+{username}/{reponame}/info/refs", func(w http.ResponseWriter, r *http.Request) {
-		handler.GetInfoRefs(w, r, db, conf.Paths.RepoPath)
-	}).Methods("GET")
-	m.HandleFunc("/+{username}/{reponame}/HEAD", func(w http.ResponseWriter, r *http.Request) {
-		handler.GetHEADFile(w, r, db, conf.Paths.RepoPath)
-	}).Methods("GET")
-	m.HandleFunc("/+{username}/{reponame}/objects/{regex1}/{regex2}", func(w http.ResponseWriter, r *http.Request) {
-		handler.GetGitRegexRequestHandler(w, r, db, conf.Paths.RepoPath)
-	}).Methods("GET")
+	// m.HandleFunc("/+{username}/{reponame}/git-{rpc}", func(w http.ResponseWriter, r *http.Request) {
+	// 	// handler.PostServiceRPC(w, r, db, conf.Paths.RepoPath)
+	// 	gitviahttp.Context(w, r, "D:\\Work\\sorcia\\repositories")
+	// }).Methods("POST")
+	// m.HandleFunc("/+{username}/{reponame}/info/refs", func(w http.ResponseWriter, r *http.Request) {
+	// 	// handler.GetInfoRefs(w, r, db, conf.Paths.RepoPath)
+	// 	gitviahttp.Context(w, r, "D:\\Work\\sorcia\\repositories")
+	// }).Methods("GET")
+	// m.HandleFunc("/+{username}/{reponame}/HEAD", func(w http.ResponseWriter, r *http.Request) {
+	// 	// handler.GetHEADFile(w, r, db, conf.Paths.RepoPath)
+	// 	gitviahttp.Context(w, r, "D:\\Work\\sorcia\\repositories")
+	// }).Methods("GET")
+	// m.HandleFunc("/+{username}/{reponame}/objects/{regex1}/{regex2}", func(w http.ResponseWriter, r *http.Request) {
+	// 	// handler.GetGitRegexRequestHandler(w, r, db, conf.Paths.RepoPath)
+	// 	gitviahttp.Context(w, r, "D:\\Work\\sorcia\\repositories")
+	// }).Methods("GET")
 
 	staticFileDirectory := http.Dir(conf.Paths.AssetPath)
 	staticFileHandler := http.StripPrefix("/public/", http.FileServer(staticFileDirectory))
