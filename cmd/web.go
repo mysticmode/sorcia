@@ -18,7 +18,7 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
-	gitviahttp "gopkg.in/mysticmode/gitviahttp.v1"
+	"gopkg.in/mysticmode/gitviahttp.v1"
 	"github.com/urfave/cli"
 
 	// PostgreSQL driver
