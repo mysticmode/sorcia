@@ -13,4 +13,5 @@ require (
 	github.com/urfave/cli v1.22.1
 	golang.org/x/crypto v0.0.0-20191112222119-e1110fd1c708
 	gopkg.in/ini.v1 v1.51.0
+	gopkg.in/mysticmode/gitviahttp.v1 v1.1.2
 )
