@@ -36,7 +36,7 @@ var Web = cli.Command{
 var decoder = schema.NewDecoder()
 
 func runWeb(c *cli.Context) error {
-	// Gin initiate
+	// Mux initiate
 	m := mux.NewRouter()
 
 	// Get config values
@@ -87,7 +87,7 @@ func runWeb(c *cli.Context) error {
 		handler.GetRepoTree(w, r, db, conf.Paths.TemplatePath)
 	}).Methods("GET")
 	m.PathPrefix("/+{username}/{reponame[\\d\\w-_\\.]+\\.git$}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		gitviahttp.Context(w, r, "D:\\Work\\sorcia\\repositories")
+		gitviahttp.Context(w, r, conf.Paths.RepoPath)
 	}).Methods("GET", "POST")
 
 	// Git http backend service handlers
