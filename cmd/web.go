@@ -53,12 +53,6 @@ func runWeb(c *cli.Context) error {
 	model.CreateAccount(db)
 	model.CreateRepo(db)
 
-	// r.Use(
-	// 	middleware.CORSMiddleware(),
-	// 	middleware.APIMiddleware(db),
-	// 	middleware.UserMiddleware(db),
-	// )
-
 	m.Use(middleware.Middleware)
 
 	// Web handlers
