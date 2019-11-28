@@ -28,30 +28,6 @@
                 margin-right: 0;
             }
         }
-
-        &--dashboard {
-            & a:nth-child(1) {
-                color: $text-color;
-            }
-        }
-
-        &--explore {
-            & a:nth-child(2) {
-                color: $text-color;
-            }
-        }
-
-        &--man {
-            & a:nth-child(3) {
-                color: $text-color;
-            }
-        }
-
-        &--meta {
-            & a:nth-child(4) {
-                color: $text-color;
-            }
-        }
     }
 
     &__right {
@@ -63,10 +39,10 @@
         & a {
             text-decoration: none;
             color: $text-color-2;
-            margin-left: 20px;
+            margin-right: 20px;
 
-            &:first-child {
-                margin-left: 0;
+            &:last-child {
+                margin-right: 0;
             }
 
             &:hover {
