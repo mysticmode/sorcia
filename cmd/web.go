@@ -118,11 +118,12 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, templatePath st
 		username := model.GetUsernameFromToken(db, token)
 		repos := model.GetReposFromUserID(db, userID)
 
-		lp := path.Join(templatePath, "templates", "layout.tmpl")
-		hp := path.Join(templatePath, "templates", "header.tmpl")
-		ip := path.Join(templatePath, "templates", "index.tmpl")
+		layoutPage := path.Join(templatePath, "templates", "layout.tmpl")
+		headerPage := path.Join(templatePath, "templates", "header.tmpl")
+		indexPage := path.Join(templatePath, "templates", "index.tmpl")
+		footerPage := path.Join(templatePath, "templates", "footer.tmpl")
 
-		tmpl, err := template.ParseFiles(lp, hp, ip)
+		tmpl, err := template.ParseFiles(layoutPage, headerPage, indexPage, footerPage)
 		errorhandler.CheckError(err)
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
