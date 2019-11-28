@@ -65,8 +65,9 @@ func GetLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, templatePath s
 		layoutPage := path.Join(templatePath, "templates", "layout.tmpl")
 		headerPage := path.Join(templatePath, "templates", "header.tmpl")
 		loginPage := path.Join(templatePath, "templates", "login.tmpl")
+		footerPage := path.Join(templatePath, "templates", "footer.tmpl")
 
-		tmpl, err := template.ParseFiles(layoutPage, headerPage, loginPage)
+		tmpl, err := template.ParseFiles(layoutPage, headerPage, loginPage, footerPage)
 		errorhandler.CheckError(err)
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")

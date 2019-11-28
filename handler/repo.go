@@ -34,8 +34,9 @@ func GetCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, templateP
 		layoutPage := path.Join(templatePath, "templates", "layout.tmpl")
 		headerPage := path.Join(templatePath, "templates", "header.tmpl")
 		createRepoPage := path.Join(templatePath, "templates", "create-repo.tmpl")
+		footerPage := path.Join(templatePath, "templates", "footer.tmpl")
 
-		tmpl, err := template.ParseFiles(layoutPage, headerPage, createRepoPage)
+		tmpl, err := template.ParseFiles(layoutPage, headerPage, createRepoPage, footerPage)
 		errorhandler.CheckError(err)
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -154,8 +155,9 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, templatePath st
 		layoutPage := path.Join(templatePath, "templates", "layout.tmpl")
 		headerPage := path.Join(templatePath, "templates", "header.tmpl")
 		repoSummaryPage := path.Join(templatePath, "templates", "repo-summary.tmpl")
+		footerPage := path.Join(templatePath, "templates", "footer.tmpl")
 
-		tmpl, err := template.ParseFiles(layoutPage, headerPage, repoSummaryPage)
+		tmpl, err := template.ParseFiles(layoutPage, headerPage, repoSummaryPage, footerPage)
 		errorhandler.CheckError(err)
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -229,8 +231,9 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, templatePat
 		layoutPage := path.Join(templatePath, "templates", "layout.tmpl")
 		headerPage := path.Join(templatePath, "templates", "header.tmpl")
 		repoTreePage := path.Join(templatePath, "templates", "repo-tree.tmpl")
+		footerPage := path.Join(templatePath, "templates", "footer.tmpl")
 
-		tmpl, err := template.ParseFiles(layoutPage, headerPage, repoTreePage)
+		tmpl, err := template.ParseFiles(layoutPage, headerPage, repoTreePage, footerPage)
 		errorhandler.CheckError(err)
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
