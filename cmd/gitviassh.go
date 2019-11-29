@@ -35,17 +35,6 @@ func RunSSH(conf *setting.BaseStruct) {
 	// An SSH server is represented by a ServerConfig, which holds
 	// certificate details and handles authentication of ServerConns.
 	config := &ssh.ServerConfig{
-		// Remove to disable password auth.
-		PasswordCallback: func(c ssh.ConnMetadata, pass []byte) (*ssh.Permissions, error) {
-			// Should use constant-time compare (or better, salt+hash) in
-			// a production setting.
-			if c.User() == "testuser" && string(pass) == "tiger" {
-				return nil, nil
-			}
-			return nil, fmt.Errorf("password rejected for %q", c.User())
-		},
-
-		// Remove to disable public key auth.
 		PublicKeyCallback: func(c ssh.ConnMetadata, pubKey ssh.PublicKey) (*ssh.Permissions, error) {
 			if authorizedKeysMap[string(pubKey.Marshal())] {
 				return &ssh.Permissions{
