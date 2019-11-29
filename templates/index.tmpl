@@ -8,7 +8,10 @@
         </div>
     </div>
     <div class="git__repos">
-        <input type="text" class="git__repos__search" placeholder="Type here to search for repositories.." />
+        <div class="git__repos__search">
+            <input type="text" placeholder="Search for repositories.." />
+            <button class="button button--primary">Search</button>
+        </div>
         <ul class="repos">
             {{range .Repos.Repositories}}
             <li>
