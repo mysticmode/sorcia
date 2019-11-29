@@ -137,25 +137,33 @@ func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath, tem
 
 			http.Redirect(w, r, "/", http.StatusFound)
 		} else {
-			invalidLoginCredentials(w, r)
+			invalidLoginCredentials(w, r, templatePath)
 		}
 	} else {
-		invalidLoginCredentials(w, r)
+		invalidLoginCredentials(w, r, templatePath)
 	}
 }
 
-func invalidLoginCredentials(w http.ResponseWriter, r *http.Request) {
-	tmpl := template.Must(template.ParseFiles("./templates/login.tmpl"))
+func invalidLoginCredentials(w http.ResponseWriter, r *http.Request, templatePath string) {
+	layoutPage := path.Join(templatePath, "templates", "layout.tmpl")
+	headerPage := path.Join(templatePath, "templates", "header.tmpl")
+	loginPage := path.Join(templatePath, "templates", "login.tmpl")
+	footerPage := path.Join(templatePath, "templates", "footer.tmpl")
+
+	tmpl, err := template.ParseFiles(layoutPage, headerPage, loginPage, footerPage)
+	errorhandler.CheckError(err)
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
 
 	data := LoginPageResponse{
+		IsHeaderLogin:      true,
+		HeaderActiveMenu:   "",
 		LoginErrMessage:    "Your username or password is incorrect.",
 		RegisterErrMessage: "",
 	}
 
-	tmpl.Execute(w, data)
+	tmpl.ExecuteTemplate(w, "layout", data)
 }
 
 func isAlnumOrHyphen(s string) bool {
