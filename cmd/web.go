@@ -25,12 +25,9 @@ import (
 
 var decoder = schema.NewDecoder()
 
-func runWeb() {
+func RunWeb(conf *setting.BaseStruct) {
 	// Mux initiate
 	m := mux.NewRouter()
-
-	// Get config values
-	conf := setting.GetConf()
 
 	// Create repositories directory
 	// 0755 - The owner can read, write, execute. Everyone else can read and execute but not modify the file.
