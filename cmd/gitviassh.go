@@ -6,10 +6,18 @@ import (
 	"log"
 	"net"
 	"sorcia/setting"
+	"strings"
 
 	"golang.org/x/crypto/ssh"
-	"golang.org/x/crypto/ssh/terminal"
 )
+
+func cleanCommand(cmd string) string {
+	i := strings.Index(cmd, "git")
+	if i == -1 {
+		return cmd
+	}
+	return cmd[i:]
+}
 
 // RunSSH ...
 func RunSSH(conf *setting.BaseStruct) {
@@ -98,25 +106,19 @@ func RunSSH(conf *setting.BaseStruct) {
 		}
 
 		// Sessions have out-of-band requests such as "shell",
-		// "pty-req" and "env".  Here we handle only the
+		// "pty-req" and "env". Here we handle only the
 		// "shell" request.
 		go func(in <-chan *ssh.Request) {
+			defer channel.Close()
+
 			for req := range in {
-				req.Reply(req.Type == "shell", nil)
+				payload := cleanCommand(string(req.Payload))
+				fmt.Println(req.Type)
+
+				cmdName := strings.TrimLeft(payload, "'()")
+				fmt.Println("cmdName")
+				fmt.Println(cmdName)
 			}
 		}(requests)
-
-		term := terminal.NewTerminal(channel, "> ")
-
-		go func() {
-			defer channel.Close()
-			for {
-				line, err := term.ReadLine()
-				if err != nil {
-					break
-				}
-				fmt.Println(line)
-			}
-		}()
 	}
 }
