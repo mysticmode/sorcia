@@ -116,7 +116,6 @@ func handleServer(keyID string, chans <-chan ssh.NewChannel) {
 }
 
 func runSSH(config *ssh.ServerConfig, host, port string) {
-	fmt.Println("coming")
 	listener, err := net.Listen("tcp", host+":"+port)
 	if err != nil {
 		log.Fatal("failed to listen for connection: ", err)
