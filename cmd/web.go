@@ -25,6 +25,7 @@ import (
 
 var decoder = schema.NewDecoder()
 
+// RunWeb ...
 func RunWeb(conf *setting.BaseStruct) {
 	// Mux initiate
 	m := mux.NewRouter()
