@@ -1,0 +1,17 @@
+[Unit]
+Description=sorcia
+After=network.target
+After=postgresql.service
+Requires=postgresql.service
+
+[Service]
+ExecStart=/home/git/sorcia/sorcia web
+TimeoutStartSec=3600
+Restart=always
+RestartSec=10
+WorkingDirectory=/home/git/sorcia
+User=root
+Group=root
+
+[Install]
+WantedBy=postgresql.service
