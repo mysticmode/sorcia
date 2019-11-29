@@ -4,6 +4,7 @@ Sorcia is a fast and minimal web frontend for git repositories which is written 
 ### pre-requisites
   - Ubuntu 18.04 LTS
   - PostgreSQL 11
+  - Go 1.13
  
 ### installation
 Let's create a user and databse on PostgreSQL 11
