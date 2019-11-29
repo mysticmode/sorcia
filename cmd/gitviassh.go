@@ -2,9 +2,11 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net"
+	"os/exec"
 	"sorcia/setting"
 	"strings"
 
@@ -118,6 +120,46 @@ func RunSSH(conf *setting.BaseStruct) {
 				cmdName := strings.TrimLeft(payload, "'()")
 				fmt.Println("cmdName")
 				fmt.Println(cmdName)
+
+				cmd := exec.Command(strings.Split(cmdName, " ")[0], "joyread.git")
+				cmd.Dir = "D:\\Work\\sorcia\\repositories\\+mysticmode"
+
+				stdout, err := cmd.StdoutPipe()
+				if err != nil {
+					log.Printf("ssh: cant open stdout pipe: %v", err)
+					return
+				}
+
+				stderr, err := cmd.StderrPipe()
+				if err != nil {
+					log.Printf("ssh: cant open stderr pipe: %v", err)
+					return
+				}
+
+				input, err := cmd.StdinPipe()
+				if err != nil {
+					log.Printf("ssh: cant open stdin pipe: %v", err)
+					return
+				}
+
+				if err = cmd.Start(); err != nil {
+					log.Printf("ssh: start error: %v", err)
+					return
+				}
+
+				req.Reply(true, nil)
+				go io.Copy(input, channel)
+				io.Copy(channel, stdout)
+				io.Copy(channel.Stderr(), stderr)
+
+				if err = cmd.Wait(); err != nil {
+					log.Printf("ssh: command failed: %v", err)
+					return
+				}
+
+				channel.SendRequest("exit-status", false, []byte{0, 0, 0, 0})
+
+				return
 			}
 		}(requests)
 	}
