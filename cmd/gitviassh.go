@@ -184,7 +184,7 @@ func RunSSH(conf *setting.BaseStruct) {
 	}
 
 	// keyPath := filepath.Join(conf.Paths.DataPath, "ssh/sorcia.rsa")
-	keyPath := "C:\\Users\\mysticmode\\.ssh\\id_rsa"
+	keyPath := "/home/git/.ssh/id_rsa"
 	// if _, err := os.Stat(keyPath); err != nil || !os.IsExist(err) {
 	// 	if err := os.MkdirAll(filepath.Dir(keyPath), os.ModePerm); err != nil {
 	// 		fmt.Errorf("Couldn't create the directory %v", err)
