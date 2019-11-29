@@ -176,8 +176,9 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, templatePath st
 				layoutPage := path.Join(templatePath, "templates", "layout.tmpl")
 				headerPage := path.Join(templatePath, "templates", "header.tmpl")
 				repoSummaryPage := path.Join(templatePath, "templates", "repo-summary.tmpl")
+				footerPage := path.Join(templatePath, "templates", "footer.tmpl")
 
-				tmpl, err := template.ParseFiles(layoutPage, headerPage, repoSummaryPage)
+				tmpl, err := template.ParseFiles(layoutPage, headerPage, repoSummaryPage, footerPage)
 				errorhandler.CheckError(err)
 
 				w.Header().Set("Content-Type", "text/html; charset=utf-8")
