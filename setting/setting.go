@@ -17,6 +17,7 @@ var conf BaseStruct
 // BaseStruct struct
 type BaseStruct struct {
 	AppMode  string
+	Version  string
 	Paths    PathsStruct
 	Server   ServerStruct
 	Postgres PostgresStruct
@@ -60,6 +61,7 @@ func init() {
 
 	conf = BaseStruct{
 		AppMode: cfg.Section("").Key("app_mode").String(),
+		Version: cfg.Section("").Key("version").String(),
 		Paths: PathsStruct{
 			AssetPath:    cfg.Section("paths").Key("asset_path").String(),
 			TemplatePath: cfg.Section("paths").Key("template_path").String(),

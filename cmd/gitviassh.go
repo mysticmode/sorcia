@@ -17,9 +17,7 @@ func parseSSHCmd(cmd string) (string, string) {
 	return ss[0], ss[1]
 }
 
-func runSSH() {
-	// Get config values
-	conf := setting.GetConf()
+func RunSSH(conf *setting.BaseStruct) {
 
 	sshCmd := os.Getenv("SSH_ORIGINAL_COMMAND")
 	if len(sshCmd) == 0 {
