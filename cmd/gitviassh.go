@@ -68,7 +68,7 @@ func handleServer(keyID string, chans <-chan ssh.NewChannel) {
 					cmdName := strings.TrimLeft(payload, "'()")
 
 					cmd := exec.Command(strings.Split(cmdName, " ")[0], "joyread.git")
-					cmd.Dir = "D:\\Work\\sorcia\\repositories\\+mysticmode"
+					cmd.Dir = "/home/git/sorcia/repositories/+mysticmode"
 
 					stdout, err := cmd.StdoutPipe()
 					if err != nil {
@@ -147,7 +147,7 @@ func RunSSH(conf *setting.BaseStruct) {
 	// Public key authentication is done by comparing
 	// the public key of a received connection
 	// with the entries in the authorized_keys file.
-	authorizedKeysBytes, err := ioutil.ReadFile("C:\\Users\\mysticmode\\.ssh\\authorized_keys")
+	authorizedKeysBytes, err := ioutil.ReadFile("/home/git/.ssh/authorized_keys")
 	if err != nil {
 		log.Fatalf("Failed to load authorized_keys, err: %v", err)
 	}
