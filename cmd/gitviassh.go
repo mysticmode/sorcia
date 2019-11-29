@@ -147,7 +147,7 @@ func RunSSH(conf *setting.BaseStruct) {
 	// Public key authentication is done by comparing
 	// the public key of a received connection
 	// with the entries in the authorized_keys file.
-	authorizedKeysBytes, err := ioutil.ReadFile("/home/git/.ssh/authorized_keys")
+	authorizedKeysBytes, err := ioutil.ReadFile("C:\\Users\\mysticmode\\.ssh\\id_rsa.pub")
 	if err != nil {
 		log.Fatalf("Failed to load authorized_keys, err: %v", err)
 	}
