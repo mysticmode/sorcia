@@ -1,24 +1,23 @@
 package main
 
 import (
+	"fmt"
 	"os"
-	"sorcia/cmd"
-
-	"github.com/urfave/cli"
 )
 
-// Version ...
-// Write sorcia version here
-const Version = "0.1.0"
-
 func main() {
-	app := cli.NewApp()
-	app.Name = "sorcia"
-	app.Usage = "Self-hosted and modular services for your Git projects"
-	app.Version = Version
-	app.Commands = []cli.Command{
-		cmd.Web,
-		cmd.SSHServe,
+	if len(os.Args) < 2 {
+		fmt.Println("Expected 'web' or 'gitviassh' subcommands")
+		os.Exit(1)
 	}
-	app.Run(os.Args)
+
+	switch os.Args[1] {
+	case "web":
+		cmd.runWeb()
+	case "gitviassh":
+		cmd.runSSH()
+	default:
+		fmt.Println("Expected 'web' or 'gitviassh' subcommands")
+		os.Exit(1)
+	}
 }
