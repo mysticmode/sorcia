@@ -215,5 +215,5 @@ func RunSSH(conf *setting.BaseStruct) {
 	}
 	config.AddHostKey(private)
 
-	runSSH(config, "0.0.0.0", "1938")
+	runSSH(config, "0.0.0.0", "22")
 }
