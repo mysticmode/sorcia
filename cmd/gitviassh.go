@@ -6,17 +6,7 @@ import (
 	"os/exec"
 	"sorcia/setting"
 	"strings"
-
-	"github.com/urfave/cli"
 )
-
-// SSHServe ...
-var SSHServe = cli.Command{
-	Name:        "sshserve",
-	Usage:       "Start ssh server",
-	Description: `This serves git via SSH`,
-	Action:      runSSH,
-}
 
 func parseSSHCmd(cmd string) (string, string) {
 	ss := strings.SplitN(cmd, " ", 2)
@@ -27,8 +17,7 @@ func parseSSHCmd(cmd string) (string, string) {
 	return ss[0], ss[1]
 }
 
-func runSSH(c *cli.Context) error {
-
+func runSSH() {
 	// Get config values
 	conf := setting.GetConf()
 
@@ -36,7 +25,6 @@ func runSSH(c *cli.Context) error {
 	if len(sshCmd) == 0 {
 		println("Hi there, You've successfully authenticated, but sorcia does not provide shell access.")
 		println("If this is unexpected, please log in with password and setup sorcia under another user.")
-		return nil
 	}
 
 	gitVerb, args := parseSSHCmd(sshCmd)
@@ -63,7 +51,6 @@ func runSSH(c *cli.Context) error {
 
 	if gitVerb != "git-upload-pack" && gitVerb != "git-upload-archive" && gitVerb != "git-receive-pack" {
 		fmt.Println("Unknown git command")
-		return nil
 	}
 
 	var cmdSSHServe *exec.Cmd
@@ -76,6 +63,4 @@ func runSSH(c *cli.Context) error {
 	if err := cmdSSHServe.Run(); err != nil {
 		fmt.Printf("Fail to execute git command: %v", err)
 	}
-
-	return nil
 }

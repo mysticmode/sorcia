@@ -18,24 +18,14 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
-	"github.com/urfave/cli"
-	"gopkg.in/mysticmode/gitviahttp.v1"
 
 	// PostgreSQL driver
 	_ "github.com/lib/pq"
 )
 
-// Web ...
-var Web = cli.Command{
-	Name:        "web",
-	Usage:       "Start web server",
-	Description: `This starts the sorica web server`,
-	Action:      runWeb,
-}
-
 var decoder = schema.NewDecoder()
 
-func runWeb(c *cli.Context) error {
+func runWeb() {
 	// Mux initiate
 	m := mux.NewRouter()
 
@@ -81,7 +71,7 @@ func runWeb(c *cli.Context) error {
 		handler.GetRepoTree(w, r, db, conf.Paths.TemplatePath)
 	}).Methods("GET")
 	m.PathPrefix("/+{username}/{reponame[\\d\\w-_\\.]+\\.git$}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		gitviahttp.Context(w, r, conf.Paths.RepoPath)
+		handler.GitviaHTTP(w, r, conf.Paths.RepoPath)
 	}).Methods("GET", "POST")
 
 	staticFileDirectory := http.Dir(conf.Paths.AssetPath)
@@ -96,8 +86,6 @@ func runWeb(c *cli.Context) error {
 	allowedMethods := []string{"GET", "POST"}
 
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", conf.Server.HTTPPort), handlers.CORS(handlers.AllowedOrigins(allowedOrigins), handlers.AllowedMethods(allowedMethods))(m)))
-
-	return nil
 }
 
 // IndexPageResponse struct
