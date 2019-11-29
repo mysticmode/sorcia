@@ -5,7 +5,7 @@ Sorcia is a fast and minimal web frontend for git repositories which is written 
   - Ubuntu 18.04 LTS
   - PostgreSQL 11
  
-## installation
+### installation
 Let's create a user and databse on PostgreSQL 11
 ```
 CREATE DATABASE sorciadb;
