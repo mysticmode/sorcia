@@ -1,30 +1,30 @@
 server {
     listen 80 default_server;
     listen [::]:80 default_server;
-    server_name sorcia.io www.sorcia.io;
-    return 301 https://sorcia.io$request_uri;
+    server_name example.com www.example.com;
+    return 301 https://example.com$request_uri;
 }
 
 server {
     listen 443 ssl;
     listen [::]:443 ssl;
-    server_name www.sorcia.io;
+    server_name www.example.com;
 
     ssl on;
-    ssl_certificate /etc/ssl/sorcia.io.pem;
-    ssl_certificate_key /etc/ssl/sorcia.io.key;
+    ssl_certificate /etc/ssl/example.com.pem;
+    ssl_certificate_key /etc/ssl/example.com.key;
 
-    return 301 https://sorcia.io$request_uri;
+    return 301 https://example.com$request_uri;
 }
 
 server {
     listen 443 ssl;
     listen [::]:443 ssl;
-    server_name sorcia.io;
+    server_name example.com;
 
     ssl on;
-    ssl_certificate /etc/ssl/sorcia.io.pem;
-    ssl_certificate_key /etc/ssl/sorcia.io.key;
+    ssl_certificate /etc/ssl/example.com.pem;
+    ssl_certificate_key /etc/ssl/example.com.key;
 
     location / {
         proxy_set_header X-Real-IP $remote_addr;
