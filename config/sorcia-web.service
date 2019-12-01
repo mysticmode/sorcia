@@ -10,8 +10,8 @@ TimeoutStartSec=3600
 Restart=always
 RestartSec=10
 WorkingDirectory=/home/git/sorcia
-User=root
-Group=root
+User=git
+Group=git
 
 [Install]
 WantedBy=postgresql.service
