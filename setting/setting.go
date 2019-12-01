@@ -26,12 +26,8 @@ type BaseStruct struct {
 
 // PathsStruct struct
 type PathsStruct struct {
-	AssetPath    string
-	TemplatePath string
-	CaptchaPath  string
-	DataPath     string
-	ProjectRoot  string
-	RepoPath     string
+	ProjectRoot string
+	RepoPath    string
 }
 
 // ServerStruct struct
@@ -52,7 +48,7 @@ type PostgresStruct struct {
 func init() {
 	cfg, err := ini.Load("config/app.ini")
 	if err != nil {
-		cfg, err = ini.Load("/home/git/sorcia-core/config/app.ini")
+		cfg, err = ini.Load("/home/git/sorcia/config/app.ini")
 		if err != nil {
 			fmt.Printf("Fail to read file: %v", err)
 			os.Exit(1)
@@ -63,12 +59,8 @@ func init() {
 		AppMode: cfg.Section("").Key("app_mode").String(),
 		Version: cfg.Section("").Key("version").String(),
 		Paths: PathsStruct{
-			AssetPath:    cfg.Section("paths").Key("asset_path").String(),
-			TemplatePath: cfg.Section("paths").Key("template_path").String(),
-			CaptchaPath:  cfg.Section("paths").Key("captcha_path").String(),
-			DataPath:     cfg.Section("paths").Key("data_path").String(),
-			ProjectRoot:  cfg.Section("paths").Key("project_root").String(),
-			RepoPath:     cfg.Section("paths").Key("repo_path").String(),
+			ProjectRoot: cfg.Section("paths").Key("project_root").String(),
+			RepoPath:    cfg.Section("paths").Key("repo_path").String(),
 		},
 		Server: ServerStruct{
 			HTTPPort: cfg.Section("server").Key("http_port").String(),
