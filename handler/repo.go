@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os/exec"
 	"path"
+	"path/filepath"
 
 	errorhandler "sorcia/error"
 	"sorcia/model"
@@ -24,17 +25,17 @@ type GetCreateRepoResponse struct {
 }
 
 // GetCreateRepo ...
-func GetCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, templatePath string) {
+func GetCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	userPresent := w.Header().Get("user-present")
 
 	if userPresent == "true" {
 		token := w.Header().Get("sorcia-cookie-token")
 		username := model.GetUsernameFromToken(db, token)
 
-		layoutPage := path.Join(templatePath, "templates", "layout.tmpl")
-		headerPage := path.Join(templatePath, "templates", "header.tmpl")
-		createRepoPage := path.Join(templatePath, "templates", "create-repo.tmpl")
-		footerPage := path.Join(templatePath, "templates", "footer.tmpl")
+		layoutPage := path.Join("./templates", "layout.tmpl")
+		headerPage := path.Join("./templates", "header.tmpl")
+		createRepoPage := path.Join("./templates", "create-repo.tmpl")
+		footerPage := path.Join("./templates", "footer.tmpl")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, createRepoPage, footerPage)
 		errorhandler.CheckError(err)
@@ -62,7 +63,7 @@ type CreateRepoRequest struct {
 }
 
 // PostCreateRepo ...
-func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath string, decoder *schema.Decoder) {
+func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder *schema.Decoder, repoPath string) {
 	// NOTE: Invoke ParseForm or ParseMultipartForm before reading form values
 	if err := r.ParseForm(); err != nil {
 		fmt.Fprintf(w, "ParseForm() err: %v", err)
@@ -104,14 +105,14 @@ func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath
 	username := model.GetUsernameFromToken(db, token)
 
 	// Create Git bare repository
-	bareRepoDir := path.Join(dataPath, "repositories/"+"+"+username+"/"+createRepoRequest.Name+".git")
+	bareRepoDir := filepath.Join(repoPath, "repositories", username, createRepoRequest.Name+".git")
 
 	cmd := exec.Command("git", "init", "--bare", bareRepoDir)
 	err = cmd.Run()
 	errorhandler.CheckError(err)
 
 	// Clone from the bare repository created above
-	repoDir := path.Join(dataPath, "repositories/"+"+"+username+"/"+createRepoRequest.Name)
+	repoDir := filepath.Join(repoPath, "repositories", username, createRepoRequest.Name)
 	cmd = exec.Command("git", "clone", bareRepoDir, repoDir)
 	err = cmd.Run()
 	errorhandler.CheckError(err)
@@ -128,7 +129,7 @@ type GetRepoResponse struct {
 }
 
 // GetRepo ...
-func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, templatePath string) {
+func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	vars := mux.Vars(r)
 	username := vars["username"]
 	reponame := vars["reponame"]
@@ -152,10 +153,10 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, templatePath st
 
 	// Check if repository is not private
 	if isRepoPrivate := model.GetRepoType(db, &rts); !isRepoPrivate {
-		layoutPage := path.Join(templatePath, "templates", "layout.tmpl")
-		headerPage := path.Join(templatePath, "templates", "header.tmpl")
-		repoSummaryPage := path.Join(templatePath, "templates", "repo-summary.tmpl")
-		footerPage := path.Join(templatePath, "templates", "footer.tmpl")
+		layoutPage := path.Join("./templates", "layout.tmpl")
+		headerPage := path.Join("./templates", "header.tmpl")
+		repoSummaryPage := path.Join("./templates", "repo-summary.tmpl")
+		footerPage := path.Join("./templates", "footer.tmpl")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, repoSummaryPage, footerPage)
 		errorhandler.CheckError(err)
@@ -173,10 +174,10 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, templatePath st
 
 			// Check if the logged in user has access to view the repository.
 			if hasRepoAccess := model.CheckRepoAccessFromUserID(db, userIDFromToken); hasRepoAccess {
-				layoutPage := path.Join(templatePath, "templates", "layout.tmpl")
-				headerPage := path.Join(templatePath, "templates", "header.tmpl")
-				repoSummaryPage := path.Join(templatePath, "templates", "repo-summary.tmpl")
-				footerPage := path.Join(templatePath, "templates", "footer.tmpl")
+				layoutPage := path.Join("./templates", "layout.tmpl")
+				headerPage := path.Join("./templates", "header.tmpl")
+				repoSummaryPage := path.Join("./templates", "repo-summary.tmpl")
+				footerPage := path.Join("./templates", "footer.tmpl")
 
 				tmpl, err := template.ParseFiles(layoutPage, headerPage, repoSummaryPage, footerPage)
 				errorhandler.CheckError(err)
@@ -205,7 +206,7 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, templatePath st
 }
 
 // GetRepoTree ...
-func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, templatePath string) {
+func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	vars := mux.Vars(r)
 	username := vars["username"]
 	reponame := vars["reponame"]
@@ -227,19 +228,19 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, templatePat
 		Reponame:         reponame,
 	}
 
+	layoutPage := path.Join("./templates", "layout.tmpl")
+	headerPage := path.Join("./templates", "header.tmpl")
+	repoTreePage := path.Join("./templates", "repo-tree.tmpl")
+	footerPage := path.Join("./templates", "footer.tmpl")
+
+	tmpl, err := template.ParseFiles(layoutPage, headerPage, repoTreePage, footerPage)
+	errorhandler.CheckError(err)
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+
 	// Check if repository is not private
 	if isRepoPrivate := model.GetRepoType(db, &rts); !isRepoPrivate {
-		layoutPage := path.Join(templatePath, "templates", "layout.tmpl")
-		headerPage := path.Join(templatePath, "templates", "header.tmpl")
-		repoTreePage := path.Join(templatePath, "templates", "repo-tree.tmpl")
-		footerPage := path.Join(templatePath, "templates", "footer.tmpl")
-
-		tmpl, err := template.ParseFiles(layoutPage, headerPage, repoTreePage, footerPage)
-		errorhandler.CheckError(err)
-
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		w.WriteHeader(http.StatusOK)
-
 		tmpl.ExecuteTemplate(w, "layout", data)
 	} else {
 		userPresent := w.Header().Get("user-present")
@@ -250,17 +251,6 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, templatePat
 
 			// Check if the logged in user has access to view the repository.
 			if hasRepoAccess := model.CheckRepoAccessFromUserID(db, userIDFromToken); hasRepoAccess {
-				layoutPage := path.Join(templatePath, "templates", "layout.tmpl")
-				headerPage := path.Join(templatePath, "templates", "header.tmpl")
-				repoTreePage := path.Join(templatePath, "templates", "repo-tree.tmpl")
-				footerPage := path.Join(templatePath, "templates", "footer.tmpl")
-
-				tmpl, err := template.ParseFiles(layoutPage, headerPage, repoTreePage, footerPage)
-				errorhandler.CheckError(err)
-
-				w.Header().Set("Content-Type", "text/html; charset=utf-8")
-				w.WriteHeader(http.StatusOK)
-
 				tmpl.ExecuteTemplate(w, "layout", data)
 			} else {
 				noRepoAccess(w)
