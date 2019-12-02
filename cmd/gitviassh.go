@@ -102,6 +102,9 @@ func handleServer(keyID string, chans <-chan ssh.NewChannel) {
 						log.Printf("ssh: command failed: %v", err)
 						return
 					}
+
+					channel.SendRequest("exit-status", false, []byte{0, 0, 0, 0})
+
 					return
 
 				default:

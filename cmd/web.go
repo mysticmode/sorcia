@@ -32,7 +32,7 @@ func RunWeb(conf *setting.BaseStruct) {
 
 	// Create repositories directory
 	// 0755 - The owner can read, write, execute. Everyone else can read and execute but not modify the file.
-	os.MkdirAll(path.Join(conf.Paths.DataPath, "repositories"), 0755)
+	os.MkdirAll(path.Join(conf.Paths.RepoPath, "repositories"), 0755)
 
 	// Open postgres database
 	db := conf.DBConn
@@ -45,35 +45,34 @@ func RunWeb(conf *setting.BaseStruct) {
 
 	// Web handlers
 	m.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		GetHome(w, r, db, conf.Paths.TemplatePath)
+		GetHome(w, r, db)
 	}).Methods("GET")
 	m.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-		handler.GetLogin(w, r, db, conf.Paths.TemplatePath)
+		handler.GetLogin(w, r, db)
 	}).Methods("GET")
 	m.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-		handler.PostLogin(w, r, db, conf.Paths.DataPath, conf.Paths.TemplatePath, decoder)
+		handler.PostLogin(w, r, db, decoder, conf.Paths.RepoPath)
 	}).Methods("POST")
 	m.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetLogout(w, r)
 	}).Methods("GET")
 	m.HandleFunc("/create-repo", func(w http.ResponseWriter, r *http.Request) {
-		handler.GetCreateRepo(w, r, db, conf.Paths.TemplatePath)
+		handler.GetCreateRepo(w, r, db)
 	}).Methods("GET")
 	m.HandleFunc("/create-repo", func(w http.ResponseWriter, r *http.Request) {
-		handler.PostCreateRepo(w, r, db, conf.Paths.DataPath, decoder)
+		handler.PostCreateRepo(w, r, db, decoder, conf.Paths.RepoPath)
 	}).Methods("POST")
 	m.HandleFunc("/+{username}/{reponame}", func(w http.ResponseWriter, r *http.Request) {
-		handler.GetRepo(w, r, db, conf.Paths.TemplatePath)
+		handler.GetRepo(w, r, db)
 	}).Methods("GET")
 	m.HandleFunc("/+{username}/{reponame}/tree", func(w http.ResponseWriter, r *http.Request) {
-		handler.GetRepoTree(w, r, db, conf.Paths.TemplatePath)
+		handler.GetRepoTree(w, r, db)
 	}).Methods("GET")
 	m.PathPrefix("/+{username}/{reponame[\\d\\w-_\\.]+\\.git$}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		handler.GitviaHTTP(w, r, conf.Paths.RepoPath)
 	}).Methods("GET", "POST")
 
-	staticFileDirectory := http.Dir(conf.Paths.AssetPath)
-	staticFileHandler := http.StripPrefix("/public/", http.FileServer(staticFileDirectory))
+	staticFileHandler := http.StripPrefix("/public/", http.FileServer(http.Dir("./public")))
 	// The "PathPrefix" method acts as a matcher, and matches all routes starting
 	// with "/public/", instead of the absolute route itself
 	m.PathPrefix("/public/").Handler(staticFileHandler).Methods("GET")
@@ -95,7 +94,7 @@ type IndexPageResponse struct {
 }
 
 // GetHome ...
-func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, templatePath string) {
+func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	userPresent := w.Header().Get("user-present")
 
 	if userPresent == "true" {
@@ -104,10 +103,10 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, templatePath st
 		username := model.GetUsernameFromToken(db, token)
 		repos := model.GetReposFromUserID(db, userID)
 
-		layoutPage := path.Join(templatePath, "templates", "layout.tmpl")
-		headerPage := path.Join(templatePath, "templates", "header.tmpl")
-		indexPage := path.Join(templatePath, "templates", "index.tmpl")
-		footerPage := path.Join(templatePath, "templates", "footer.tmpl")
+		layoutPage := path.Join("./templates", "layout.tmpl")
+		headerPage := path.Join("./templates", "header.tmpl")
+		indexPage := path.Join("./templates", "index.tmpl")
+		footerPage := path.Join("./templates", "footer.tmpl")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, indexPage, footerPage)
 		errorhandler.CheckError(err)
