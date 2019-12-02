@@ -56,16 +56,16 @@ type LoginPageResponse struct {
 }
 
 // GetLogin ...
-func GetLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, templatePath string) {
+func GetLogin(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	userPresent := w.Header().Get("user-present")
 
 	if userPresent == "true" {
 		http.Redirect(w, r, "/", http.StatusFound)
 	} else {
-		layoutPage := path.Join(templatePath, "templates", "layout.tmpl")
-		headerPage := path.Join(templatePath, "templates", "header.tmpl")
-		loginPage := path.Join(templatePath, "templates", "login.tmpl")
-		footerPage := path.Join(templatePath, "templates", "footer.tmpl")
+		layoutPage := path.Join("./templates", "layout.tmpl")
+		headerPage := path.Join("./templates", "header.tmpl")
+		loginPage := path.Join("./templates", "login.tmpl")
+		footerPage := path.Join("./templates", "footer.tmpl")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, loginPage, footerPage)
 		errorhandler.CheckError(err)
@@ -91,7 +91,7 @@ type LoginRequest struct {
 }
 
 // PostLogin ...
-func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath, templatePath string, decoder *schema.Decoder) {
+func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder *schema.Decoder, repoPath string) {
 	// NOTE: Invoke ParseForm or ParseMultipartForm before reading form values
 	if err := r.ParseForm(); err != nil {
 		fmt.Fprintf(w, "ParseForm() err: %v", err)
@@ -110,7 +110,7 @@ func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath, tem
 
 	isRegisterForm := r.FormValue("register")
 	if isRegisterForm == "1" {
-		postRegister(w, r, db, dataPath, templatePath, decoder)
+		postRegister(w, r, db, decoder, repoPath)
 		return
 	}
 
@@ -137,18 +137,18 @@ func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath, tem
 
 			http.Redirect(w, r, "/", http.StatusFound)
 		} else {
-			invalidLoginCredentials(w, r, templatePath)
+			invalidLoginCredentials(w, r)
 		}
 	} else {
-		invalidLoginCredentials(w, r, templatePath)
+		invalidLoginCredentials(w, r)
 	}
 }
 
-func invalidLoginCredentials(w http.ResponseWriter, r *http.Request, templatePath string) {
-	layoutPage := path.Join(templatePath, "templates", "layout.tmpl")
-	headerPage := path.Join(templatePath, "templates", "header.tmpl")
-	loginPage := path.Join(templatePath, "templates", "login.tmpl")
-	footerPage := path.Join(templatePath, "templates", "footer.tmpl")
+func invalidLoginCredentials(w http.ResponseWriter, r *http.Request) {
+	layoutPage := path.Join("./templates", "layout.tmpl")
+	headerPage := path.Join("./templates", "header.tmpl")
+	loginPage := path.Join("./templates", "login.tmpl")
+	footerPage := path.Join("./templates", "footer.tmpl")
 
 	tmpl, err := template.ParseFiles(layoutPage, headerPage, loginPage, footerPage)
 	errorhandler.CheckError(err)
@@ -184,7 +184,7 @@ type RegisterRequest struct {
 }
 
 // PostRegister ...
-func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath string, templatePath string, decoder *schema.Decoder) {
+func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder *schema.Decoder, repoPath string) {
 	var registerRequest = &RegisterRequest{}
 	err := decoder.Decode(registerRequest, r.PostForm)
 	errorhandler.CheckError(err)
@@ -201,9 +201,9 @@ func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath s
 		s := registerRequest.Username
 
 		if len(s) > 39 || len(s) < 1 {
-			layoutPage := path.Join(templatePath, "templates", "layout.tmpl")
-			headerPage := path.Join(templatePath, "templates", "header.tmpl")
-			loginPage := path.Join(templatePath, "templates", "login.tmpl")
+			layoutPage := path.Join("./templates", "layout.tmpl")
+			headerPage := path.Join("./templates", "header.tmpl")
+			loginPage := path.Join("./templates", "login.tmpl")
 
 			tmpl, err := template.ParseFiles(layoutPage, headerPage, loginPage)
 			errorhandler.CheckError(err)
@@ -225,9 +225,9 @@ func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath s
 			tmpl.Execute(w, data)
 			return
 		} else if strings.HasPrefix(s, "-") || strings.Contains(s, "--") || strings.HasSuffix(s, "-") || !isAlnumOrHyphen(s) {
-			layoutPage := path.Join(templatePath, "templates", "layout.tmpl")
-			headerPage := path.Join(templatePath, "templates", "header.tmpl")
-			loginPage := path.Join(templatePath, "templates", "login.tmpl")
+			layoutPage := path.Join("./templates", "layout.tmpl")
+			headerPage := path.Join("./templates", "header.tmpl")
+			loginPage := path.Join("./templates", "login.tmpl")
 
 			tmpl, err := template.ParseFiles(layoutPage, headerPage, loginPage)
 			errorhandler.CheckError(err)
@@ -258,7 +258,7 @@ func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, dataPath s
 
 		// Create repositories directory
 		// 0755 - The owner can read, write, execute. Everyone else can read and execute but not modify the file.
-		repoDir := path.Join(dataPath, "repositories/"+"+"+registerRequest.Username)
+		repoDir := path.Join(repoPath, "repositories/"+"+"+registerRequest.Username)
 		if _, err := os.Stat(repoDir); os.IsNotExist(err) {
 			os.MkdirAll(repoDir, 0755)
 		}
