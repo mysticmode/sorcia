@@ -51,12 +51,13 @@ func validateJWTToken(tokenString string, passwordHash string) (bool, error) {
 type LoginPageResponse struct {
 	IsHeaderLogin      bool
 	HeaderActiveMenu   string
+	SorciaVersion      string
 	LoginErrMessage    string
 	RegisterErrMessage string
 }
 
 // GetLogin ...
-func GetLogin(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+func GetLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion string) {
 	userPresent := w.Header().Get("user-present")
 
 	if userPresent == "true" {
@@ -76,6 +77,7 @@ func GetLogin(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		data := LoginPageResponse{
 			IsHeaderLogin:      true,
 			HeaderActiveMenu:   "",
+			SorciaVersion:      sorciaVersion,
 			LoginErrMessage:    "",
 			RegisterErrMessage: "",
 		}
@@ -91,7 +93,7 @@ type LoginRequest struct {
 }
 
 // PostLogin ...
-func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder *schema.Decoder, repoPath string) {
+func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion string, decoder *schema.Decoder, repoPath string) {
 	// NOTE: Invoke ParseForm or ParseMultipartForm before reading form values
 	if err := r.ParseForm(); err != nil {
 		fmt.Fprintf(w, "ParseForm() err: %v", err)
@@ -110,7 +112,7 @@ func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder *sche
 
 	isRegisterForm := r.FormValue("register")
 	if isRegisterForm == "1" {
-		postRegister(w, r, db, decoder, repoPath)
+		postRegister(w, r, db, sorciaVersion, decoder, repoPath)
 		return
 	}
 
@@ -137,14 +139,14 @@ func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder *sche
 
 			http.Redirect(w, r, "/", http.StatusFound)
 		} else {
-			invalidLoginCredentials(w, r)
+			invalidLoginCredentials(w, r, sorciaVersion)
 		}
 	} else {
-		invalidLoginCredentials(w, r)
+		invalidLoginCredentials(w, r, sorciaVersion)
 	}
 }
 
-func invalidLoginCredentials(w http.ResponseWriter, r *http.Request) {
+func invalidLoginCredentials(w http.ResponseWriter, r *http.Request, sorciaVersion string) {
 	layoutPage := path.Join("./templates", "layout.tmpl")
 	headerPage := path.Join("./templates", "header.tmpl")
 	loginPage := path.Join("./templates", "login.tmpl")
@@ -184,7 +186,7 @@ type RegisterRequest struct {
 }
 
 // PostRegister ...
-func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder *schema.Decoder, repoPath string) {
+func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion string, decoder *schema.Decoder, repoPath string) {
 	var registerRequest = &RegisterRequest{}
 	err := decoder.Decode(registerRequest, r.PostForm)
 	errorhandler.CheckError(err)
@@ -204,8 +206,9 @@ func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder *s
 			layoutPage := path.Join("./templates", "layout.tmpl")
 			headerPage := path.Join("./templates", "header.tmpl")
 			loginPage := path.Join("./templates", "login.tmpl")
+			footerPage := path.Join("./templates", "footer.tmpl")
 
-			tmpl, err := template.ParseFiles(layoutPage, headerPage, loginPage)
+			tmpl, err := template.ParseFiles(layoutPage, headerPage, loginPage, footerPage)
 			errorhandler.CheckError(err)
 
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -213,6 +216,8 @@ func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder *s
 
 			data := LoginPageResponse{
 				IsHeaderLogin:      true,
+				HeaderActiveMenu:   "",
+				SorciaVersion:      sorciaVersion,
 				LoginErrMessage:    "",
 				RegisterErrMessage: "Username is too long (maximum is 39 characters).",
 			}
@@ -228,8 +233,9 @@ func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder *s
 			layoutPage := path.Join("./templates", "layout.tmpl")
 			headerPage := path.Join("./templates", "header.tmpl")
 			loginPage := path.Join("./templates", "login.tmpl")
+			footerPage := path.Join("./templates", "footer.tmpl")
 
-			tmpl, err := template.ParseFiles(layoutPage, headerPage, loginPage)
+			tmpl, err := template.ParseFiles(layoutPage, headerPage, loginPage, footerPage)
 			errorhandler.CheckError(err)
 
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -238,6 +244,7 @@ func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder *s
 			data := LoginPageResponse{
 				IsHeaderLogin:      true,
 				HeaderActiveMenu:   "",
+				SorciaVersion:      sorciaVersion,
 				LoginErrMessage:    "",
 				RegisterErrMessage: "Username may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen.",
 			}
