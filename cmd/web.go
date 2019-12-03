@@ -45,28 +45,28 @@ func RunWeb(conf *setting.BaseStruct) {
 
 	// Web handlers
 	m.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		GetHome(w, r, db)
+		GetHome(w, r, db, conf.Version)
 	}).Methods("GET")
 	m.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-		handler.GetLogin(w, r, db)
+		handler.GetLogin(w, r, db, conf.Version)
 	}).Methods("GET")
 	m.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-		handler.PostLogin(w, r, db, decoder, conf.Paths.RepoPath)
+		handler.PostLogin(w, r, db, conf.Version, decoder, conf.Paths.RepoPath)
 	}).Methods("POST")
 	m.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetLogout(w, r)
 	}).Methods("GET")
 	m.HandleFunc("/create-repo", func(w http.ResponseWriter, r *http.Request) {
-		handler.GetCreateRepo(w, r, db)
+		handler.GetCreateRepo(w, r, db, conf.Version)
 	}).Methods("GET")
 	m.HandleFunc("/create-repo", func(w http.ResponseWriter, r *http.Request) {
 		handler.PostCreateRepo(w, r, db, decoder, conf.Paths.RepoPath)
 	}).Methods("POST")
 	m.HandleFunc("/+{username}/{reponame}", func(w http.ResponseWriter, r *http.Request) {
-		handler.GetRepo(w, r, db)
+		handler.GetRepo(w, r, db, conf.Version)
 	}).Methods("GET")
 	m.HandleFunc("/+{username}/{reponame}/tree", func(w http.ResponseWriter, r *http.Request) {
-		handler.GetRepoTree(w, r, db)
+		handler.GetRepoTree(w, r, db, conf.Version)
 	}).Methods("GET")
 	m.PathPrefix("/+{username}/{reponame[\\d\\w-_\\.]+\\.git$}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		handler.GitviaHTTP(w, r, conf.Paths.RepoPath)
@@ -89,12 +89,13 @@ func RunWeb(conf *setting.BaseStruct) {
 type IndexPageResponse struct {
 	IsHeaderLogin    bool
 	HeaderActiveMenu string
+	SorciaVersion    string
 	Username         string
 	Repos            *model.GetReposFromUserIDResponse
 }
 
 // GetHome ...
-func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion string) {
 	userPresent := w.Header().Get("user-present")
 
 	if userPresent == "true" {
@@ -117,6 +118,7 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		data := IndexPageResponse{
 			IsHeaderLogin:    false,
 			HeaderActiveMenu: "header__menu--dashboard",
+			SorciaVersion:    sorciaVersion,
 			Username:         username,
 			Repos:            repos,
 		}
