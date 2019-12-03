@@ -67,7 +67,7 @@ func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder 
 	// NOTE: Invoke ParseForm or ParseMultipartForm before reading form values
 	if err := r.ParseForm(); err != nil {
 		fmt.Fprintf(w, "ParseForm() err: %v", err)
-		errorResponse := &errorhandler.ErrorResponse{
+		errorResponse := &errorhandler.Response{
 			Error: err.Error(),
 		}
 
@@ -187,7 +187,7 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 				tmpl.ExecuteTemplate(w, "layout", data)
 			} else {
-				errorResponse := &errorhandler.ErrorResponse{
+				errorResponse := &errorhandler.Response{
 					Error: "You don't have access to this repository.",
 				}
 
@@ -262,7 +262,7 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 }
 
 func noRepoAccess(w http.ResponseWriter) {
-	errorResponse := &errorhandler.ErrorResponse{
+	errorResponse := &errorhandler.Response{
 		Error: "You don't have access to this repository.",
 	}
 

@@ -13,6 +13,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	errorhandler "sorcia/error"
 )
 
 type gitHandler struct {
@@ -36,9 +38,7 @@ func gitCommand(dir string, args ...string) []byte {
 	cmd := exec.Command("git", args...)
 	cmd.Dir = dir
 	out, err := cmd.Output()
-	if err != nil {
-		fmt.Printf("%v", err)
-	}
+	errorhandler.CheckError(err)
 
 	return out
 }
@@ -196,16 +196,12 @@ var routes = []struct {
 func writeHdr(w http.ResponseWriter, status int, text string) {
 	w.WriteHeader(status)
 	_, err := w.Write([]byte(text))
-	if err != nil {
-		fmt.Printf("Error: %v", err)
-	}
+	errorhandler.CheckError(err)
 }
 
 func getProjectRootDir() string {
 	projectRootDir, err := filepath.Abs(filepath.Dir(os.Args[0]))
-	if err != nil {
-		fmt.Printf("Error: %v", err)
-	}
+	errorhandler.CheckError(err)
 	return projectRootDir
 }
 

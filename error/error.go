@@ -5,11 +5,11 @@ import "fmt"
 // CheckError ...
 func CheckError(err error) {
 	if err != nil {
-		fmt.Println(err)
+		fmt.Printf("Error: %v", err)
 	}
 }
 
-// ErrorResponse struct
-type ErrorResponse struct {
+// Response struct
+type Response struct {
 	Error string `json:"error"`
 }

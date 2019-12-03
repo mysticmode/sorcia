@@ -95,7 +95,7 @@ func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder *sche
 	// NOTE: Invoke ParseForm or ParseMultipartForm before reading form values
 	if err := r.ParseForm(); err != nil {
 		fmt.Fprintf(w, "ParseForm() err: %v", err)
-		errorResponse := &errorhandler.ErrorResponse{
+		errorResponse := &errorhandler.Response{
 			Error: err.Error(),
 		}
 
