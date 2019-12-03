@@ -21,11 +21,12 @@ import (
 type GetCreateRepoResponse struct {
 	IsHeaderLogin    bool
 	HeaderActiveMenu string
+	SorciaVersion    string
 	Username         string
 }
 
 // GetCreateRepo ...
-func GetCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+func GetCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion string) {
 	userPresent := w.Header().Get("user-present")
 
 	if userPresent == "true" {
@@ -46,6 +47,7 @@ func GetCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		data := GetCreateRepoResponse{
 			IsHeaderLogin:    false,
 			HeaderActiveMenu: "",
+			SorciaVersion:    sorciaVersion,
 			Username:         username,
 		}
 
@@ -124,12 +126,13 @@ func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder 
 type GetRepoResponse struct {
 	IsHeaderLogin    bool
 	HeaderActiveMenu string
+	SorciaVersion    string
 	Username         string
 	Reponame         string
 }
 
 // GetRepo ...
-func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion string) {
 	vars := mux.Vars(r)
 	username := vars["username"]
 	reponame := vars["reponame"]
@@ -147,6 +150,7 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	data := GetRepoResponse{
 		IsHeaderLogin:    false,
 		HeaderActiveMenu: "",
+		SorciaVersion:    sorciaVersion,
 		Username:         username,
 		Reponame:         reponame,
 	}
@@ -206,7 +210,7 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 }
 
 // GetRepoTree ...
-func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion string) {
 	vars := mux.Vars(r)
 	username := vars["username"]
 	reponame := vars["reponame"]
@@ -224,6 +228,7 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	data := GetRepoResponse{
 		IsHeaderLogin:    false,
 		HeaderActiveMenu: "",
+		SorciaVersion:    sorciaVersion,
 		Username:         username,
 		Reponame:         reponame,
 	}
