@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
 
 	errorhandler "sorcia/error"
 	"sorcia/handler"
@@ -72,7 +73,9 @@ func RunWeb(conf *setting.BaseStruct) {
 		handler.GitviaHTTP(w, r, conf.Paths.RepoPath)
 	}).Methods("GET", "POST")
 
-	staticFileHandler := http.StripPrefix("/public/", http.FileServer(http.Dir("./public")))
+	staticDir := filepath.Join(conf.Paths.ProjectRoot, "public")
+	fmt.Println(staticDir)
+	staticFileHandler := http.StripPrefix("/public/", http.FileServer(http.Dir(staticDir)))
 	// The "PathPrefix" method acts as a matcher, and matches all routes starting
 	// with "/public/", instead of the absolute route itself
 	m.PathPrefix("/public/").Handler(staticFileHandler).Methods("GET")
