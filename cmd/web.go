@@ -74,7 +74,6 @@ func RunWeb(conf *setting.BaseStruct) {
 	}).Methods("GET", "POST")
 
 	staticDir := filepath.Join(conf.Paths.ProjectRoot, "public")
-	fmt.Println(staticDir)
 	staticFileHandler := http.StripPrefix("/public/", http.FileServer(http.Dir(staticDir)))
 	// The "PathPrefix" method acts as a matcher, and matches all routes starting
 	// with "/public/", instead of the absolute route itself
