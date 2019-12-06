@@ -6,7 +6,6 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"os"
 	"path"
 	"path/filepath"
 
@@ -30,10 +29,6 @@ var decoder = schema.NewDecoder()
 func RunWeb(conf *setting.BaseStruct) {
 	// Mux initiate
 	m := mux.NewRouter()
-
-	// Create repositories directory
-	// 0755 - The owner can read, write, execute. Everyone else can read and execute but not modify the file.
-	os.MkdirAll(path.Join(conf.Paths.RepoPath, "repositories"), 0755)
 
 	// Open postgres database
 	db := conf.DBConn
