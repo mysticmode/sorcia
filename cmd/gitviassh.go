@@ -68,7 +68,7 @@ func handleServer(keyID string, chans <-chan ssh.NewChannel) {
 					cmdName := strings.TrimLeft(payload, "'()")
 
 					cmd := exec.Command(strings.Split(cmdName, " ")[0], "joyread.git")
-					cmd.Dir = "/home/git/sorcia/repositories/+mysticmode"
+					cmd.Dir = "/home/git/repositories/+mysticmode"
 
 					stdout, err := cmd.StdoutPipe()
 					if err != nil {
