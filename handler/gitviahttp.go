@@ -227,10 +227,8 @@ func GitviaHTTP(w http.ResponseWriter, r *http.Request, dir string) {
 		var repoDir string
 		projectRootDir := getProjectRootDir()
 
-		if dir == "." || dir == "" {
+		if dir == "." || dir == "" || dir == "./repositories" {
 			repoDir = filepath.Join(projectRootDir, "repositories", routeMatch[1])
-		} else if dir == "./repositories" {
-			repoDir = filepath.Join(projectRootDir, routeMatch[1])
 		} else {
 			repoDir = filepath.Join(dir, routeMatch[1])
 		}
