@@ -17,21 +17,6 @@
         margin-right: 40px;
     }
 
-    &__menu {
-        &__item {
-            margin-right: 20px;
-            color: $text-color-2;
-            
-            &:hover {
-                color: $text-color;
-            }
-
-            &:last-child {
-                margin-right: 0;
-            }
-        }
-    }
-
     &__right {
         display: flex;
         align-items: center;
