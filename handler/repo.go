@@ -100,14 +100,14 @@ func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder 
 	model.InsertRepo(db, crs)
 
 	// Create Git bare repository
-	bareRepoDir := filepath.Join(repoPath, "repositories", createRepoRequest.Name+".git")
+	bareRepoDir := filepath.Join(repoPath, createRepoRequest.Name+".git")
 
 	cmd := exec.Command("git", "init", "--bare", bareRepoDir)
 	err = cmd.Run()
 	errorhandler.CheckError(err)
 
 	// Clone from the bare repository created above
-	repoDir := filepath.Join(repoPath, "repositories", createRepoRequest.Name)
+	repoDir := filepath.Join(repoPath, createRepoRequest.Name)
 	cmd = exec.Command("git", "clone", bareRepoDir, repoDir)
 	err = cmd.Run()
 	errorhandler.CheckError(err)
