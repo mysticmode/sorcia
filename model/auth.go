@@ -61,6 +61,22 @@ func GetUsernameFromToken(db *sql.DB, token string) string {
 	return username
 }
 
+// GetUsernameFromUserID ...
+func GetUsernameFromUserID(db *sql.DB, userID int) string {
+	rows, err := db.Query("SELECT username FROM account WHERE id = $1", userID)
+	errorhandler.CheckError(err)
+
+	var username string
+
+	if rows.Next() {
+		err = rows.Scan(&username)
+		errorhandler.CheckError(err)
+	}
+	rows.Close()
+
+	return username
+}
+
 // SelectPasswordHashAndJWTTokenStruct struct
 type SelectPasswordHashAndJWTTokenStruct struct {
 	Username string

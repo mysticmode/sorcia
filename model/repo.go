@@ -118,3 +118,19 @@ func CheckRepoAccessFromUserID(db *sql.DB, userID int) bool {
 
 	return false
 }
+
+// GetUserIDFromReponame ...
+func GetUserIDFromReponame(db *sql.DB, reponame string) int {
+	rows, err := db.Query("SELECT user_id FROM repository WHERE name = $1", reponame)
+	errorhandler.CheckError(err)
+
+	var userID int
+
+	if rows.Next() {
+		err = rows.Scan(&userID)
+		errorhandler.CheckError(err)
+	}
+	rows.Close()
+
+	return userID
+}

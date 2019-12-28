@@ -3,7 +3,7 @@ package handler
 import (
 	"bytes"
 	"compress/gzip"
-	"crypto/subtle"
+	"database/sql"
 	"fmt"
 	"net/http"
 	"os"
@@ -16,6 +16,7 @@ import (
 	"time"
 
 	errorhandler "sorcia/error"
+	"sorcia/model"
 )
 
 type gitHandler struct {
@@ -26,11 +27,13 @@ type gitHandler struct {
 	file string
 }
 
-func (gh *gitHandler) basicAuth(username, password, realm string) bool {
+func (gh *gitHandler) basicAuth(username, passwordHash, realm string) bool {
 
 	user, pass, ok := gh.r.BasicAuth()
 
-	if !ok || subtle.ConstantTimeCompare([]byte(user), []byte(username)) != 1 || subtle.ConstantTimeCompare([]byte(pass), []byte(password)) != 1 {
+	isPasswordValid := CheckPasswordHash(pass, passwordHash)
+
+	if !ok || user != username || !isPasswordValid {
 		gh.w.Header().Set("WWW-Authenticate", `Basic realm="`+realm+`"`)
 		writeHdr(gh.w, http.StatusUnauthorized, "The repository cannot be accessed with your credentials.\n")
 		return false
@@ -220,7 +223,7 @@ func getProjectRootDir() string {
 }
 
 // GitviaHTTP ...
-func GitviaHTTP(w http.ResponseWriter, r *http.Request, dir string) {
+func GitviaHTTP(w http.ResponseWriter, r *http.Request, db *sql.DB, dir string) {
 	for _, route := range routes {
 		reqPath := strings.ToLower(r.URL.Path)
 		reqPath = "/" + strings.Split(reqPath, "/r/")[1]
@@ -257,7 +260,32 @@ func GitviaHTTP(w http.ResponseWriter, r *http.Request, dir string) {
 			file: file,
 		}
 
-		if gh.basicAuth("username", "password", "Please enter your username and password") {
+		reponame := strings.TrimSuffix(strings.TrimPrefix(routeMatch[1], "/"), ".git")
+
+		rts := model.RepoTypeStruct{
+			Reponame: reponame,
+		}
+
+		// Check if repository is private
+		if isRepoPrivate := model.GetRepoType(db, &rts); isRepoPrivate {
+			userID := model.GetUserIDFromReponame(db, reponame)
+			hasRepoAccess := model.CheckRepoAccessFromUserID(db, userID)
+
+			if hasRepoAccess {
+				username := model.GetUsernameFromUserID(db, userID)
+				sphjwt := model.SelectPasswordHashAndJWTTokenStruct{
+					Username: username,
+				}
+				sphjwtr := model.SelectPasswordHashAndJWTToken(db, sphjwt)
+				passwordHash := sphjwtr.PasswordHash
+
+				if gh.basicAuth(username, passwordHash, "Please enter your username and password") {
+					route.handler(gh)
+				}
+			} else {
+				return
+			}
+		} else {
 			route.handler(gh)
 		}
 
