@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 	"path"
 	"path/filepath"
 
@@ -37,6 +38,13 @@ func RunWeb(conf *setting.BaseStruct) {
 	model.CreateAccount(db)
 	model.CreateRepo(db)
 
+	// Create repositories directory
+	// 0755 - The owner can read, write, execute. Everyone else can read and execute but not modify the file.
+	repoDir := filepath.Join(conf.Paths.RepoPath, "repositories")
+	if _, err := os.Stat(repoDir); os.IsNotExist(err) {
+		os.MkdirAll(repoDir, 0755)
+	}
+
 	m.Use(middleware.Middleware)
 
 	// Web handlers
@@ -58,13 +66,13 @@ func RunWeb(conf *setting.BaseStruct) {
 	m.HandleFunc("/create-repo", func(w http.ResponseWriter, r *http.Request) {
 		handler.PostCreateRepo(w, r, db, decoder, conf.Paths.RepoPath)
 	}).Methods("POST")
-	m.HandleFunc("/+{username}/{reponame}", func(w http.ResponseWriter, r *http.Request) {
+	m.HandleFunc("/r/{reponame}", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetRepo(w, r, db, conf.Version)
 	}).Methods("GET")
-	m.HandleFunc("/+{username}/{reponame}/tree", func(w http.ResponseWriter, r *http.Request) {
+	m.HandleFunc("/r/{reponame}/tree", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetRepoTree(w, r, db, conf.Version)
 	}).Methods("GET")
-	m.PathPrefix("/+{username}/{reponame[\\d\\w-_\\.]+\\.git$}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	m.PathPrefix("/r/{reponame[\\d\\w-_\\.]+\\.git$}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		handler.GitviaHTTP(w, r, conf.Paths.RepoPath)
 	}).Methods("GET", "POST")
 
