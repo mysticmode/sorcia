@@ -17,8 +17,8 @@ GRANT ALL PRIVILEGES ON DATABASE sorciadb to sorcia;
 Now create a `git` user on your machine and clone the sorcia repository
 ```
 sudo adduser --disabled-login --gecos 'sorcia' git
-git clone --depth 1 https://github.com/getsorcia/sorcia.git sorcia
 sudo su - git
+git clone --depth 1 https://github.com/getsorcia/sorcia.git sorcia
 ```
 
 Move to sorcia directory and change the `config/app.ini` file to match with the database, user and password that we had created above.
