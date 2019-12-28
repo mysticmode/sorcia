@@ -209,6 +209,7 @@ func getProjectRootDir() string {
 func GitviaHTTP(w http.ResponseWriter, r *http.Request, dir string) {
 	for _, route := range routes {
 		reqPath := strings.ToLower(r.URL.Path)
+		reqPath = "/" + strings.Split(reqPath, "/r/")[1]
 		routeMatch := route.rxp.FindStringSubmatch(reqPath)
 
 		if routeMatch == nil {
