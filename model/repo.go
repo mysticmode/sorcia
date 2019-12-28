@@ -8,7 +8,7 @@ import (
 
 // CreateRepo ...
 func CreateRepo(db *sql.DB) {
-	_, err := db.Query("CREATE TABLE IF NOT EXISTS repository (id BIGSERIAL, repo_from INTEGER REFERENCES account(id), name VARCHAR(255) UNIQUE NOT NULL, description VARCHAR(500), is_private BOOLEAN NOT NULL DEFAULT FALSE, PRIMARY KEY (id, repo_from))")
+	_, err := db.Query("CREATE TABLE IF NOT EXISTS repository (id BIGSERIAL, user_id INTEGER NOT NULL, name VARCHAR(255) UNIQUE NOT NULL, description VARCHAR(500), is_private BOOLEAN NOT NULL DEFAULT FALSE, PRIMARY KEY(id), FOREIGN KEY (user_id) REFERENCES account(id))")
 	errorhandler.CheckError(err)
 }
 
@@ -24,7 +24,7 @@ type CreateRepoStruct struct {
 func InsertRepo(db *sql.DB, crs CreateRepoStruct) {
 	var lastInsertID int
 
-	err := db.QueryRow("INSERT INTO repository (repo_from, name, description, is_private) VALUES ($1, $2, $3, $4) returning id", crs.UserID, crs.Name, crs.Description, crs.IsPrivate).Scan(&lastInsertID)
+	err := db.QueryRow("INSERT INTO repository (user_id, name, description, is_private) VALUES ($1, $2, $3, $4) returning id", crs.UserID, crs.Name, crs.Description, crs.IsPrivate).Scan(&lastInsertID)
 	errorhandler.CheckError(err)
 }
 
@@ -42,7 +42,7 @@ type ReposDetailStruct struct {
 
 // GetReposFromUserID ...
 func GetReposFromUserID(db *sql.DB, userID int) *GetReposFromUserIDResponse {
-	rows, err := db.Query("SELECT name, description, is_private FROM repository WHERE repo_from = $1", userID)
+	rows, err := db.Query("SELECT name, description, is_private FROM repository WHERE user_id = $1", userID)
 	errorhandler.CheckError(err)
 
 	var grfur GetReposFromUserIDResponse
@@ -102,7 +102,7 @@ func GetRepoType(db *sql.DB, rts *RepoTypeStruct) bool {
 
 // CheckRepoAccessFromUserID ...
 func CheckRepoAccessFromUserID(db *sql.DB, userID int) bool {
-	rows, err := db.Query("SELECT name FROM repository WHERE repo_from = $1", userID)
+	rows, err := db.Query("SELECT name FROM repository WHERE user_id = $1", userID)
 	errorhandler.CheckError(err)
 
 	var reponame string
