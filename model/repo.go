@@ -80,7 +80,6 @@ func CheckRepoExists(db *sql.DB, reponame string) bool {
 
 // RepoTypeStruct struct
 type RepoTypeStruct struct {
-	Username string
 	Reponame string
 }
 

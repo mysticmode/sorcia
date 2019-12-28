@@ -22,7 +22,6 @@ type GetCreateRepoResponse struct {
 	IsHeaderLogin    bool
 	HeaderActiveMenu string
 	SorciaVersion    string
-	Username         string
 }
 
 // GetCreateRepo ...
@@ -30,9 +29,6 @@ func GetCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVer
 	userPresent := w.Header().Get("user-present")
 
 	if userPresent == "true" {
-		token := w.Header().Get("sorcia-cookie-token")
-		username := model.GetUsernameFromToken(db, token)
-
 		layoutPage := path.Join("./templates", "layout.tmpl")
 		headerPage := path.Join("./templates", "header.tmpl")
 		createRepoPage := path.Join("./templates", "create-repo.tmpl")
@@ -48,7 +44,6 @@ func GetCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVer
 			IsHeaderLogin:    false,
 			HeaderActiveMenu: "",
 			SorciaVersion:    sorciaVersion,
-			Username:         username,
 		}
 
 		tmpl.ExecuteTemplate(w, "layout", data)
@@ -104,19 +99,15 @@ func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder 
 
 	model.InsertRepo(db, crs)
 
-	username := model.GetUsernameFromToken(db, token)
-
-	username = "+" + username
-
 	// Create Git bare repository
-	bareRepoDir := filepath.Join(repoPath, "repositories", username, createRepoRequest.Name+".git")
+	bareRepoDir := filepath.Join(repoPath, "repositories", createRepoRequest.Name+".git")
 
 	cmd := exec.Command("git", "init", "--bare", bareRepoDir)
 	err = cmd.Run()
 	errorhandler.CheckError(err)
 
 	// Clone from the bare repository created above
-	repoDir := filepath.Join(repoPath, "repositories", username, createRepoRequest.Name)
+	repoDir := filepath.Join(repoPath, "repositories", createRepoRequest.Name)
 	cmd = exec.Command("git", "clone", bareRepoDir, repoDir)
 	err = cmd.Run()
 	errorhandler.CheckError(err)
@@ -131,12 +122,12 @@ type GetRepoResponse struct {
 	SorciaVersion    string
 	Username         string
 	Reponame         string
+	Host             string
 }
 
 // GetRepo ...
 func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion string) {
 	vars := mux.Vars(r)
-	username := vars["username"]
 	reponame := vars["reponame"]
 
 	if repoExists := model.CheckRepoExists(db, reponame); !repoExists {
@@ -145,7 +136,6 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 	}
 
 	rts := model.RepoTypeStruct{
-		Username: username,
 		Reponame: reponame,
 	}
 
@@ -153,8 +143,8 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 		IsHeaderLogin:    false,
 		HeaderActiveMenu: "",
 		SorciaVersion:    sorciaVersion,
-		Username:         username,
 		Reponame:         reponame,
+		Host:             r.Host,
 	}
 
 	// Check if repository is not private
@@ -193,17 +183,7 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 
 				tmpl.ExecuteTemplate(w, "layout", data)
 			} else {
-				errorResponse := &errorhandler.Response{
-					Error: "You don't have access to this repository.",
-				}
-
-				errorJSON, err := json.Marshal(errorResponse)
-				errorhandler.CheckError(err)
-
-				w.Header().Set("Content-Type", "application/json")
-				w.WriteHeader(http.StatusBadRequest)
-
-				w.Write(errorJSON)
+				noRepoAccess(w)
 			}
 		} else {
 			http.Redirect(w, r, "/login", http.StatusFound)
@@ -223,7 +203,6 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 	}
 
 	rts := model.RepoTypeStruct{
-		Username: username,
 		Reponame: reponame,
 	}
 

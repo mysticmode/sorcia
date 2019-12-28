@@ -1,14 +1,11 @@
-{{define "title"}}{{.Username}} | create repo{{end}}
+{{define "title"}}Create repo{{end}}
 {{define "content"}}
 <main class="container create-repo">
     <form method="post" action="/create-repo" class="form create-repo__form">
         <div class="form__title">create new repository</div>
         <div class="form__group">
             <label for="repoName">Name<i>*</i></label>
-            <div class="form__group-sub">
-                <div class="form__username-tag">+{{ .Username }} /</div>
-                <input type="text" class="form__input" id="repoName" name="name" maxlength="100" autocomplete="off" spellcheck="false" required="required" />
-            </div>
+            <input type="text" class="form__input" id="repoName" name="name" maxlength="100" autocomplete="off" spellcheck="false" required="required" />
         </div>
         <div class="form__group">
             <label for="repoDescription">Description</label>

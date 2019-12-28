@@ -1,15 +1,15 @@
-{{define "title"}}+{{ .Username }}/{{ .Reponame }}{{end}}
+{{define "title"}}{{ .Reponame }}{{end}}
 {{define "content"}}
 <main class="container repo">
     <div class="repo__header">
         <div>
-            <div class="repo__title"><a href="">+{{ .Username }}</a> / <a href="/+{{ .Username }}/{{ .Reponame }}">{{ .Reponame }}</a></div>
+            <div class="repo__title"><a href="/{{ .Reponame }}">{{ .Reponame }}</a></div>
             <div class="repo__description">Self-hosted multi-user free(libre) ebook reader.</div>
         </div>
     </div>
     <div class="repo__menu">
-        <a href="/+{{ .Username }}/{{ .Reponame }}" class="repo__menu__item">summary</a>
-        <a href="/+{{ .Username }}/{{ .Reponame }}/tree" class="repo__menu__item repo__menu__item--active">tree</a>
+        <a href="/r/{{ .Reponame }}" class="repo__menu__item">summary</a>
+        <a href="/r/{{ .Reponame }}/tree" class="repo__menu__item repo__menu__item--active">tree</a>
         <a href="" class="repo__menu__item">log</a>
         <a href="" class="repo__menu__item">refs</a>
         <a href="" class="repo__menu__item">contributors</a>

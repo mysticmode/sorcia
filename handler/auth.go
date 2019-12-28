@@ -6,9 +6,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
-	"os"
 	"path"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -263,15 +261,6 @@ func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVers
 		}
 
 		model.InsertAccount(db, rr)
-
-		username := "+" + registerRequest.Username
-
-		// Create repositories directory
-		// 0755 - The owner can read, write, execute. Everyone else can read and execute but not modify the file.
-		repoDir := filepath.Join(repoPath, "repositories", username)
-		if _, err := os.Stat(repoDir); os.IsNotExist(err) {
-			os.MkdirAll(repoDir, 0755)
-		}
 
 		// Set cookie
 		now := time.Now()
