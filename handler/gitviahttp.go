@@ -3,6 +3,7 @@ package handler
 import (
 	"bytes"
 	"compress/gzip"
+	"crypto/subtle"
 	"fmt"
 	"net/http"
 	"os"
@@ -23,6 +24,19 @@ type gitHandler struct {
 	rpc  string
 	dir  string
 	file string
+}
+
+func (gh *gitHandler) basicAuth(username, password, realm string) bool {
+
+	user, pass, ok := gh.r.BasicAuth()
+
+	if !ok || subtle.ConstantTimeCompare([]byte(user), []byte(username)) != 1 || subtle.ConstantTimeCompare([]byte(pass), []byte(password)) != 1 {
+		gh.w.Header().Set("WWW-Authenticate", `Basic realm="`+realm+`"`)
+		writeHdr(gh.w, http.StatusUnauthorized, "The repository cannot be accessed with your credentials.\n")
+		return false
+	}
+
+	return true
 }
 
 func getServiceType(r *http.Request) string {
@@ -236,12 +250,17 @@ func GitviaHTTP(w http.ResponseWriter, r *http.Request, dir string) {
 
 		file := strings.TrimPrefix(reqPath, routeMatch[1]+"/")
 
-		route.handler(gitHandler{
+		gh := gitHandler{
 			w:    w,
 			r:    r,
 			dir:  repoDir,
 			file: file,
-		})
+		}
+
+		if gh.basicAuth("username", "password", "Please enter your username and password") {
+			route.handler(gh)
+		}
+
 		return
 	}
 
