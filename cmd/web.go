@@ -65,7 +65,7 @@ func RunWeb(conf *setting.BaseStruct) {
 		handler.GetRepoTree(w, r, db, conf.Version)
 	}).Methods("GET")
 	m.PathPrefix("/r/{reponame[\\d\\w-_\\.]+\\.git$}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		handler.GitviaHTTP(w, r, conf.Paths.RepoPath)
+		handler.GitviaHTTP(w, r, db, conf.Paths.RepoPath)
 	}).Methods("GET", "POST")
 
 	staticDir := filepath.Join(conf.Paths.ProjectRoot, "public")

@@ -23,7 +23,8 @@ func hashPassword(password string) (string, error) {
 	return string(bytes), err
 }
 
-func checkPasswordHash(password, hash string) bool {
+// CheckPasswordHash ...
+func CheckPasswordHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
 }
@@ -124,7 +125,7 @@ func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion
 	}
 	sphjwtr := model.SelectPasswordHashAndJWTToken(db, sphjwt)
 
-	if isPasswordValid := checkPasswordHash(loginRequest.Password, sphjwtr.PasswordHash); isPasswordValid == true {
+	if isPasswordValid := CheckPasswordHash(loginRequest.Password, sphjwtr.PasswordHash); isPasswordValid == true {
 		isTokenValid, err := validateJWTToken(sphjwtr.Token, sphjwtr.PasswordHash)
 		errorhandler.CheckError(err)
 
