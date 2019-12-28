@@ -6,7 +6,6 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"os"
 	"path"
 	"path/filepath"
 
@@ -37,13 +36,6 @@ func RunWeb(conf *setting.BaseStruct) {
 
 	model.CreateAccount(db)
 	model.CreateRepo(db)
-
-	// Create repositories directory
-	// 0755 - The owner can read, write, execute. Everyone else can read and execute but not modify the file.
-	repoDir := filepath.Join(conf.Paths.RepoPath, "repositories")
-	if _, err := os.Stat(repoDir); os.IsNotExist(err) {
-		os.MkdirAll(repoDir, 0755)
-	}
 
 	m.Use(middleware.Middleware)
 
