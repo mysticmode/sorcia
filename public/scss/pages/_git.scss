@@ -136,7 +136,7 @@
         padding: 10px;
 
         &__item {
-            margin-right: 20px;
+            margin-right: 10px;
 
             &:last-child {
                 margin-right: 0;
@@ -163,6 +163,12 @@
             & p {
                 margin-right: 5px;
             }
+        }
+
+        &__bullet {
+            float: left;
+            color: $text-color-2;
+            margin-right: 10px;
         }
     }
 }
