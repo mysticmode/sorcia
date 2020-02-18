@@ -1,5 +1,5 @@
 ## sorcia
-Sorcia is a self-hosted web frontend for git repositories written in Go. This project is under development.
+Sorcia is a self-hosted software development platform with Git and mailing lists. This project is under development.
 
 ### pre-requisites
   - Ubuntu 18.04 LTS
