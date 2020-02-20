@@ -74,6 +74,7 @@ func CheckRepoExists(db *sql.DB, reponame string) bool {
 		err = rows.Scan(&repoID)
 		errorhandler.CheckError(err)
 	}
+	rows.Close()
 
 	if repoID != 0 {
 		return true
