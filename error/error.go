@@ -1,11 +1,15 @@
 package error
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+)
 
 // CheckError ...
 func CheckError(err error) {
 	if err != nil {
 		fmt.Printf("Error: %v", err)
+		os.Exit(1)
 	}
 }
 
