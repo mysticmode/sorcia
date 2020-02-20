@@ -3,7 +3,7 @@
 <main class="container repo">
     <div class="repo__header">
         <div>
-            <div class="repo__title"><a href="/{{ .Reponame }}">{{ .Reponame }}</a></div>
+            <div class="repo__title"><a href="/r/{{ .Reponame }}">{{ .Reponame }}</a></div>
             <div class="repo__description">Self-hosted multi-user free(libre) ebook reader.</div>
         </div>
     </div>
@@ -12,8 +12,6 @@
         <a href="/r/{{ .Reponame }}/tree" class="repo__menu__item">tree</a>
         <a href="" class="repo__menu__item">log</a>
         <a href="" class="repo__menu__item">releases</a>
-        <a href="" class="repo__menu__item">issues</a>
-        <a href="" class="repo__menu__item">lists</a>
         <a href="" class="repo__menu__item">contributors</a>
         <a href="" class="repo__menu__item">meta</a>
     </div>
@@ -22,40 +20,44 @@
         <p class="repo__sub-menu__bullet">&bull;</p>
         <a href="" class="repo__sub-menu__item">2 releases</a>
         <p class="repo__sub-menu__bullet">&bull;</p>
-        <a href="" class="repo__sub-menu__item">56 issues</a>
-        <p class="repo__sub-menu__bullet">&bull;</p>
-        <a href="" class="repo__sub-menu__item">2 lists</a>
-        <p class="repo__sub-menu__bullet">&bull;</p>
         <a href="" class="repo__sub-menu__item">23 contributors</a>
     </div>
     <div class="repo__summary">
-        <ul class="repo__latest-commits">
-            <li>
-                <div>
-                    <p><a href="">6b3ffdfc</a> - <a href="">+mysticmode</a></p>
-                    <p>2 days ago</p>
-                </div>
-                <p class="repo__commit-message">Update release announcements link in README.md</p>
-            </li>
-            <li>
-                <div>
-                    <p><a href="">6b3ffdfc</a> - <a href="">+mysticmode</a></p>
-                    <p>2 days ago</p>
-                </div>
-                <p class="repo__commit-message">Update release announcements link in README.md</p>
-            </li>
-            <li>
-                <div>
-                    <p><a href="">6b3ffdfc</a> - <a href="">+mysticmode</a></p>
-                    <p>2 days ago</p>
-                </div>
-                <p class="repo__commit-message">Update release announcements link in README.md</p>
-            </li>
-        </ul>
-        <div class="repo__clone">
-            <div class="repo__clone__title">clone</div>
-            <div class="repo__clone__item"><span>ssh </span><input type="text" onclick="this.select()" value="git@{{ .Host }}:{{ .Reponame }}.git" readonly="" /></div>
-            <div class="repo__clone__item"><span>https </span><input type="text" onclick="this.select()" value="https://{{ .Host }}/r/{{ .Reponame }}.git" readonly="" /></div>
+        <div class="repo__summary__left">
+            <ul class="repo__latest-commits">
+                <li>
+                    <div>
+                        <p><a href="">6b3ffdfc</a> - <a href="">+mysticmode</a></p>
+                        <p>2 days ago</p>
+                    </div>
+                    <p class="repo__commit-message">Update release announcements link in README.md</p>
+                </li>
+                <li>
+                    <div>
+                        <p><a href="">6b3ffdfc</a> - <a href="">+mysticmode</a></p>
+                        <p>2 days ago</p>
+                    </div>
+                    <p class="repo__commit-message">Update release announcements link in README.md</p>
+                </li>
+                <li>
+                    <div>
+                        <p><a href="">6b3ffdfc</a> - <a href="">+mysticmode</a></p>
+                        <p>2 days ago</p>
+                    </div>
+                    <p class="repo__commit-message">Update release announcements link in README.md</p>
+                </li>
+            </ul>
+        </div>
+        <div class="repo__summary__right">
+            <div class="repo__owner">
+                <div class="repo__owner__title">owner</div>
+                <div class="repo__owner__detail">{{ .Username }}</div>
+            </div>
+            <div class="repo__clone">
+                <div class="repo__clone__title">clone</div>
+                <div class="repo__clone__item"><span>ssh </span><input type="text" onclick="this.select()" value="git@{{ .Host }}:{{ .Reponame }}.git" readonly="" /></div>
+                <div class="repo__clone__item"><span>https </span><input type="text" onclick="this.select()" value="https://{{ .Host }}/r/{{ .Reponame }}.git" readonly="" /></div>
+            </div>
         </div>
     </div>
     <div class="readme">

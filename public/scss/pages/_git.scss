@@ -85,6 +85,8 @@
     }
 
     &__clone {
+        margin-top: 20px;
+        
         &__title {
             font-weight: bold;
         }
@@ -99,6 +101,13 @@
             & input[type="text"] {
                 width: 300px;
             }
+        }
+    }
+
+    &__owner {
+        &__title {
+            font-weight: bold;
+            margin-bottom: 5px;
         }
     }
 
