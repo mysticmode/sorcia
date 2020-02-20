@@ -139,10 +139,14 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 		Reponame: reponame,
 	}
 
+	userID := model.GetUserIDFromReponame(db, reponame)
+	username := model.GetUsernameFromUserID(db, userID)
+
 	data := GetRepoResponse{
 		IsHeaderLogin:    false,
 		HeaderActiveMenu: "",
 		SorciaVersion:    sorciaVersion,
+		Username:         username,
 		Reponame:         reponame,
 		Host:             r.Host,
 	}
