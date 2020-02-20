@@ -18,9 +18,6 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
-
-	// PostgreSQL driver
-	_ "github.com/lib/pq"
 )
 
 var decoder = schema.NewDecoder()

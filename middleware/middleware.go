@@ -7,8 +7,8 @@ import (
 	"sorcia/model"
 	"sorcia/setting"
 
-	// PostgreSQL driver
-	_ "github.com/lib/pq"
+	// SQLite3 driver
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var middlewareDB *sql.DB
