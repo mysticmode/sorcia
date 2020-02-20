@@ -8,7 +8,10 @@ import (
 
 // CreateAccount ...
 func CreateAccount(db *sql.DB) {
-	_, err := db.Query("CREATE TABLE IF NOT EXISTS account (id BIGSERIAL PRIMARY KEY, username VARCHAR(255) UNIQUE NOT NULL, email VARCHAR(255) UNIQUE NOT NULL, password_hash varchar(255) NOT NULL, jwt_token VARCHAR(255) NOT NULL, is_admin BOOLEAN NOT NULL DEFAULT FALSE)")
+	stmt, err := db.Prepare("CREATE TABLE IF NOT EXISTS account (id INTEGER PRIMARY KEY, username TEXT UNIQUE NOT NULL, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, jwt_token TEXT NOT NULL, is_admin BOOLEAN DEFAULT 0)")
+	errorhandler.CheckError(err)
+
+	_, err = stmt.Exec()
 	errorhandler.CheckError(err)
 }
 
@@ -23,15 +26,16 @@ type CreateAccountStruct struct {
 
 // InsertAccount ...
 func InsertAccount(db *sql.DB, cas CreateAccountStruct) {
-	var lastInsertID int
+	stmt, err := db.Prepare("INSERT INTO account (username, email, password_hash, jwt_token, is_admin) VALUES (?, ?, ?, ?, ?)")
+	errorhandler.CheckError(err)
 
-	err := db.QueryRow("INSERT INTO account (username, email, password_hash, jwt_token, is_admin) VALUES ($1, $2, $3, $4, $5) returning id", cas.Username, cas.Email, cas.PasswordHash, cas.Token, cas.IsAdmin).Scan(&lastInsertID)
+	_, err = stmt.Exec(cas.Username, cas.Email, cas.PasswordHash, cas.Token, cas.IsAdmin)
 	errorhandler.CheckError(err)
 }
 
 // GetUserIDFromToken ...
 func GetUserIDFromToken(db *sql.DB, token string) int {
-	rows, err := db.Query("SELECT id FROM account WHERE jwt_token = $1", token)
+	rows, err := db.Query("SELECT id FROM account WHERE jwt_token = ?", token)
 	errorhandler.CheckError(err)
 
 	var userID int
@@ -47,7 +51,7 @@ func GetUserIDFromToken(db *sql.DB, token string) int {
 
 // GetUsernameFromToken ...
 func GetUsernameFromToken(db *sql.DB, token string) string {
-	rows, err := db.Query("SELECT username FROM account WHERE jwt_token = $1", token)
+	rows, err := db.Query("SELECT username FROM account WHERE jwt_token = ?", token)
 	errorhandler.CheckError(err)
 
 	var username string
@@ -63,7 +67,7 @@ func GetUsernameFromToken(db *sql.DB, token string) string {
 
 // GetUsernameFromUserID ...
 func GetUsernameFromUserID(db *sql.DB, userID int) string {
-	rows, err := db.Query("SELECT username FROM account WHERE id = $1", userID)
+	rows, err := db.Query("SELECT username FROM account WHERE id = ?", userID)
 	errorhandler.CheckError(err)
 
 	var username string
@@ -91,7 +95,7 @@ type SelectPasswordHashAndJWTTokenResponse struct {
 // SelectPasswordHashAndJWTToken ...
 func SelectPasswordHashAndJWTToken(db *sql.DB, sphjwt SelectPasswordHashAndJWTTokenStruct) *SelectPasswordHashAndJWTTokenResponse {
 	// Search for username in the 'account' table with the given string
-	rows, err := db.Query("SELECT password_hash, jwt_token FROM account WHERE username = $1", sphjwt.Username)
+	rows, err := db.Query("SELECT password_hash, jwt_token FROM account WHERE username = ?", sphjwt.Username)
 	errorhandler.CheckError(err)
 
 	var sphjwtr SelectPasswordHashAndJWTTokenResponse

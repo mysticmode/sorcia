@@ -4,8 +4,7 @@ package-lock.json
 
 sorcia
 sorcia.exe
-sorcia-git
-sorcia-git.exe
+sorcia.db
 
 repositories/
 ssh/

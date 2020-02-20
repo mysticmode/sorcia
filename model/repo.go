@@ -8,7 +8,10 @@ import (
 
 // CreateRepo ...
 func CreateRepo(db *sql.DB) {
-	_, err := db.Query("CREATE TABLE IF NOT EXISTS repository (id BIGSERIAL, user_id INTEGER NOT NULL, name VARCHAR(255) UNIQUE NOT NULL, description VARCHAR(500), is_private BOOLEAN NOT NULL DEFAULT FALSE, PRIMARY KEY(id), FOREIGN KEY (user_id) REFERENCES account(id))")
+	stmt, err := db.Prepare("CREATE TABLE IF NOT EXISTS repository (id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, name TEXT UNIQUE NOT NULL, description TEXT, is_private BOOLEAN DEFAULT 0, FOREIGN KEY (user_id) REFERENCES account(id))")
+	errorhandler.CheckError(err)
+
+	_, err = stmt.Exec()
 	errorhandler.CheckError(err)
 }
 
@@ -22,9 +25,10 @@ type CreateRepoStruct struct {
 
 // InsertRepo ...
 func InsertRepo(db *sql.DB, crs CreateRepoStruct) {
-	var lastInsertID int
+	stmt, err := db.Prepare("INSERT INTO repository (user_id, name, description, is_private) VALUES (?, ?, ?, ?)")
+	errorhandler.CheckError(err)
 
-	err := db.QueryRow("INSERT INTO repository (user_id, name, description, is_private) VALUES ($1, $2, $3, $4) returning id", crs.UserID, crs.Name, crs.Description, crs.IsPrivate).Scan(&lastInsertID)
+	_, err = stmt.Exec(crs.UserID, crs.Name, crs.Description, crs.IsPrivate)
 	errorhandler.CheckError(err)
 }
 
@@ -42,7 +46,7 @@ type ReposDetailStruct struct {
 
 // GetReposFromUserID ...
 func GetReposFromUserID(db *sql.DB, userID int) *GetReposFromUserIDResponse {
-	rows, err := db.Query("SELECT name, description, is_private FROM repository WHERE user_id = $1", userID)
+	rows, err := db.Query("SELECT name, description, is_private FROM repository WHERE user_id = ?", userID)
 	errorhandler.CheckError(err)
 
 	var grfur GetReposFromUserIDResponse
@@ -61,7 +65,7 @@ func GetReposFromUserID(db *sql.DB, userID int) *GetReposFromUserIDResponse {
 
 // CheckRepoExists ...
 func CheckRepoExists(db *sql.DB, reponame string) bool {
-	rows, err := db.Query("SELECT id FROM repository WHERE name = $1", reponame)
+	rows, err := db.Query("SELECT id FROM repository WHERE name = ?", reponame)
 	errorhandler.CheckError(err)
 
 	var repoID int
@@ -85,7 +89,7 @@ type RepoTypeStruct struct {
 
 // GetRepoType ...
 func GetRepoType(db *sql.DB, rts *RepoTypeStruct) bool {
-	rows, err := db.Query("SELECT is_private FROM repository WHERE name = $1", rts.Reponame)
+	rows, err := db.Query("SELECT is_private FROM repository WHERE name = ?", rts.Reponame)
 	errorhandler.CheckError(err)
 
 	var isPrivate bool
@@ -101,7 +105,7 @@ func GetRepoType(db *sql.DB, rts *RepoTypeStruct) bool {
 
 // CheckRepoAccessFromUserID ...
 func CheckRepoAccessFromUserID(db *sql.DB, userID int) bool {
-	rows, err := db.Query("SELECT name FROM repository WHERE user_id = $1", userID)
+	rows, err := db.Query("SELECT name FROM repository WHERE user_id = ?", userID)
 	errorhandler.CheckError(err)
 
 	var reponame string
@@ -121,7 +125,7 @@ func CheckRepoAccessFromUserID(db *sql.DB, userID int) bool {
 
 // GetUserIDFromReponame ...
 func GetUserIDFromReponame(db *sql.DB, reponame string) int {
-	rows, err := db.Query("SELECT user_id FROM repository WHERE name = $1", reponame)
+	rows, err := db.Query("SELECT user_id FROM repository WHERE name = ?", reponame)
 	errorhandler.CheckError(err)
 
 	var userID int
