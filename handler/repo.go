@@ -122,6 +122,7 @@ type GetRepoResponse struct {
 	SorciaVersion    string
 	Username         string
 	Reponame         string
+	IsRepoPrivate    bool
 	Host             string
 }
 
@@ -148,6 +149,7 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 		SorciaVersion:    sorciaVersion,
 		Username:         username,
 		Reponame:         reponame,
+		IsRepoPrivate:    false,
 		Host:             r.Host,
 	}
 
@@ -174,6 +176,8 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 
 			// Check if the logged in user has access to view the repository.
 			if hasRepoAccess := model.CheckRepoAccessFromUserID(db, userIDFromToken); hasRepoAccess {
+				data.IsRepoPrivate = true
+
 				layoutPage := path.Join("./templates", "layout.tmpl")
 				headerPage := path.Join("./templates", "header.tmpl")
 				repoSummaryPage := path.Join("./templates", "repo-summary.tmpl")
@@ -216,6 +220,7 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 		SorciaVersion:    sorciaVersion,
 		Username:         username,
 		Reponame:         reponame,
+		IsRepoPrivate:    false,
 	}
 
 	layoutPage := path.Join("./templates", "layout.tmpl")
@@ -241,6 +246,7 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 
 			// Check if the logged in user has access to view the repository.
 			if hasRepoAccess := model.CheckRepoAccessFromUserID(db, userIDFromToken); hasRepoAccess {
+				data.IsRepoPrivate = true
 				tmpl.ExecuteTemplate(w, "layout", data)
 			} else {
 				noRepoAccess(w)
