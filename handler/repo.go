@@ -162,19 +162,6 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 		Host:             r.Host,
 	}
 
-	readmeFile := filepath.Join(repoPath, reponame, "README.md")
-	_, err := os.Stat(readmeFile)
-	if !os.IsNotExist(err) {
-		dat, err := ioutil.ReadFile(readmeFile)
-		if err != nil {
-			fmt.Println(err)
-		}
-		md := []byte(dat)
-		output := blackfriday.Run(md)
-
-		data.RepoDetail.Readme = template.HTML(output)
-	}
-
 	// Check if repository is not private
 	if isRepoPrivate := model.GetRepoType(db, &rts); !isRepoPrivate {
 		layoutPage := path.Join("./templates", "layout.tmpl")
@@ -187,6 +174,8 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
+
+		data.RepoDetail.Readme = processREADME(repoPath, reponame)
 
 		tmpl.ExecuteTemplate(w, "layout", data)
 	} else {
@@ -219,6 +208,26 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 			http.Redirect(w, r, "/login", http.StatusFound)
 		}
 	}
+}
+
+func processREADME(repoPath, repoName string) template.HTML {
+	readmeFile := filepath.Join(repoPath, repoName, "README.md")
+	_, err := os.Stat(readmeFile)
+
+	html := template.HTML("")
+
+	if !os.IsNotExist(err) {
+		dat, err := ioutil.ReadFile(readmeFile)
+		if err != nil {
+			fmt.Println(err)
+		}
+		md := []byte(dat)
+		output := blackfriday.Run(md)
+
+		html = template.HTML(output)
+	}
+
+	return html
 }
 
 // GetRepoTree ...
