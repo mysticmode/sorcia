@@ -134,10 +134,11 @@ type GetRepoResponse struct {
 
 // RepoDetail struct
 type RepoDetail struct {
-	Readme    template.HTML
-	WalkPath  string
-	RepoDirs  []string
-	RepoFiles []string
+	Readme     template.HTML
+	LegendPath template.HTML
+	WalkPath   string
+	RepoDirs   []string
+	RepoFiles  []string
 }
 
 // GetRepo ...
@@ -327,9 +328,24 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 	dirPath := filepath.Join(repoPath, reponame, frdpath)
 	dirs, files := walkThrough(dirPath)
 
+	legendPathSplit := strings.Split(frdpath, "/")
+
+	legendPathArr := make([]string, len(legendPathSplit))
+
+	for i, s := range legendPathSplit {
+		legendPathArr[i] = "<a href=\"/r/" + reponame + "/tree"
+		for j := 0; j <= i; j++ {
+			legendPathArr[i] = fmt.Sprintf("%s/%s", legendPathArr[i], legendPathSplit[j])
+		}
+		legendPathArr[i] = fmt.Sprintf("%s\">%s</a>", legendPathArr[i], s)
+	}
+
+	legendPath := template.HTML(strings.Join(legendPathArr, " / "))
+
 	data.RepoDetail.RepoDirs = dirs
 	data.RepoDetail.RepoFiles = files
 	data.RepoDetail.WalkPath = r.URL.Path
+	data.RepoDetail.LegendPath = legendPath
 
 	layoutPage := path.Join("./templates", "layout.tmpl")
 	headerPage := path.Join("./templates", "header.tmpl")
