@@ -12,6 +12,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"strings"
 
 	errorhandler "sorcia/error"
 	"sorcia/model"
@@ -134,6 +135,7 @@ type GetRepoResponse struct {
 // RepoDetail struct
 type RepoDetail struct {
 	Readme    template.HTML
+	WalkPath  string
 	RepoDirs  []string
 	RepoFiles []string
 }
@@ -238,7 +240,6 @@ func processREADME(repoPath, repoName string) template.HTML {
 // GetRepoTree ...
 func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion, repoPath string) {
 	vars := mux.Vars(r)
-	username := vars["username"]
 	reponame := vars["reponame"]
 
 	if repoExists := model.CheckRepoExists(db, reponame); !repoExists {
@@ -254,35 +255,16 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 		IsHeaderLogin:    false,
 		HeaderActiveMenu: "",
 		SorciaVersion:    sorciaVersion,
-		Username:         username,
 		Reponame:         reponame,
 		IsRepoPrivate:    false,
 	}
-
-	// err := filepath.Walk(dirPath,
-	// 	func(path string, info os.FileInfo, err error) error {
-	// 		if err != nil {
-	// 			return err
-	// 		}
-	// 		if info.IsDir() {
-	// 			if !strings.HasPrefix(path, "repositories/sorcia/.git") {
-	// 				dirs = append(dirs, path)
-	// 			}
-	// 		} else {
-	// 			files = append(files, path)
-	// 		}
-	// 		fmt.Println(dirs)
-	// 		return nil
-	// 	})
-	// if err != nil {
-	// 	log.Println(err)
-	// }
 
 	dirPath := filepath.Join(repoPath, reponame)
 	dirs, files := walkThrough(dirPath)
 
 	data.RepoDetail.RepoDirs = dirs
 	data.RepoDetail.RepoFiles = files
+	data.RepoDetail.WalkPath = r.URL.Path
 
 	layoutPage := path.Join("./templates", "layout.tmpl")
 	headerPage := path.Join("./templates", "header.tmpl")
@@ -316,6 +298,72 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 			http.Redirect(w, r, "/login", http.StatusFound)
 		}
 	}
+}
+
+// GetRepoTreePath ...
+func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion, repoPath string) {
+	vars := mux.Vars(r)
+	reponame := vars["reponame"]
+
+	if repoExists := model.CheckRepoExists(db, reponame); !repoExists {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	rts := model.RepoTypeStruct{
+		Reponame: reponame,
+	}
+
+	data := GetRepoResponse{
+		IsHeaderLogin:    false,
+		HeaderActiveMenu: "",
+		SorciaVersion:    sorciaVersion,
+		Reponame:         reponame,
+		IsRepoPrivate:    false,
+	}
+
+	frdpath := strings.Split(r.URL.Path, "r/"+reponame+"/tree/")[1]
+
+	dirPath := filepath.Join(repoPath, reponame, frdpath)
+	dirs, files := walkThrough(dirPath)
+
+	data.RepoDetail.RepoDirs = dirs
+	data.RepoDetail.RepoFiles = files
+	data.RepoDetail.WalkPath = r.URL.Path
+
+	layoutPage := path.Join("./templates", "layout.tmpl")
+	headerPage := path.Join("./templates", "header.tmpl")
+	repoTreePage := path.Join("./templates", "repo-tree.tmpl")
+	footerPage := path.Join("./templates", "footer.tmpl")
+
+	tmpl, err := template.ParseFiles(layoutPage, headerPage, repoTreePage, footerPage)
+	errorhandler.CheckError(err)
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+
+	// Check if repository is not private
+	if isRepoPrivate := model.GetRepoType(db, &rts); !isRepoPrivate {
+		tmpl.ExecuteTemplate(w, "layout", data)
+	} else {
+		userPresent := w.Header().Get("user-present")
+
+		if userPresent != "" {
+			token := w.Header().Get("sorcia-cookie-token")
+			userIDFromToken := model.GetUserIDFromToken(db, token)
+
+			// Check if the logged in user has access to view the repository.
+			if hasRepoAccess := model.CheckRepoAccessFromUserID(db, userIDFromToken); hasRepoAccess {
+				data.IsRepoPrivate = true
+				tmpl.ExecuteTemplate(w, "layout", data)
+			} else {
+				noRepoAccess(w)
+			}
+		} else {
+			http.Redirect(w, r, "/login", http.StatusFound)
+		}
+	}
+
 }
 
 // Walk through files and folders

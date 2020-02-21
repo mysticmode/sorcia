@@ -31,10 +31,10 @@
     </div>
     <div class="repo-tree">
         {{range .RepoDetail.RepoDirs}}
-        <a href="" class="repo-tree__directory">{{.}}</a>
+        <a href="{{ $.RepoDetail.WalkPath }}/{{.}}" class="repo-tree__directory">{{.}}</a>
         {{end}}
         {{range .RepoDetail.RepoFiles}}
-        <a href="" class="repo-tree__file">{{.}}</a>
+        <a href="{{ $.RepoDetail.WalkPath }}/{{.}}" class="repo-tree__file">{{.}}</a>
         {{end}}
     </div>
 </main>
