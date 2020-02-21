@@ -207,25 +207,30 @@
     
     & p {
         margin-bottom: 15px;
-
-        & code {
-            font-family: $font-source-code;
-            font-size: 14px;
-            background: $brand-bg-1;
-            padding: 5px;
-        }
     }
 
     & ul {
         margin-bottom: 15px;
     }
 
-    & pre {
+    & li {
+        margin-bottom: 5px;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    & pre, & code {
         font-family: $font-source-code;
         font-size: 14px;
+        line-height: 22px;
         background: $brand-bg-1;
-        padding: 10px;
-        margin-bottom: 10px;
+    }
+
+    & pre {
+        margin-bottom: 15px;
+        padding: 5px;
     }
 }
 
