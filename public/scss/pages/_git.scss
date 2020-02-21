@@ -190,14 +190,19 @@
 }
 
 .readme {
+    & h1 {
+        font-size: 22px;
+        margin-bottom: 10px;
+    }
+
     & h2 {
         font-size: 17px;
-        margin-bottom: 5px;
+        margin-bottom: 10px;
     }
 
     & h3 {
         font-size: 15px;
-        margin-bottom: 5px;
+        margin-bottom: 10px;
     }
     
     & p {
@@ -211,11 +216,16 @@
         }
     }
 
+    & ul {
+        margin-bottom: 15px;
+    }
+
     & pre {
         font-family: $font-source-code;
         font-size: 14px;
         background: $brand-bg-1;
         padding: 10px;
+        margin-bottom: 10px;
     }
 }
 

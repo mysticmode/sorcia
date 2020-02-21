@@ -56,7 +56,7 @@ func RunWeb(conf *setting.BaseStruct) {
 		handler.PostCreateRepo(w, r, db, decoder, conf.Paths.RepoPath)
 	}).Methods("POST")
 	m.HandleFunc("/r/{reponame}", func(w http.ResponseWriter, r *http.Request) {
-		handler.GetRepo(w, r, db, conf.Version)
+		handler.GetRepo(w, r, db, conf.Version, conf.Paths.RepoPath)
 	}).Methods("GET")
 	m.HandleFunc("/r/{reponame}/tree", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetRepoTree(w, r, db, conf.Version)

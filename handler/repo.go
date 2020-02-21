@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"io/ioutil"
 	"net/http"
+	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
@@ -15,6 +17,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
+	"gopkg.in/russross/blackfriday.v2"
 )
 
 // GetCreateRepoResponse struct
@@ -124,10 +127,16 @@ type GetRepoResponse struct {
 	Reponame         string
 	IsRepoPrivate    bool
 	Host             string
+	RepoDetail       RepoDetail
+}
+
+// RepoDetail struct
+type RepoDetail struct {
+	Readme template.HTML
 }
 
 // GetRepo ...
-func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion string) {
+func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion string, repoPath string) {
 	vars := mux.Vars(r)
 	reponame := vars["reponame"]
 
@@ -151,6 +160,19 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 		Reponame:         reponame,
 		IsRepoPrivate:    false,
 		Host:             r.Host,
+	}
+
+	readmeFile := filepath.Join(repoPath, reponame, "README.md")
+	_, err := os.Stat(readmeFile)
+	if !os.IsNotExist(err) {
+		dat, err := ioutil.ReadFile(readmeFile)
+		if err != nil {
+			fmt.Println(err)
+		}
+		md := []byte(dat)
+		output := blackfriday.Run(md)
+
+		data.RepoDetail.Readme = template.HTML(output)
 	}
 
 	// Check if repository is not private
