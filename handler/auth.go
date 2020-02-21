@@ -52,6 +52,7 @@ type LoginPageResponse struct {
 	IsHeaderLogin      bool
 	HeaderActiveMenu   string
 	SorciaVersion      string
+	IsShowSignUp       bool
 	LoginErrMessage    string
 	RegisterErrMessage string
 }
@@ -78,6 +79,7 @@ func GetLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion 
 			IsHeaderLogin:      true,
 			HeaderActiveMenu:   "",
 			SorciaVersion:      sorciaVersion,
+			IsShowSignUp:       !model.CheckIfFirstUserExists(db),
 			LoginErrMessage:    "",
 			RegisterErrMessage: "",
 		}

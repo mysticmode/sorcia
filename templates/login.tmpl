@@ -17,6 +17,7 @@
             <a href="">forgot your password?</a>
         </div>
     </form>
+    {{if .IsShowSignUp}}
     <form method="post" action="/login" class="onboard__form">
         <div class="onboard__form__title">create account</div>
         <div class="onboard__form__error">{{ .RegisterErrMessage }}</div>
@@ -35,5 +36,6 @@
         <input type="hidden" name="register" value="1" />
         <input type="submit" class="button button--primary" value="Create account" />
     </form>
+    {{end}}
 </main>
 {{end}}

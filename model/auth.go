@@ -108,3 +108,24 @@ func SelectPasswordHashAndJWTToken(db *sql.DB, sphjwt SelectPasswordHashAndJWTTo
 
 	return &sphjwtr
 }
+
+// CheckIfFirstUserExists ...
+func CheckIfFirstUserExists(db *sql.DB) bool {
+	rows, err := db.Query("SELECT username from account WHERE id = ?", 1)
+	errorhandler.CheckError(err)
+
+	var username string
+	userExists := false
+
+	if rows.Next() {
+		err = rows.Scan(&username)
+		errorhandler.CheckError(err)
+	}
+	rows.Close()
+
+	if username != "" {
+		userExists = true
+	}
+
+	return userExists
+}
