@@ -24,8 +24,11 @@
             </select>
         </div>
         <div class="repo__sub-menu__item path">
+            {{if .RepoDetail.PathEmpty}}
+            {{else}}
             <p>path:</p>
-            <div>/ {{.RepoDetail.LegendPath}}</div>
+            <div>{{.RepoDetail.LegendPath}}</div>
+            {{end}}
         </div>
     </div>
     <div class="repo-tree">
