@@ -200,6 +200,8 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 				w.Header().Set("Content-Type", "text/html; charset=utf-8")
 				w.WriteHeader(http.StatusOK)
 
+				data.RepoDetail.Readme = processREADME(repoPath, reponame)
+
 				tmpl.ExecuteTemplate(w, "layout", data)
 			} else {
 				noRepoAccess(w)
