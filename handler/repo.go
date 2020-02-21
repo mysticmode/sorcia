@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"html/template"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -132,7 +133,9 @@ type GetRepoResponse struct {
 
 // RepoDetail struct
 type RepoDetail struct {
-	Readme template.HTML
+	Readme    template.HTML
+	RepoDirs  []string
+	RepoFiles []string
 }
 
 // GetRepo ...
@@ -233,7 +236,7 @@ func processREADME(repoPath, repoName string) template.HTML {
 }
 
 // GetRepoTree ...
-func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion string) {
+func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion, repoPath string) {
 	vars := mux.Vars(r)
 	username := vars["username"]
 	reponame := vars["reponame"]
@@ -255,6 +258,31 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 		Reponame:         reponame,
 		IsRepoPrivate:    false,
 	}
+
+	// err := filepath.Walk(dirPath,
+	// 	func(path string, info os.FileInfo, err error) error {
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 		if info.IsDir() {
+	// 			if !strings.HasPrefix(path, "repositories/sorcia/.git") {
+	// 				dirs = append(dirs, path)
+	// 			}
+	// 		} else {
+	// 			files = append(files, path)
+	// 		}
+	// 		fmt.Println(dirs)
+	// 		return nil
+	// 	})
+	// if err != nil {
+	// 	log.Println(err)
+	// }
+
+	dirPath := filepath.Join(repoPath, reponame)
+	dirs, files := walkThrough(dirPath)
+
+	data.RepoDetail.RepoDirs = dirs
+	data.RepoDetail.RepoFiles = files
 
 	layoutPage := path.Join("./templates", "layout.tmpl")
 	headerPage := path.Join("./templates", "header.tmpl")
@@ -288,6 +316,26 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 			http.Redirect(w, r, "/login", http.StatusFound)
 		}
 	}
+}
+
+// Walk through files and folders
+func walkThrough(dirPath string) ([]string, []string) {
+	var dirs, files []string
+	entries, err := ioutil.ReadDir(dirPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, f := range entries {
+		if f.IsDir() && f.Name() != ".git" {
+			dirs = append(dirs, f.Name())
+		} else {
+			if f.Name() != ".git" {
+				files = append(files, f.Name())
+			}
+		}
+	}
+
+	return dirs, files
 }
 
 func noRepoAccess(w http.ResponseWriter) {

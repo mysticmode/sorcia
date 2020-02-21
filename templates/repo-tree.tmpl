@@ -25,14 +25,17 @@
         </div>
         <div class="repo__sub-menu__item path">
             <p>path:</p>
-            <div>/ <a href="">config</a> / <a href="">cmd</a> /</div>
+            <!-- <div>/ <a href="">config</a> / <a href="">cmd</a> /</div> -->
+            <div>/</div>
         </div>
     </div>
     <div class="repo-tree">
-        <a href="" class="repo-tree__file">.gitignore</a>
-        <a href="" class="repo-tree__file">gulpfile.js</a>
-        <a href="" class="repo-tree__file">package.json</a>
-        <a href="" class="repo-tree__directory">src /</a>
+        {{range .RepoDetail.RepoDirs}}
+        <a href="" class="repo-tree__directory">{{.}}</a>
+        {{end}}
+        {{range .RepoDetail.RepoFiles}}
+        <a href="" class="repo-tree__file">{{.}}</a>
+        {{end}}
     </div>
 </main>
 {{end}}
