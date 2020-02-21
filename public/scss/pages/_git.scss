@@ -4,6 +4,11 @@
 
     &__repos {
         width: 610px;
+
+        &__title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
         
         & li {
             background: $brand-bg-1;
@@ -25,20 +30,6 @@
                 background: $text-color-2;
                 padding: 2px;
                 margin-left: 2px;
-            }
-        }
-
-        &__search {
-            display: flex;
-            width: 100%;
-            margin-bottom: 10px;
-
-            & input[type="text"] {
-                width: 100%;
-            }
-
-            & button {
-                margin-left: 10px;
             }
         }
     }
