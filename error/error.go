@@ -8,7 +8,7 @@ import (
 // CheckError ...
 func CheckError(err error) {
 	if err != nil {
-		fmt.Printf("Error: %v", err)
+		fmt.Printf("Error: %v\n", err)
 		os.Exit(1)
 	}
 }
