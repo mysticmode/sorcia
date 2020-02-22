@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"bufio"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -134,12 +135,13 @@ type GetRepoResponse struct {
 
 // RepoDetail struct
 type RepoDetail struct {
-	Readme     template.HTML
-	LegendPath template.HTML
-	WalkPath   string
-	PathEmpty  bool
-	RepoDirs   []string
-	RepoFiles  []string
+	Readme      template.HTML
+	FileContent template.HTML
+	LegendPath  template.HTML
+	WalkPath    string
+	PathEmpty   bool
+	RepoDirs    []string
+	RepoFiles   []string
 }
 
 // GetRepo ...
@@ -328,7 +330,8 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 	frdpath := strings.Split(r.URL.Path, "r/"+reponame+"/tree/")[1]
 
 	dirPath := filepath.Join(repoPath, reponame, frdpath)
-	dirs, files := walkThrough(dirPath)
+	fi, err := os.Stat(dirPath)
+	errorhandler.CheckError(err)
 
 	legendPathSplit := strings.Split(frdpath, "/")
 
@@ -345,6 +348,58 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 		}
 		legendPathArr[i] = fmt.Sprintf("%s\">%s</a>", legendPathArr[i], s)
 	}
+
+	if fi.Mode().IsRegular() {
+		file, err := os.Open(dirPath)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer file.Close()
+
+		var codeLines []string
+		scanner := bufio.NewScanner(file)
+		for scanner.Scan() {
+			codeLines = append(codeLines, scanner.Text())
+		}
+
+		if err := scanner.Err(); err != nil {
+			log.Fatal(err)
+		}
+
+		code := strings.Join(codeLines, "\n")
+
+		fileDotSplit := strings.Split(dirPath, ".")
+		fileExt := fileDotSplit[len(fileDotSplit)-1]
+
+		fileContent := fmt.Sprintf("<pre><code class=\"%s\">%s</code></pre>", fileExt, code)
+		html := template.HTML(fileContent)
+
+		legendPath := template.HTML(strings.Join(legendPathArr, " / "))
+
+		// data.RepoDetail.RepoDirs = dirs
+		// data.RepoDetail.RepoFiles = files
+		data.RepoDetail.PathEmpty = false
+		data.RepoDetail.WalkPath = r.URL.Path
+		data.RepoDetail.LegendPath = legendPath
+		data.RepoDetail.FileContent = html
+
+		layoutPage := path.Join("./templates", "layout.tmpl")
+		headerPage := path.Join("./templates", "header.tmpl")
+		fileViewerPage := path.Join("./templates", "file-viewer.tmpl")
+		footerPage := path.Join("./templates", "footer.tmpl")
+
+		tmpl, err := template.ParseFiles(layoutPage, headerPage, fileViewerPage, footerPage)
+		errorhandler.CheckError(err)
+
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
+
+		tmpl.ExecuteTemplate(w, "layout", data)
+
+		return
+	}
+
+	dirs, files := walkThrough(dirPath)
 
 	legendPath := template.HTML(strings.Join(legendPathArr, " / "))
 
@@ -393,9 +448,7 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 func walkThrough(dirPath string) ([]string, []string) {
 	var dirs, files []string
 	entries, err := ioutil.ReadDir(dirPath)
-	if err != nil {
-		log.Fatal(err)
-	}
+	errorhandler.CheckError(err)
 	for _, f := range entries {
 		if f.IsDir() && f.Name() != ".git" {
 			dirs = append(dirs, f.Name())
