@@ -35,10 +35,10 @@ func GetCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVer
 	userPresent := w.Header().Get("user-present")
 
 	if userPresent == "true" {
-		layoutPage := path.Join("./templates", "layout.tmpl")
-		headerPage := path.Join("./templates", "header.tmpl")
-		createRepoPage := path.Join("./templates", "create-repo.tmpl")
-		footerPage := path.Join("./templates", "footer.tmpl")
+		layoutPage := path.Join("./templates", "layout.html")
+		headerPage := path.Join("./templates", "header.html")
+		createRepoPage := path.Join("./templates", "create-repo.html")
+		footerPage := path.Join("./templates", "footer.html")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, createRepoPage, footerPage)
 		errorhandler.CheckError(err)
@@ -173,10 +173,10 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 
 	// Check if repository is not private
 	if isRepoPrivate := model.GetRepoType(db, &rts); !isRepoPrivate {
-		layoutPage := path.Join("./templates", "layout.tmpl")
-		headerPage := path.Join("./templates", "header.tmpl")
-		repoSummaryPage := path.Join("./templates", "repo-summary.tmpl")
-		footerPage := path.Join("./templates", "footer.tmpl")
+		layoutPage := path.Join("./templates", "layout.html")
+		headerPage := path.Join("./templates", "header.html")
+		repoSummaryPage := path.Join("./templates", "repo-summary.html")
+		footerPage := path.Join("./templates", "footer.html")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, repoSummaryPage, footerPage)
 		errorhandler.CheckError(err)
@@ -198,10 +198,10 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 			if hasRepoAccess := model.CheckRepoAccessFromUserID(db, userIDFromToken); hasRepoAccess {
 				data.IsRepoPrivate = true
 
-				layoutPage := path.Join("./templates", "layout.tmpl")
-				headerPage := path.Join("./templates", "header.tmpl")
-				repoSummaryPage := path.Join("./templates", "repo-summary.tmpl")
-				footerPage := path.Join("./templates", "footer.tmpl")
+				layoutPage := path.Join("./templates", "layout.html")
+				headerPage := path.Join("./templates", "header.html")
+				repoSummaryPage := path.Join("./templates", "repo-summary.html")
+				footerPage := path.Join("./templates", "footer.html")
 
 				tmpl, err := template.ParseFiles(layoutPage, headerPage, repoSummaryPage, footerPage)
 				errorhandler.CheckError(err)
@@ -271,10 +271,10 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 	data.RepoDetail.WalkPath = r.URL.Path
 	data.RepoDetail.PathEmpty = true
 
-	layoutPage := path.Join("./templates", "layout.tmpl")
-	headerPage := path.Join("./templates", "header.tmpl")
-	repoTreePage := path.Join("./templates", "repo-tree.tmpl")
-	footerPage := path.Join("./templates", "footer.tmpl")
+	layoutPage := path.Join("./templates", "layout.html")
+	headerPage := path.Join("./templates", "header.html")
+	repoTreePage := path.Join("./templates", "repo-tree.html")
+	footerPage := path.Join("./templates", "footer.html")
 
 	tmpl, err := template.ParseFiles(layoutPage, headerPage, repoTreePage, footerPage)
 	errorhandler.CheckError(err)
@@ -383,10 +383,10 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 		data.RepoDetail.LegendPath = legendPath
 		data.RepoDetail.FileContent = html
 
-		layoutPage := path.Join("./templates", "layout.tmpl")
-		headerPage := path.Join("./templates", "header.tmpl")
-		fileViewerPage := path.Join("./templates", "file-viewer.tmpl")
-		footerPage := path.Join("./templates", "footer.tmpl")
+		layoutPage := path.Join("./templates", "layout.html")
+		headerPage := path.Join("./templates", "header.html")
+		fileViewerPage := path.Join("./templates", "file-viewer.html")
+		footerPage := path.Join("./templates", "footer.html")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, fileViewerPage, footerPage)
 		errorhandler.CheckError(err)
@@ -409,10 +409,10 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 	data.RepoDetail.WalkPath = r.URL.Path
 	data.RepoDetail.LegendPath = legendPath
 
-	layoutPage := path.Join("./templates", "layout.tmpl")
-	headerPage := path.Join("./templates", "header.tmpl")
-	repoTreePage := path.Join("./templates", "repo-tree.tmpl")
-	footerPage := path.Join("./templates", "footer.tmpl")
+	layoutPage := path.Join("./templates", "layout.html")
+	headerPage := path.Join("./templates", "header.html")
+	repoTreePage := path.Join("./templates", "repo-tree.html")
+	footerPage := path.Join("./templates", "footer.html")
 
 	tmpl, err := template.ParseFiles(layoutPage, headerPage, repoTreePage, footerPage)
 	errorhandler.CheckError(err)
