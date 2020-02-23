@@ -591,6 +591,8 @@ func getCommits(repoPath, reponame string, commits int) *RepoLogs {
 	}
 
 	ss := strings.Split(out.String(), "\n")
+	fmt.Println(out.String())
+	fmt.Println(ss)
 
 	rla := RepoLogs{}
 	rl := RepoLog{}
