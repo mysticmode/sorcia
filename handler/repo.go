@@ -371,6 +371,10 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 		fileDotSplit := strings.Split(dirPath, ".")
 		fileExt := fileDotSplit[len(fileDotSplit)-1]
 
+		if fileExt == "html" || fileExt == "tmpl" {
+			code = template.HTMLEscaper(code)
+		}
+
 		fileContent := fmt.Sprintf("<pre><code class=\"%s\">%s</code></pre>", fileExt, code)
 		html := template.HTML(fileContent)
 
