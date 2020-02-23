@@ -64,6 +64,9 @@ func RunWeb(conf *setting.BaseStruct) {
 	m.PathPrefix("/r/{reponame}/tree/{[a-zA-Z0-9]+}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		handler.GetRepoTreePath(w, r, db, conf.Version, conf.Paths.RepoPath)
 	}).Methods("GET")
+	m.HandleFunc("/r/{reponame}/log", func(w http.ResponseWriter, r *http.Request) {
+		handler.GetRepoLog(w, r, db, conf.Version, conf.Paths.RepoPath)
+	}).Methods("GET")
 	m.PathPrefix("/r/{reponame[\\d\\w-_\\.]+\\.git$}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		handler.GitviaHTTP(w, r, db, conf.Paths.RepoPath)
 	}).Methods("GET", "POST")

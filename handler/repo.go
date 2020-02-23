@@ -2,6 +2,7 @@ package handler
 
 import (
 	"bufio"
+	"bytes"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -13,6 +14,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	errorhandler "sorcia/error"
@@ -131,6 +133,8 @@ type GetRepoResponse struct {
 	IsRepoPrivate    bool
 	Host             string
 	RepoDetail       RepoDetail
+	RepoLogs         RepoLogs
+	DisplayCommits   string
 }
 
 // RepoDetail struct
@@ -142,6 +146,15 @@ type RepoDetail struct {
 	PathEmpty   bool
 	RepoDirs    []string
 	RepoFiles   []string
+}
+
+// RepoLog struct
+type RepoLog struct {
+	IsHead  bool
+	Hash    string
+	Author  string
+	Date    string
+	Message string
 }
 
 // GetRepo ...
@@ -478,4 +491,126 @@ func noRepoAccess(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusBadRequest)
 
 	w.Write(errorJSON)
+}
+
+// GetRepoLog ...
+func GetRepoLog(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion, repoPath string) {
+	vars := mux.Vars(r)
+	reponame := vars["reponame"]
+
+	if repoExists := model.CheckRepoExists(db, reponame); !repoExists {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	rts := model.RepoTypeStruct{
+		Reponame: reponame,
+	}
+
+	data := GetRepoResponse{
+		IsHeaderLogin:    false,
+		HeaderActiveMenu: "",
+		SorciaVersion:    sorciaVersion,
+		Reponame:         reponame,
+		IsRepoPrivate:    false,
+	}
+
+	commitCounts := getCommitCounts(repoPath, reponame)
+	fmt.Println(commitCounts)
+
+	commits := getCommits(repoPath, reponame, -10)
+	data.RepoLogs = *commits
+
+	layoutPage := path.Join("./templates", "layout.html")
+	headerPage := path.Join("./templates", "header.html")
+	repoLogPage := path.Join("./templates", "repo-log.html")
+	footerPage := path.Join("./templates", "footer.html")
+
+	tmpl, err := template.ParseFiles(layoutPage, headerPage, repoLogPage, footerPage)
+	errorhandler.CheckError(err)
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+
+	// Check if repository is not private
+	if isRepoPrivate := model.GetRepoType(db, &rts); !isRepoPrivate {
+		tmpl.ExecuteTemplate(w, "layout", data)
+	} else {
+		userPresent := w.Header().Get("user-present")
+
+		if userPresent != "" {
+			token := w.Header().Get("sorcia-cookie-token")
+			userIDFromToken := model.GetUserIDFromToken(db, token)
+
+			// Check if the logged in user has access to view the repository.
+			if hasRepoAccess := model.CheckRepoAccessFromUserID(db, userIDFromToken); hasRepoAccess {
+				data.IsRepoPrivate = true
+				tmpl.ExecuteTemplate(w, "layout", data)
+			} else {
+				noRepoAccess(w)
+			}
+		} else {
+			http.Redirect(w, r, "/login", http.StatusFound)
+		}
+	}
+}
+
+func getCommitCounts(repoPath, reponame string) string {
+	dirPath := filepath.Join(repoPath, reponame+".git")
+	cmd := exec.Command("/bin/git", "rev-list", "HEAD", "--count")
+	cmd.Dir = dirPath
+
+	var out, stderr bytes.Buffer
+	cmd.Stderr = &stderr
+	cmd.Stdout = &out
+
+	err := cmd.Run()
+	if err != nil {
+		fmt.Println(stderr.String())
+	}
+
+	return strings.TrimSpace(out.String())
+}
+
+type RepoLogs struct {
+	History []RepoLog
+}
+
+func getCommits(repoPath, reponame string, commits int) *RepoLogs {
+	dirPath := filepath.Join(repoPath, reponame+".git")
+	cmd := exec.Command("/bin/git", "log", strconv.Itoa(commits), "--pretty=format:%h||srca-sptra||%d||srca-sptra||%s||srca-sptra||%cr||srca-sptra||%ae")
+	cmd.Dir = dirPath
+
+	var out, stderr bytes.Buffer
+	cmd.Stderr = &stderr
+	cmd.Stdout = &out
+
+	err := cmd.Run()
+	if err != nil {
+		fmt.Println(stderr.String())
+	}
+
+	ss := strings.Split(out.String(), "\n")
+
+	rla := RepoLogs{}
+	rl := RepoLog{}
+
+	for i := 0; i < len(ss); i++ {
+		st := strings.Split(ss[i], "||srca-sptra||")
+		if strings.HasPrefix(strings.TrimSpace(st[1]), "(HEAD ->") {
+			rl.IsHead = true
+		} else {
+			rl.IsHead = false
+		}
+		rl.Hash = st[0]
+		rl.Message = st[2]
+		rl.Date = st[3]
+		rl.Author = st[4]
+
+		rla = RepoLogs{
+			History: append(rla.History, rl),
+		}
+	}
+
+	return &rla
 }
