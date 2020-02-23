@@ -468,7 +468,7 @@ func getCommits(repoPath, reponame string, commits int) *RepoLogs {
 		}
 	}
 
-	cmd := exec.Command(gitPath, "log", strconv.Itoa(commits), "--pretty=format:%h||srca-sptra||%d||srca-sptra||%s||srca-sptra||%cr||srca-sptra||%ae")
+	cmd := exec.Command(gitPath, "log", strconv.Itoa(commits), "--pretty=format:%h||srca-sptra||%d||srca-sptra||%s||srca-sptra||%cr||srca-sptra||%an")
 	cmd.Dir = dirPath
 
 	var out, stderr bytes.Buffer
