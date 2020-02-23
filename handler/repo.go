@@ -149,7 +149,6 @@ type RepoDetail struct {
 
 // RepoLog struct
 type RepoLog struct {
-	IsHead  bool
 	Hash    string
 	Author  string
 	Date    string
@@ -166,10 +165,6 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 		return
 	}
 
-	rts := model.RepoTypeStruct{
-		Reponame: reponame,
-	}
-
 	userID := model.GetUserIDFromReponame(db, reponame)
 	username := model.GetUsernameFromUserID(db, userID)
 
@@ -183,54 +178,10 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 		Host:             r.Host,
 	}
 
-	// Check if repository is not private
-	if isRepoPrivate := model.GetRepoType(db, &rts); !isRepoPrivate {
-		layoutPage := path.Join("./templates", "layout.html")
-		headerPage := path.Join("./templates", "header.html")
-		repoSummaryPage := path.Join("./templates", "repo-summary.html")
-		footerPage := path.Join("./templates", "footer.html")
+	data.RepoDetail.Readme = processREADME(repoPath, reponame)
 
-		tmpl, err := template.ParseFiles(layoutPage, headerPage, repoSummaryPage, footerPage)
-		errorhandler.CheckError(err)
-
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		w.WriteHeader(http.StatusOK)
-
-		data.RepoDetail.Readme = processREADME(repoPath, reponame)
-
-		tmpl.ExecuteTemplate(w, "layout", data)
-	} else {
-		userPresent := w.Header().Get("user-present")
-
-		if userPresent == "true" {
-			token := w.Header().Get("sorcia-cookie-token")
-			userIDFromToken := model.GetUserIDFromToken(db, token)
-
-			// Check if the logged in user has access to view the repository.
-			if hasRepoAccess := model.CheckRepoAccessFromUserID(db, userIDFromToken); hasRepoAccess {
-				data.IsRepoPrivate = true
-
-				layoutPage := path.Join("./templates", "layout.html")
-				headerPage := path.Join("./templates", "header.html")
-				repoSummaryPage := path.Join("./templates", "repo-summary.html")
-				footerPage := path.Join("./templates", "footer.html")
-
-				tmpl, err := template.ParseFiles(layoutPage, headerPage, repoSummaryPage, footerPage)
-				errorhandler.CheckError(err)
-
-				w.Header().Set("Content-Type", "text/html; charset=utf-8")
-				w.WriteHeader(http.StatusOK)
-
-				data.RepoDetail.Readme = processREADME(repoPath, reponame)
-
-				tmpl.ExecuteTemplate(w, "layout", data)
-			} else {
-				noRepoAccess(w)
-			}
-		} else {
-			http.Redirect(w, r, "/login", http.StatusFound)
-		}
-	}
+	writeRepoResponse(w, r, db, reponame, "repo-summary.html", data)
+	return
 }
 
 func processREADME(repoPath, repoName string) template.HTML {
@@ -536,11 +487,6 @@ func getCommits(repoPath, reponame string, commits int) *RepoLogs {
 
 	for i := 0; i < len(ss); i++ {
 		st := strings.Split(ss[i], "||srca-sptra||")
-		if strings.HasPrefix(strings.TrimSpace(st[1]), "(HEAD ->") {
-			rl.IsHead = true
-		} else {
-			rl.IsHead = false
-		}
 		rl.Hash = st[0]
 		rl.Message = st[2]
 		rl.Date = st[3]
