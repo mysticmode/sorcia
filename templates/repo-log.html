@@ -1,0 +1,32 @@
+{{define "title"}}{{ .Reponame }}{{end}}
+{{define "content"}}
+<main class="container repo">
+    <div class="repo__header">
+        <div>
+            <div class="repo__title"><a href="/r/{{ .Reponame }}">{{ .Reponame }}</a> {{if eq .IsRepoPrivate true}} <i>private</i> {{end}} </div>
+            <div class="repo__description">Self-hosted multi-user free(libre) ebook reader.</div>
+        </div>
+    </div>
+    <div class="repo__menu">
+        <a href="/r/{{ .Reponame }}" class="repo__menu__item">summary</a>
+        <a href="/r/{{ .Reponame }}/tree" class="repo__menu__item">tree</a>
+        <a href="/r/{{ .Reponame }}/log" class="repo__menu__item repo__menu__item--active">log</a>
+        <a href="" class="repo__menu__item">refs</a>
+        <a href="" class="repo__menu__item">contributors</a>
+        <a href="" class="repo__menu__item">meta</a>
+    </div>
+    <div class="repo__log">
+        <ul>
+            {{range .RepoLogs.History}}
+            <li>
+                <div>
+                    <p><a href="">{{.Hash}}</a> - <a href="">{{.Author}}</a></p>
+                    <p>{{.Date}}</p>
+                </div>
+                <p class="repo__commit-message">{{.Message}}</p>
+            </li>
+            {{end}}
+        </ul>
+    </div>
+</main>
+{{end}}
