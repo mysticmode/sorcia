@@ -578,7 +578,7 @@ type RepoLogs struct {
 
 func getCommits(repoPath, reponame string, commits int) *RepoLogs {
 	dirPath := filepath.Join(repoPath, reponame+".git")
-	cmd := exec.Command("/bin/git", "log", strconv.Itoa(commits), "--pretty=format:%h||srca-sptra||%d||srca-sptra||%s||srca-sptra||%cr||srca-sptra||%ae")
+	cmd := exec.Command("usr/bin/git", "log", strconv.Itoa(commits), "--pretty=format:%h||srca-sptra||%d||srca-sptra||%s||srca-sptra||%cr||srca-sptra||%ae")
 	cmd.Dir = dirPath
 
 	var out, stderr bytes.Buffer
