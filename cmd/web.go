@@ -101,10 +101,10 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 		username := model.GetUsernameFromToken(db, token)
 		repos := model.GetReposFromUserID(db, userID)
 
-		layoutPage := path.Join("./templates", "layout.tmpl")
-		headerPage := path.Join("./templates", "header.tmpl")
-		indexPage := path.Join("./templates", "index.tmpl")
-		footerPage := path.Join("./templates", "footer.tmpl")
+		layoutPage := path.Join("./templates", "layout.html")
+		headerPage := path.Join("./templates", "header.html")
+		indexPage := path.Join("./templates", "index.html")
+		footerPage := path.Join("./templates", "footer.html")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, indexPage, footerPage)
 		errorhandler.CheckError(err)

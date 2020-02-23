@@ -64,10 +64,10 @@ func GetLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion 
 	if userPresent == "true" {
 		http.Redirect(w, r, "/", http.StatusFound)
 	} else {
-		layoutPage := path.Join("./templates", "layout.tmpl")
-		headerPage := path.Join("./templates", "header.tmpl")
-		loginPage := path.Join("./templates", "login.tmpl")
-		footerPage := path.Join("./templates", "footer.tmpl")
+		layoutPage := path.Join("./templates", "layout.html")
+		headerPage := path.Join("./templates", "header.html")
+		loginPage := path.Join("./templates", "login.html")
+		footerPage := path.Join("./templates", "footer.html")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, loginPage, footerPage)
 		errorhandler.CheckError(err)
@@ -149,10 +149,10 @@ func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion
 }
 
 func invalidLoginCredentials(w http.ResponseWriter, r *http.Request, sorciaVersion string) {
-	layoutPage := path.Join("./templates", "layout.tmpl")
-	headerPage := path.Join("./templates", "header.tmpl")
-	loginPage := path.Join("./templates", "login.tmpl")
-	footerPage := path.Join("./templates", "footer.tmpl")
+	layoutPage := path.Join("./templates", "layout.html")
+	headerPage := path.Join("./templates", "header.html")
+	loginPage := path.Join("./templates", "login.html")
+	footerPage := path.Join("./templates", "footer.html")
 
 	tmpl, err := template.ParseFiles(layoutPage, headerPage, loginPage, footerPage)
 	errorhandler.CheckError(err)
@@ -205,10 +205,10 @@ func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVers
 		s := registerRequest.Username
 
 		if len(s) > 39 || len(s) < 1 {
-			layoutPage := path.Join("./templates", "layout.tmpl")
-			headerPage := path.Join("./templates", "header.tmpl")
-			loginPage := path.Join("./templates", "login.tmpl")
-			footerPage := path.Join("./templates", "footer.tmpl")
+			layoutPage := path.Join("./templates", "layout.html")
+			headerPage := path.Join("./templates", "header.html")
+			loginPage := path.Join("./templates", "login.html")
+			footerPage := path.Join("./templates", "footer.html")
 
 			tmpl, err := template.ParseFiles(layoutPage, headerPage, loginPage, footerPage)
 			errorhandler.CheckError(err)
@@ -232,10 +232,10 @@ func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVers
 			tmpl.Execute(w, data)
 			return
 		} else if strings.HasPrefix(s, "-") || strings.Contains(s, "--") || strings.HasSuffix(s, "-") || !isAlnumOrHyphen(s) {
-			layoutPage := path.Join("./templates", "layout.tmpl")
-			headerPage := path.Join("./templates", "header.tmpl")
-			loginPage := path.Join("./templates", "login.tmpl")
-			footerPage := path.Join("./templates", "footer.tmpl")
+			layoutPage := path.Join("./templates", "layout.html")
+			headerPage := path.Join("./templates", "header.html")
+			loginPage := path.Join("./templates", "login.html")
+			footerPage := path.Join("./templates", "footer.html")
 
 			tmpl, err := template.ParseFiles(layoutPage, headerPage, loginPage, footerPage)
 			errorhandler.CheckError(err)
