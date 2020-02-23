@@ -134,7 +134,6 @@ type GetRepoResponse struct {
 	Host             string
 	RepoDetail       RepoDetail
 	RepoLogs         RepoLogs
-	DisplayCommits   string
 }
 
 // RepoDetail struct
@@ -264,10 +263,6 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 		return
 	}
 
-	rts := model.RepoTypeStruct{
-		Reponame: reponame,
-	}
-
 	data := GetRepoResponse{
 		IsHeaderLogin:    false,
 		HeaderActiveMenu: "",
@@ -284,38 +279,8 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 	data.RepoDetail.WalkPath = r.URL.Path
 	data.RepoDetail.PathEmpty = true
 
-	layoutPage := path.Join("./templates", "layout.html")
-	headerPage := path.Join("./templates", "header.html")
-	repoTreePage := path.Join("./templates", "repo-tree.html")
-	footerPage := path.Join("./templates", "footer.html")
-
-	tmpl, err := template.ParseFiles(layoutPage, headerPage, repoTreePage, footerPage)
-	errorhandler.CheckError(err)
-
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.WriteHeader(http.StatusOK)
-
-	// Check if repository is not private
-	if isRepoPrivate := model.GetRepoType(db, &rts); !isRepoPrivate {
-		tmpl.ExecuteTemplate(w, "layout", data)
-	} else {
-		userPresent := w.Header().Get("user-present")
-
-		if userPresent != "" {
-			token := w.Header().Get("sorcia-cookie-token")
-			userIDFromToken := model.GetUserIDFromToken(db, token)
-
-			// Check if the logged in user has access to view the repository.
-			if hasRepoAccess := model.CheckRepoAccessFromUserID(db, userIDFromToken); hasRepoAccess {
-				data.IsRepoPrivate = true
-				tmpl.ExecuteTemplate(w, "layout", data)
-			} else {
-				noRepoAccess(w)
-			}
-		} else {
-			http.Redirect(w, r, "/login", http.StatusFound)
-		}
-	}
+	writeRepoResponse(w, r, db, reponame, "repo-tree.html", data)
+	return
 }
 
 // GetRepoTreePath ...
@@ -326,10 +291,6 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 	if repoExists := model.CheckRepoExists(db, reponame); !repoExists {
 		w.WriteHeader(http.StatusNotFound)
 		return
-	}
-
-	rts := model.RepoTypeStruct{
-		Reponame: reponame,
 	}
 
 	data := GetRepoResponse{
@@ -393,26 +354,12 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 
 		legendPath := template.HTML(strings.Join(legendPathArr, " / "))
 
-		// data.RepoDetail.RepoDirs = dirs
-		// data.RepoDetail.RepoFiles = files
 		data.RepoDetail.PathEmpty = false
 		data.RepoDetail.WalkPath = r.URL.Path
 		data.RepoDetail.LegendPath = legendPath
 		data.RepoDetail.FileContent = html
 
-		layoutPage := path.Join("./templates", "layout.html")
-		headerPage := path.Join("./templates", "header.html")
-		fileViewerPage := path.Join("./templates", "file-viewer.html")
-		footerPage := path.Join("./templates", "footer.html")
-
-		tmpl, err := template.ParseFiles(layoutPage, headerPage, fileViewerPage, footerPage)
-		errorhandler.CheckError(err)
-
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		w.WriteHeader(http.StatusOK)
-
-		tmpl.ExecuteTemplate(w, "layout", data)
-
+		writeRepoResponse(w, r, db, reponame, "file-viewer.html", data)
 		return
 	}
 
@@ -426,39 +373,35 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 	data.RepoDetail.WalkPath = r.URL.Path
 	data.RepoDetail.LegendPath = legendPath
 
-	layoutPage := path.Join("./templates", "layout.html")
-	headerPage := path.Join("./templates", "header.html")
-	repoTreePage := path.Join("./templates", "repo-tree.html")
-	footerPage := path.Join("./templates", "footer.html")
+	writeRepoResponse(w, r, db, reponame, "repo-tree.html", data)
+	return
+}
 
-	tmpl, err := template.ParseFiles(layoutPage, headerPage, repoTreePage, footerPage)
-	errorhandler.CheckError(err)
+// GetRepoLog ...
+func GetRepoLog(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion, repoPath string) {
+	vars := mux.Vars(r)
+	reponame := vars["reponame"]
 
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.WriteHeader(http.StatusOK)
-
-	// Check if repository is not private
-	if isRepoPrivate := model.GetRepoType(db, &rts); !isRepoPrivate {
-		tmpl.ExecuteTemplate(w, "layout", data)
-	} else {
-		userPresent := w.Header().Get("user-present")
-
-		if userPresent != "" {
-			token := w.Header().Get("sorcia-cookie-token")
-			userIDFromToken := model.GetUserIDFromToken(db, token)
-
-			// Check if the logged in user has access to view the repository.
-			if hasRepoAccess := model.CheckRepoAccessFromUserID(db, userIDFromToken); hasRepoAccess {
-				data.IsRepoPrivate = true
-				tmpl.ExecuteTemplate(w, "layout", data)
-			} else {
-				noRepoAccess(w)
-			}
-		} else {
-			http.Redirect(w, r, "/login", http.StatusFound)
-		}
+	if repoExists := model.CheckRepoExists(db, reponame); !repoExists {
+		w.WriteHeader(http.StatusNotFound)
+		return
 	}
 
+	data := GetRepoResponse{
+		IsHeaderLogin:    false,
+		HeaderActiveMenu: "",
+		SorciaVersion:    sorciaVersion,
+		Reponame:         reponame,
+		IsRepoPrivate:    false,
+	}
+
+	// commitCounts := getCommitCounts(repoPath, reponame)
+
+	commits := getCommits(repoPath, reponame, -10)
+	data.RepoLogs = *commits
+
+	writeRepoResponse(w, r, db, reponame, "repo-log.html", data)
+	return
 }
 
 // Walk through files and folders
@@ -493,47 +436,14 @@ func noRepoAccess(w http.ResponseWriter) {
 	w.Write(errorJSON)
 }
 
-// GetRepoLog ...
-func GetRepoLog(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion, repoPath string) {
-	vars := mux.Vars(r)
-	reponame := vars["reponame"]
-
-	if repoExists := model.CheckRepoExists(db, reponame); !repoExists {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-
+func writeRepoResponse(w http.ResponseWriter, r *http.Request, db *sql.DB, reponame string, mainPage string, data GetRepoResponse) {
 	rts := model.RepoTypeStruct{
 		Reponame: reponame,
 	}
 
-	data := GetRepoResponse{
-		IsHeaderLogin:    false,
-		HeaderActiveMenu: "",
-		SorciaVersion:    sorciaVersion,
-		Reponame:         reponame,
-		IsRepoPrivate:    false,
-	}
-
-	commitCounts := getCommitCounts(repoPath, reponame)
-	fmt.Println(commitCounts)
-
-	commits := getCommits(repoPath, reponame, -10)
-	data.RepoLogs = *commits
-
-	layoutPage := path.Join("./templates", "layout.html")
-	headerPage := path.Join("./templates", "header.html")
-	repoLogPage := path.Join("./templates", "repo-log.html")
-	footerPage := path.Join("./templates", "footer.html")
-
-	tmpl, err := template.ParseFiles(layoutPage, headerPage, repoLogPage, footerPage)
-	errorhandler.CheckError(err)
-
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.WriteHeader(http.StatusOK)
-
 	// Check if repository is not private
 	if isRepoPrivate := model.GetRepoType(db, &rts); !isRepoPrivate {
+		tmpl := parseTemplates(w, mainPage)
 		tmpl.ExecuteTemplate(w, "layout", data)
 	} else {
 		userPresent := w.Header().Get("user-present")
@@ -545,6 +455,7 @@ func GetRepoLog(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersio
 			// Check if the logged in user has access to view the repository.
 			if hasRepoAccess := model.CheckRepoAccessFromUserID(db, userIDFromToken); hasRepoAccess {
 				data.IsRepoPrivate = true
+				tmpl := parseTemplates(w, mainPage)
 				tmpl.ExecuteTemplate(w, "layout", data)
 			} else {
 				noRepoAccess(w)
@@ -553,6 +464,21 @@ func GetRepoLog(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersio
 			http.Redirect(w, r, "/login", http.StatusFound)
 		}
 	}
+}
+
+func parseTemplates(w http.ResponseWriter, mainPage string) *template.Template {
+	layoutPage := path.Join("./templates", "layout.html")
+	headerPage := path.Join("./templates", "header.html")
+	repoLogPage := path.Join("./templates", mainPage)
+	footerPage := path.Join("./templates", "footer.html")
+
+	tmpl, err := template.ParseFiles(layoutPage, headerPage, repoLogPage, footerPage)
+	errorhandler.CheckError(err)
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+
+	return tmpl
 }
 
 func getCommitCounts(repoPath, reponame string) string {
@@ -591,8 +517,6 @@ func getCommits(repoPath, reponame string, commits int) *RepoLogs {
 		}
 	}
 
-	fmt.Println(gitPath)
-
 	cmd := exec.Command(gitPath, "log", strconv.Itoa(commits), "--pretty=format:%h||srca-sptra||%d||srca-sptra||%s||srca-sptra||%cr||srca-sptra||%ae")
 	cmd.Dir = dirPath
 
@@ -606,8 +530,6 @@ func getCommits(repoPath, reponame string, commits int) *RepoLogs {
 	}
 
 	ss := strings.Split(out.String(), "\n")
-	fmt.Println(out.String())
-	fmt.Println(ss)
 
 	rla := RepoLogs{}
 	rl := RepoLog{}
