@@ -89,6 +89,19 @@
     &__log {
         width: 100%;
 
+        &__info {
+            display: flex;
+            align-items: flex-start;
+
+            & a {
+                margin-right: 5px;
+            }
+        }
+
+        &__dp {
+            margin: 0 5px;
+        }
+
         & li {
             background: #edf0f2;
             padding: 10px;
