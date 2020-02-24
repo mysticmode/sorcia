@@ -85,8 +85,6 @@
 
                             document.getElementById(currentID).scrollIntoView();
                         }
-                    } else {
-                        console.log('no')
                     }
                 } else {
                     setTimeout(hljsOnLoadScrollIntoView, 15);
@@ -129,7 +127,6 @@
                 removeCodeLineBg();
 
                 // Apply line background to the current ID element
-                console.log(document.getElementById(currentID));
                 document.getElementById(currentID).parentElement.style.background = '#CDF0FD';
 
                 // Update URL parameter to the Line ID
