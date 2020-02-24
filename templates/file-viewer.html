@@ -74,7 +74,9 @@
                             currentID = url.split('#')[1].split('-')[1];
                             applyMultipleCodeLinesBg(previousID, currentID);
 
-                            if (previousID < currentID) {
+                            var previousNumber = parseInt(previousID.split('L')[1]);
+                            var currentNumber = parseInt(currentID.split('L')[1]);
+                            if (previousNumber < currentNumber) {
                                 document.getElementById(previousID).scrollIntoView();
                             } else {
                                 document.getElementById(currentID).scrollIntoView();
@@ -97,7 +99,7 @@
                 if (e.target.className == 'hljs-ln-n') {
                     if (e.shiftKey) {
                         var hljsLine = document.getElementsByClassName('hljs-ln-line');
-                        for (i = 0; i < hljsLine.length; ++i) {
+                        for (i = 0; i < hljsLine.length; i++) {
                             if(hljsLine[i].parentElement.hasAttribute('style')) {
                                 var previousID = hljsLine[i].getAttribute('id');
                                 var currentID = e.target.parentElement.getAttribute('id');
@@ -138,8 +140,8 @@
             function applyMultipleCodeLinesBg(previousID, currentID) {
                 removeCodeLineBg();
 
-                var previousNumber = previousID.split('L')[1];
-                var currentNumber = currentID.split('L')[1];
+                var previousNumber = parseInt(previousID.split('L')[1]);
+                var currentNumber = parseInt(currentID.split('L')[1]);
 
                 if (previousNumber < currentNumber) {
                     for (j = previousNumber; j <= currentNumber; j++) {
