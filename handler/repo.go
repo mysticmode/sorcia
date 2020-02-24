@@ -3,7 +3,9 @@ package handler
 import (
 	"bufio"
 	"bytes"
+	"crypto/md5"
 	"database/sql"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -153,6 +155,7 @@ type RepoLog struct {
 	Author  string
 	Date    string
 	Message string
+	DP      string
 }
 
 // GetRepo ...
@@ -468,7 +471,7 @@ func getCommits(repoPath, reponame string, commits int) *RepoLogs {
 		}
 	}
 
-	cmd := exec.Command(gitPath, "log", strconv.Itoa(commits), "--pretty=format:%h||srca-sptra||%d||srca-sptra||%s||srca-sptra||%cr||srca-sptra||%an")
+	cmd := exec.Command(gitPath, "log", strconv.Itoa(commits), "--pretty=format:%h||srca-sptra||%d||srca-sptra||%s||srca-sptra||%cr||srca-sptra||%an||srca-sptra||%ae")
 	cmd.Dir = dirPath
 
 	var out, stderr bytes.Buffer
@@ -491,6 +494,10 @@ func getCommits(repoPath, reponame string, commits int) *RepoLogs {
 		rl.Message = st[2]
 		rl.Date = st[3]
 		rl.Author = st[4]
+
+		hash := md5.Sum([]byte(st[5]))
+		stringHash := hex.EncodeToString(hash[:])
+		rl.DP = fmt.Sprintf("https://www.gravatar.com/avatar/%s", stringHash)
 
 		rla = RepoLogs{
 			History: append(rla.History, rl),
