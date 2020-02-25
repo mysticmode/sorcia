@@ -140,13 +140,27 @@ type GetRepoResponse struct {
 
 // RepoDetail struct
 type RepoDetail struct {
-	Readme      template.HTML
-	FileContent template.HTML
-	LegendPath  template.HTML
-	WalkPath    string
-	PathEmpty   bool
-	RepoDirs    []string
-	RepoFiles   []string
+	Readme          template.HTML
+	FileContent     template.HTML
+	LegendPath      template.HTML
+	WalkPath        string
+	PathEmpty       bool
+	RepoDirsDetail  []RepoDirDetail
+	RepoFilesDetail []RepoFileDetail
+}
+
+// RepoDirDetail struct
+type RepoDirDetail struct {
+	DirName       string
+	DirCommit     string
+	DirCommitDate string
+}
+
+// RepoFileDetail struct
+type RepoFileDetail struct {
+	FileName       string
+	FileCommit     string
+	FileCommitDate string
 }
 
 // RepoLog struct
@@ -228,10 +242,54 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 	dirPath := filepath.Join(repoPath, reponame)
 	dirs, files := walkThrough(dirPath)
 
-	data.RepoDetail.RepoDirs = dirs
-	data.RepoDetail.RepoFiles = files
 	data.RepoDetail.WalkPath = r.URL.Path
 	data.RepoDetail.PathEmpty = true
+
+	gitPath := getGitBinPath()
+
+	for _, dir := range dirs {
+		repoDirDetail := RepoDirDetail{}
+		cmd := exec.Command(gitPath, "log", "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", dir)
+		cmd.Dir = dirPath
+
+		var out, stderr bytes.Buffer
+		cmd.Stderr = &stderr
+		cmd.Stdout = &out
+
+		err := cmd.Run()
+		if err != nil {
+			fmt.Println(stderr.String())
+		}
+
+		ss := strings.Split(out.String(), "||srca-sptra||")
+
+		repoDirDetail.DirName = dir
+		repoDirDetail.DirCommit = ss[0]
+		repoDirDetail.DirCommitDate = ss[1]
+		data.RepoDetail.RepoDirsDetail = append(data.RepoDetail.RepoDirsDetail, repoDirDetail)
+	}
+
+	for _, file := range files {
+		repoFileDetail := RepoFileDetail{}
+		cmd := exec.Command(gitPath, "log", "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", file)
+		cmd.Dir = dirPath
+
+		var out, stderr bytes.Buffer
+		cmd.Stderr = &stderr
+		cmd.Stdout = &out
+
+		err := cmd.Run()
+		if err != nil {
+			fmt.Println(stderr.String())
+		}
+
+		ss := strings.Split(out.String(), "||srca-sptra||")
+
+		repoFileDetail.FileName = file
+		repoFileDetail.FileCommit = ss[0]
+		repoFileDetail.FileCommitDate = ss[1]
+		data.RepoDetail.RepoFilesDetail = append(data.RepoDetail.RepoFilesDetail, repoFileDetail)
+	}
 
 	writeRepoResponse(w, r, db, reponame, "repo-tree.html", data)
 	return
@@ -321,11 +379,55 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 
 	legendPath := template.HTML(strings.Join(legendPathArr, " / "))
 
-	data.RepoDetail.RepoDirs = dirs
-	data.RepoDetail.RepoFiles = files
 	data.RepoDetail.PathEmpty = false
 	data.RepoDetail.WalkPath = r.URL.Path
 	data.RepoDetail.LegendPath = legendPath
+
+	gitPath := getGitBinPath()
+
+	for _, dir := range dirs {
+		repoDirDetail := RepoDirDetail{}
+		cmd := exec.Command(gitPath, "log", "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", dir)
+		cmd.Dir = dirPath
+
+		var out, stderr bytes.Buffer
+		cmd.Stderr = &stderr
+		cmd.Stdout = &out
+
+		err := cmd.Run()
+		if err != nil {
+			fmt.Println(stderr.String())
+		}
+
+		ss := strings.Split(out.String(), "||srca-sptra||")
+
+		repoDirDetail.DirName = dir
+		repoDirDetail.DirCommit = ss[0]
+		repoDirDetail.DirCommitDate = ss[1]
+		data.RepoDetail.RepoDirsDetail = append(data.RepoDetail.RepoDirsDetail, repoDirDetail)
+	}
+
+	for _, file := range files {
+		repoFileDetail := RepoFileDetail{}
+		cmd := exec.Command(gitPath, "log", "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", file)
+		cmd.Dir = dirPath
+
+		var out, stderr bytes.Buffer
+		cmd.Stderr = &stderr
+		cmd.Stdout = &out
+
+		err := cmd.Run()
+		if err != nil {
+			fmt.Println(stderr.String())
+		}
+
+		ss := strings.Split(out.String(), "||srca-sptra||")
+
+		repoFileDetail.FileName = file
+		repoFileDetail.FileCommit = ss[0]
+		repoFileDetail.FileCommitDate = ss[1]
+		data.RepoDetail.RepoFilesDetail = append(data.RepoDetail.RepoFilesDetail, repoFileDetail)
+	}
 
 	writeRepoResponse(w, r, db, reponame, "repo-tree.html", data)
 	return
@@ -452,6 +554,7 @@ func getCommitCounts(repoPath, reponame string) string {
 	return strings.TrimSpace(out.String())
 }
 
+// RepoLogs struct
 type RepoLogs struct {
 	History []RepoLog
 }
@@ -459,31 +562,7 @@ type RepoLogs struct {
 func getCommits(repoPath, reponame string, commits int) *RepoLogs {
 	dirPath := filepath.Join(repoPath, reponame+".git")
 
-	gitPath := "/usr/bin/git"
-	if _, err := os.Stat(gitPath); err != nil {
-		gitPath = "/bin/git"
-		if _, err = os.Stat(gitPath); err != nil {
-			gitPath = "/usr/local/bin/git"
-			if _, err = os.Stat(gitPath); err != nil {
-				fmt.Printf("Error: %v\n", err)
-				os.Exit(1)
-			}
-		}
-	}
-
-	cmd := exec.Command(gitPath, "log", strconv.Itoa(commits), "--pretty=format:%h||srca-sptra||%d||srca-sptra||%s||srca-sptra||%cr||srca-sptra||%an||srca-sptra||%ae")
-	cmd.Dir = dirPath
-
-	var out, stderr bytes.Buffer
-	cmd.Stderr = &stderr
-	cmd.Stdout = &out
-
-	err := cmd.Run()
-	if err != nil {
-		fmt.Println(stderr.String())
-	}
-
-	ss := strings.Split(out.String(), "\n")
+	ss := getGitCommits(commits, dirPath)
 
 	rla := RepoLogs{}
 	rl := RepoLog{}
@@ -505,4 +584,40 @@ func getCommits(repoPath, reponame string, commits int) *RepoLogs {
 	}
 
 	return &rla
+}
+
+func getGitCommits(commits int, dirPath string) []string {
+	gitPath := getGitBinPath()
+
+	cmd := exec.Command(gitPath, "log", strconv.Itoa(commits), "--pretty=format:%h||srca-sptra||%d||srca-sptra||%s||srca-sptra||%cr||srca-sptra||%an||srca-sptra||%ae")
+	cmd.Dir = dirPath
+
+	var out, stderr bytes.Buffer
+	cmd.Stderr = &stderr
+	cmd.Stdout = &out
+
+	err := cmd.Run()
+	if err != nil {
+		fmt.Println(stderr.String())
+	}
+
+	ss := strings.Split(out.String(), "\n")
+
+	return ss
+}
+
+func getGitBinPath() string {
+	gitPath := "/usr/bin/git"
+	if _, err := os.Stat(gitPath); err != nil {
+		gitPath = "/bin/git"
+		if _, err = os.Stat(gitPath); err != nil {
+			gitPath = "/usr/local/bin/git"
+			if _, err = os.Stat(gitPath); err != nil {
+				fmt.Printf("Error: %v\n", err)
+				os.Exit(1)
+			}
+		}
+	}
+
+	return gitPath
 }

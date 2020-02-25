@@ -32,11 +32,19 @@
         </div>
     </div>
     <div class="repo-tree">
-        {{range .RepoDetail.RepoDirs}}
-        <a href="{{ $.RepoDetail.WalkPath }}/{{.}}" class="repo-tree__directory">{{.}}</a>
+        {{range .RepoDetail.RepoDirsDetail}}
+        <div class="repo-tree__info">
+            <a href="{{ $.RepoDetail.WalkPath }}/{{.DirName}}" class="repo-tree__directory">{{.DirName}}</a>
+            <p class="repo-tree__info__message">{{.DirCommit}}</p>
+            <p class="repo-tree__info__date">{{.DirCommitDate}}</p>
+        </div>
         {{end}}
-        {{range .RepoDetail.RepoFiles}}
-        <a href="{{ $.RepoDetail.WalkPath }}/{{.}}" class="repo-tree__file">{{.}}</a>
+        {{range .RepoDetail.RepoFilesDetail}}
+        <div class="repo-tree__info">
+            <a href="{{ $.RepoDetail.WalkPath }}/{{.FileName}}" class="repo-tree__file">{{.FileName}}</a>
+            <p class="repo-tree__info__message">{{.FileCommit}}</p>
+            <p class="repo-tree__info__date">{{.FileCommitDate}}</p>
+        </div>
         {{end}}
     </div>
 </main>

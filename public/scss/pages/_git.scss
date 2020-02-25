@@ -267,11 +267,32 @@
     }
 }
 
-.repo-tree {  
-    & a {
-        display: block;
+.repo-tree {
+    &__info {
         padding: 5px;
         border-bottom: 1px solid $brand-border;
+        overflow: hidden;
+
+        & a {
+            float: left;
+            width: 190px;
+            margin-right: 20px;
+            word-wrap: break-word;
+        }
+
+        &__message {
+            float: left;
+            width: 500px;
+            margin-right: 20px;
+            word-wrap: break-word;
+        }
+
+        &__date {
+            float: left;
+            width: 120px;
+            word-wrap: break-word;
+            text-align: right;
+        }
     }
 
     &__file {
