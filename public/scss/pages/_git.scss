@@ -94,6 +94,10 @@
                     &:first-child {
                         display: flex;
                         align-items: start;
+
+                        & a {
+                            margin-right: 5px;
+                        }
                     }
                 }
             }
