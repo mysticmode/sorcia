@@ -1,11 +1,11 @@
 [Unit]
-Description=sorcia web service
+Description=sorcia ssh service
 After=network.target
 After=postgresql.service
 Requires=postgresql.service
 
 [Service]
-ExecStart=/usr/bin/sudo ./sorcia web
+ExecStart=/usr/bin/sudo ./sorcia gitviassh
 TimeoutStartSec=3600
 Restart=always
 RestartSec=10
