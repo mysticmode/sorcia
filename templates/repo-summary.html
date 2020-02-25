@@ -25,27 +25,15 @@
     <div class="repo__summary">
         <div class="repo__summary__left">
             <ul class="repo__latest-commits">
+                {{range .RepoLogs.History}}
                 <li>
                     <div>
-                        <p><a href="">6b3ffdfc</a> - <a href="">mysticmode</a></p>
-                        <p>2 days ago</p>
+                        <p><a href="">{{.Hash}}</a> - <img class="repo__log__dp" src="{{.DP}}" width="23px" /><span>{{.Author}}</span></p>
+                        <p>{{.Date}}</p>
                     </div>
-                    <p class="repo__commit-message">Update release announcements link in README.md</p>
+                    <p class="repo__commit-message">{{.Message}}</p>
                 </li>
-                <li>
-                    <div>
-                        <p><a href="">6b3ffdfc</a> - <a href="">mysticmode</a></p>
-                        <p>2 days ago</p>
-                    </div>
-                    <p class="repo__commit-message">Update release announcements link in README.md</p>
-                </li>
-                <li>
-                    <div>
-                        <p><a href="">6b3ffdfc</a> - <a href="">mysticmode</a></p>
-                        <p>2 days ago</p>
-                    </div>
-                    <p class="repo__commit-message">Update release announcements link in README.md</p>
-                </li>
+                {{end}}
             </ul>
         </div>
         <div class="repo__summary__right">
