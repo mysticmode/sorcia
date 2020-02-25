@@ -84,6 +84,20 @@
 
     &__latest-commits {
         width: 470px;
+
+        & li {
+            & div {
+                display: flex;
+                align-items: start;
+
+                & p {
+                    &:first-child {
+                        display: flex;
+                        align-items: start;
+                    }
+                }
+            }
+        }
     }
 
     &__log {

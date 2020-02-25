@@ -197,6 +197,9 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 
 	data.RepoDetail.Readme = processREADME(repoPath, reponame)
 
+	commits := getCommits(repoPath, reponame, -3)
+	data.RepoLogs = *commits
+
 	writeRepoResponse(w, r, db, reponame, "repo-summary.html", data)
 	return
 }
