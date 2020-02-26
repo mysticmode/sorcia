@@ -242,17 +242,17 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 		IsRepoPrivate:    false,
 	}
 
+	gitPath := getGitBinPath()
+
 	dirPath := filepath.Join(repoPath, reponame)
-	dirs, files := walkThrough(dirPath)
+	dirs, files := walkThrough(dirPath, gitPath)
 
 	data.RepoDetail.WalkPath = r.URL.Path
 	data.RepoDetail.PathEmpty = true
 
-	gitPath := getGitBinPath()
-
 	for _, dir := range dirs {
 		repoDirDetail := RepoDirDetail{}
-		cmd := exec.Command(gitPath, "log", "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", dir)
+		cmd := exec.Command(gitPath, "log", "master", "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", dir)
 		cmd.Dir = dirPath
 
 		var out, stderr bytes.Buffer
@@ -319,8 +319,6 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 	frdpath := strings.Split(r.URL.Path, "r/"+reponame+"/tree/")[1]
 
 	dirPath := filepath.Join(repoPath, reponame, frdpath)
-	fi, err := os.Stat(dirPath)
-	errorhandler.CheckError(err)
 
 	legendPathSplit := strings.Split(frdpath, "/")
 
@@ -337,6 +335,9 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 		}
 		legendPathArr[i] = fmt.Sprintf("%s\">%s</a>", legendPathArr[i], s)
 	}
+
+	fi, err := os.Stat(dirPath)
+	errorhandler.CheckError(err)
 
 	if fi.Mode().IsRegular() {
 		file, err := os.Open(dirPath)
@@ -358,13 +359,21 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 		code := strings.Join(codeLines, "\n")
 
 		fileDotSplit := strings.Split(dirPath, ".")
-		fileExt := fileDotSplit[len(fileDotSplit)-1]
-
-		if fileExt == "html" || fileExt == "tmpl" || fileExt == "svg" {
-			code = template.HTMLEscaper(code)
+		var fileExt string
+		if len(fileDotSplit) > 1 {
+			fileExt = fileDotSplit[len(fileDotSplit)-1]
+		} else {
+			fileExt = ""
 		}
 
-		fileContent := fmt.Sprintf("<pre><code class=\"%s\">%s</code></pre>", fileExt, code)
+		code = template.HTMLEscaper(code)
+
+		var fileContent string
+		if fileExt == "" {
+			fileContent = fmt.Sprintf("<pre><code class=\"plaintext\">%s</code></pre>", code)
+		} else {
+			fileContent = fmt.Sprintf("<pre><code class=\"%s\">%s</code></pre>", fileExt, code)
+		}
 		html := template.HTML(fileContent)
 
 		legendPath := template.HTML(strings.Join(legendPathArr, " / "))
@@ -378,7 +387,8 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 		return
 	}
 
-	dirs, files := walkThrough(dirPath)
+	gitPath := getGitBinPath()
+	dirs, files := walkThrough(dirPath, gitPath)
 
 	legendPath := template.HTML(strings.Join(legendPathArr, " / "))
 
@@ -386,11 +396,9 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 	data.RepoDetail.WalkPath = r.URL.Path
 	data.RepoDetail.LegendPath = legendPath
 
-	gitPath := getGitBinPath()
-
 	for _, dir := range dirs {
 		repoDirDetail := RepoDirDetail{}
-		cmd := exec.Command(gitPath, "log", "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", dir)
+		cmd := exec.Command(gitPath, "log", "master", "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", dir)
 		cmd.Dir = dirPath
 
 		var out, stderr bytes.Buffer
@@ -412,7 +420,7 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 
 	for _, file := range files {
 		repoFileDetail := RepoFileDetail{}
-		cmd := exec.Command(gitPath, "log", "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", file)
+		cmd := exec.Command(gitPath, "log", "master", "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", file)
 		cmd.Dir = dirPath
 
 		var out, stderr bytes.Buffer
@@ -464,17 +472,32 @@ func GetRepoLog(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersio
 }
 
 // Walk through files and folders
-func walkThrough(dirPath string) ([]string, []string) {
+func walkThrough(dirPath, gitPath string) ([]string, []string) {
 	var dirs, files []string
-	entries, err := ioutil.ReadDir(dirPath)
-	errorhandler.CheckError(err)
-	for _, f := range entries {
-		if f.IsDir() && f.Name() != ".git" {
-			dirs = append(dirs, f.Name())
+
+	cmd := exec.Command(gitPath, "ls-tree", "--name-only", "master", "HEAD", ".")
+	cmd.Dir = dirPath
+
+	var out, stderr bytes.Buffer
+	cmd.Stderr = &stderr
+	cmd.Stdout = &out
+
+	err := cmd.Run()
+	if err != nil {
+		fmt.Println(stderr.String())
+	}
+
+	ss := strings.Split(out.String(), "\n")
+	entries := ss[:len(ss)-1]
+
+	for _, entry := range entries {
+		fi, err := os.Stat(filepath.Join(dirPath, entry))
+		errorhandler.CheckError(err)
+
+		if fi.Mode().IsRegular() {
+			files = append(files, entry)
 		} else {
-			if f.Name() != ".git" {
-				files = append(files, f.Name())
-			}
+			dirs = append(dirs, entry)
 		}
 	}
 
