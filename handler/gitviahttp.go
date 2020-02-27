@@ -138,10 +138,6 @@ func postServiceRPC(gh gitHandler, rpc string) {
 
 	var stderr bytes.Buffer
 
-	if rpc == "receive-pack" {
-		go util.PullFromAllBranches(gh.dir)
-	}
-
 	cmd.Dir = gh.dir
 	cmd.Stdin = reqBody
 	cmd.Stdout = gh.w
@@ -149,6 +145,10 @@ func postServiceRPC(gh gitHandler, rpc string) {
 	if err := cmd.Run(); err != nil {
 		fmt.Println(fmt.Sprintf("Fail to serve RPC(%s): %v - %s", rpc, err, stderr.String()))
 		return
+	}
+
+	if rpc == "receive-pack" {
+		go util.PullFromAllBranches(gh.dir)
 	}
 }
 
@@ -164,14 +164,14 @@ func getInfoRefs(gh gitHandler) {
 		return
 	}
 
-	go util.PullFromAllBranches(gh.dir)
-
 	refs := gitCommand(gh.dir, rpc, "--stateless-rpc", "--advertise-refs", ".")
 	gh.w.Header().Set("Content-Type", fmt.Sprintf("application/x-git-%s-advertisement", rpc))
 	gh.w.WriteHeader(http.StatusOK)
 	gh.w.Write(packetWrite("# service=git-" + rpc + "\n"))
 	gh.w.Write([]byte("0000"))
 	gh.w.Write(refs)
+
+	go util.PullFromAllBranches(gh.dir)
 }
 
 func getTextFile(gh gitHandler) {
