@@ -155,7 +155,7 @@ func RunSSH(sorciaConf *setting.BaseStruct) {
 	// Public key authentication is done by comparing
 	// the public key of a received connection
 	// with the entries in the authorized_keys file.
-	authorizedKeysBytes, err := ioutil.ReadFile("/home/git/.ssh/authorized_keys")
+	authorizedKeysBytes, err := ioutil.ReadFile("/home/git/ssh/authorized_keys")
 	if err != nil {
 		log.Fatalf("Failed to load authorized_keys, err: %v", err)
 	}
@@ -191,7 +191,7 @@ func RunSSH(sorciaConf *setting.BaseStruct) {
 		},
 	}
 
-	keyDir := "/home/git/.ssh"
+	keyDir := "/home/git/ssh"
 	keyPath := filepath.Join(keyDir, "id_rsa")
 	if _, err := os.Stat(keyPath); err != nil || os.IsNotExist(err) {
 		if err := os.MkdirAll(filepath.Dir(keyDir), os.ModePerm); err != nil {
