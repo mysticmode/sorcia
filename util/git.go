@@ -33,7 +33,7 @@ func PullFromAllBranches(gitDirPath string) {
 		}
 
 		// by default fast-forward is allowed. Add + to allow non-fast-forward
-		cmd := exec.Command("git", "pull", "origin", fmt.Sprintf("+%s:%s", branch, branch))
+		cmd := exec.Command("git", "pull", "origin", fmt.Sprintf("%s:%s", branch, branch))
 		cmd.Dir = workDir
 
 		var out, stderr bytes.Buffer
@@ -44,7 +44,6 @@ func PullFromAllBranches(gitDirPath string) {
 		if err != nil {
 			fmt.Println(stderr.String())
 		}
-		fmt.Println(out.String())
 	}
 }
 
