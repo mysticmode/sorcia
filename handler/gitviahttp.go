@@ -17,6 +17,7 @@ import (
 
 	errorhandler "sorcia/error"
 	"sorcia/model"
+	"sorcia/util"
 )
 
 type gitHandler struct {
@@ -138,7 +139,7 @@ func postServiceRPC(gh gitHandler, rpc string) {
 	var stderr bytes.Buffer
 
 	if rpc == "receive-pack" {
-		go pullFromAllBranches(gh)
+		go util.PullFromAllBranches(gh.dir)
 	}
 
 	cmd.Dir = gh.dir
@@ -148,42 +149,6 @@ func postServiceRPC(gh gitHandler, rpc string) {
 	if err := cmd.Run(); err != nil {
 		fmt.Println(fmt.Sprintf("Fail to serve RPC(%s): %v - %s", rpc, err, stderr.String()))
 		return
-	}
-}
-
-func pullFromAllBranches(gh gitHandler) {
-	var files []string
-
-	dirSplit := strings.Split(gh.dir, ".git")
-	workDir := dirSplit[0]
-	refPath := filepath.Join(gh.dir, "refs", "heads")
-	err := filepath.Walk(refPath, func(path string, info os.FileInfo, err error) error {
-		files = append(files, path)
-		return nil
-	})
-	errorhandler.CheckError(err)
-
-	for i := 0; i < len(files); i++ {
-		ss := strings.Split(files[i], "/")
-		branch := ss[len(ss)-1]
-
-		if branch == "heads" {
-			continue
-		}
-
-		cmd := exec.Command("git", "pull", "origin", fmt.Sprintf("+%s:%s", branch, branch))
-		cmd.Dir = workDir
-
-		var out, stderr bytes.Buffer
-		cmd.Stderr = &stderr
-		cmd.Stdout = &out
-
-		err := cmd.Run()
-		if err != nil {
-			fmt.Println(stderr.String())
-		}
-
-		fmt.Println(out.String())
 	}
 }
 
@@ -199,7 +164,7 @@ func getInfoRefs(gh gitHandler) {
 		return
 	}
 
-	go pullFromAllBranches(gh)
+	go util.PullFromAllBranches(gh.dir)
 
 	refs := gitCommand(gh.dir, rpc, "--stateless-rpc", "--advertise-refs", ".")
 	gh.w.Header().Set("Content-Type", fmt.Sprintf("application/x-git-%s-advertisement", rpc))
