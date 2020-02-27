@@ -133,6 +133,7 @@ type GetRepoResponse struct {
 	SorciaVersion    string
 	Username         string
 	Reponame         string
+	RepoDescription  string
 	IsRepoPrivate    bool
 	Host             string
 	RepoDetail       RepoDetail
@@ -185,6 +186,7 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 
 	userID := model.GetUserIDFromReponame(db, reponame)
 	username := model.GetUsernameFromUserID(db, userID)
+	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
 
 	data := GetRepoResponse{
 		IsHeaderLogin:    false,
@@ -192,6 +194,7 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 		SorciaVersion:    sorciaVersion,
 		Username:         username,
 		Reponame:         reponame,
+		RepoDescription:  repoDescription,
 		IsRepoPrivate:    false,
 		Host:             r.Host,
 	}
@@ -235,11 +238,14 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 		return
 	}
 
+	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
+
 	data := GetRepoResponse{
 		IsHeaderLogin:    false,
 		HeaderActiveMenu: "",
 		SorciaVersion:    sorciaVersion,
 		Reponame:         reponame,
+		RepoDescription:  repoDescription,
 		IsRepoPrivate:    false,
 	}
 
@@ -309,11 +315,14 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 		return
 	}
 
+	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
+
 	data := GetRepoResponse{
 		IsHeaderLogin:    false,
 		HeaderActiveMenu: "",
 		SorciaVersion:    sorciaVersion,
 		Reponame:         reponame,
+		RepoDescription:  repoDescription,
 		IsRepoPrivate:    false,
 	}
 
@@ -455,11 +464,14 @@ func GetRepoLog(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersio
 		return
 	}
 
+	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
+
 	data := GetRepoResponse{
 		IsHeaderLogin:    false,
 		HeaderActiveMenu: "",
 		SorciaVersion:    sorciaVersion,
 		Reponame:         reponame,
+		RepoDescription:  repoDescription,
 		IsRepoPrivate:    false,
 	}
 

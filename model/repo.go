@@ -63,6 +63,20 @@ func GetReposFromUserID(db *sql.DB, userID int) *GetReposFromUserIDResponse {
 	return &grfur
 }
 
+// GetRepoDescriptionFromRepoName ...
+func GetRepoDescriptionFromRepoName(db *sql.DB, reponame string) string {
+	rows, err := db.Query("SELECT description FROM repository WHERE name = ?", reponame)
+	errorhandler.CheckError(err)
+
+	var repoDescription string
+	if rows.Next() {
+		err = rows.Scan(&repoDescription)
+	}
+	rows.Close()
+
+	return repoDescription
+}
+
 // CheckRepoExists ...
 func CheckRepoExists(db *sql.DB, reponame string) bool {
 	rows, err := db.Query("SELECT id FROM repository WHERE name = ?", reponame)
