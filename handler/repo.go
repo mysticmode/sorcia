@@ -21,6 +21,7 @@ import (
 
 	errorhandler "sorcia/error"
 	"sorcia/model"
+	"sorcia/util"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
@@ -242,7 +243,7 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 		IsRepoPrivate:    false,
 	}
 
-	gitPath := getGitBinPath()
+	gitPath := util.GetGitBinPath()
 
 	dirPath := filepath.Join(repoPath, reponame)
 	dirs, files := walkThrough(dirPath, gitPath)
@@ -387,7 +388,7 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 		return
 	}
 
-	gitPath := getGitBinPath()
+	gitPath := util.GetGitBinPath()
 	dirs, files := walkThrough(dirPath, gitPath)
 
 	legendPath := template.HTML(strings.Join(legendPathArr, " / "))
@@ -613,7 +614,7 @@ func getCommits(repoPath, reponame string, commits int) *RepoLogs {
 }
 
 func getGitCommits(commits int, dirPath string) []string {
-	gitPath := getGitBinPath()
+	gitPath := util.GetGitBinPath()
 
 	cmd := exec.Command(gitPath, "log", strconv.Itoa(commits), "--pretty=format:%h||srca-sptra||%d||srca-sptra||%s||srca-sptra||%cr||srca-sptra||%an||srca-sptra||%ae")
 	cmd.Dir = dirPath
@@ -630,20 +631,4 @@ func getGitCommits(commits int, dirPath string) []string {
 	ss := strings.Split(out.String(), "\n")
 
 	return ss
-}
-
-func getGitBinPath() string {
-	gitPath := "/usr/bin/git"
-	if _, err := os.Stat(gitPath); err != nil {
-		gitPath = "/bin/git"
-		if _, err = os.Stat(gitPath); err != nil {
-			gitPath = "/usr/local/bin/git"
-			if _, err = os.Stat(gitPath); err != nil {
-				fmt.Printf("Error: %v\n", err)
-				os.Exit(1)
-			}
-		}
-	}
-
-	return gitPath
 }

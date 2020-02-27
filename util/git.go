@@ -44,5 +44,23 @@ func PullFromAllBranches(gitDirPath string) {
 		if err != nil {
 			fmt.Println(stderr.String())
 		}
+		fmt.Println(out.String())
 	}
+}
+
+// GetGitBinPath ...
+func GetGitBinPath() string {
+	gitPath := "/usr/bin/git"
+	if _, err := os.Stat(gitPath); err != nil {
+		gitPath = "/bin/git"
+		if _, err = os.Stat(gitPath); err != nil {
+			gitPath = "/usr/local/bin/git"
+			if _, err = os.Stat(gitPath); err != nil {
+				fmt.Printf("Error: %v\n", err)
+				os.Exit(1)
+			}
+		}
+	}
+
+	return gitPath
 }
