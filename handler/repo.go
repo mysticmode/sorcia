@@ -327,7 +327,7 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 
 	for i, s := range legendPathSplit {
 		if i == 0 {
-			legendPathArr[i] = "<a href=\"/r/sorcia/tree\">sorcia</a> / <a href=\"/r/" + reponame + "/tree"
+			legendPathArr[i] = "<a href=\"/r/" + reponame + "/tree\">" + reponame + "</a> / <a href=\"/r/" + reponame + "/tree"
 		} else {
 			legendPathArr[i] = "<a href=\"/r/" + reponame + "/tree"
 		}
