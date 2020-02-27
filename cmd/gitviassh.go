@@ -68,8 +68,9 @@ func handleServer(keyID string, sorciaConf *setting.BaseStruct, chans <-chan ssh
 
 				case "exec":
 					cmdName := strings.TrimLeft(payload, "'()")
-					fmt.Println(cmdName)
-					cmd := exec.Command(strings.Split(cmdName, " ")[0], "kkk.git")
+					gitRPC := strings.Split(cmdName, " ")[0]
+					repoName := strings.Split(cmdName, " ")[1]
+					cmd := exec.Command(gitRPC, repoName)
 					cmd.Dir = sorciaConf.Paths.RepoPath
 
 					stdout, err := cmd.StdoutPipe()
