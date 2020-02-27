@@ -68,8 +68,10 @@ func handleServer(keyID string, sorciaConf *setting.BaseStruct, chans <-chan ssh
 
 				case "exec":
 					cmdName := strings.TrimLeft(payload, "'()")
+
 					gitRPC := strings.Split(cmdName, " ")[0]
-					repoName := strings.Split(cmdName, " ")[1]
+					repoName := strings.Split(strings.Split(cmdName, " ")[1], "'")[1]
+
 					cmd := exec.Command(gitRPC, repoName)
 					cmd.Dir = sorciaConf.Paths.RepoPath
 
@@ -208,7 +210,7 @@ func RunSSH(sorciaConf *setting.BaseStruct) {
 		if err != nil {
 			fmt.Println(stderr.String())
 		}
-		fmt.Printf("SSH: New private key is generateed: %s", keyPath)
+		fmt.Printf("SSH: New private key is generated: %s", keyPath)
 	}
 
 	privateBytes, err := ioutil.ReadFile(keyPath)
