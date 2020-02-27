@@ -4,7 +4,7 @@
     <div class="repo__header">
         <div>
             <div class="repo__title"><a href="/r/{{ .Reponame }}">{{ .Reponame }}</a> {{if eq .IsRepoPrivate true}} <i>private</i> {{end}} </div>
-            <div class="repo__description">Self-hosted multi-user free(libre) ebook reader.</div>
+            <div class="repo__description">{{ .RepoDescription }}</div>
         </div>
     </div>
     <div class="repo__menu">
