@@ -7,7 +7,9 @@ import (
 	"io/ioutil"
 	"log"
 	"net"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"sorcia/setting"
 	"strings"
 
@@ -34,7 +36,7 @@ func execCommandBytes(cmdname string, args ...string) ([]byte, []byte, error) {
 	return bufOut.Bytes(), bufErr.Bytes(), err
 }
 
-func handleServer(keyID string, chans <-chan ssh.NewChannel) {
+func handleServer(keyID string, sorciaConf *setting.BaseStruct, chans <-chan ssh.NewChannel) {
 	for newChannel := range chans {
 		channel, requests, err := newChannel.Accept()
 		if err != nil {
@@ -66,9 +68,9 @@ func handleServer(keyID string, chans <-chan ssh.NewChannel) {
 
 				case "exec":
 					cmdName := strings.TrimLeft(payload, "'()")
-
-					cmd := exec.Command(strings.Split(cmdName, " ")[0], "joyread.git")
-					cmd.Dir = "/home/git/repositories"
+					fmt.Println(cmdName)
+					cmd := exec.Command(strings.Split(cmdName, " ")[0], "kkk.git")
+					cmd.Dir = sorciaConf.Paths.RepoPath
 
 					stdout, err := cmd.StdoutPipe()
 					if err != nil {
@@ -118,7 +120,7 @@ func handleServer(keyID string, chans <-chan ssh.NewChannel) {
 	}
 }
 
-func runSSH(config *ssh.ServerConfig, host, port string) {
+func runSSH(config *ssh.ServerConfig, sorciaConf *setting.BaseStruct, host, port string) {
 	listener, err := net.Listen("tcp", host+":"+port)
 	if err != nil {
 		log.Fatal("failed to listen for connection: ", err)
@@ -140,13 +142,13 @@ func runSSH(config *ssh.ServerConfig, host, port string) {
 
 			// The incoming Request channel must be serviced.
 			go ssh.DiscardRequests(reqs)
-			go handleServer(conn.Permissions.Extensions["pubkey"], chans)
+			go handleServer(conn.Permissions.Extensions["pubkey"], sorciaConf, chans)
 		}()
 	}
 }
 
 // RunSSH ...
-func RunSSH(conf *setting.BaseStruct) {
+func RunSSH(sorciaConf *setting.BaseStruct) {
 	// Public key authentication is done by comparing
 	// the public key of a received connection
 	// with the entries in the authorized_keys file.
@@ -186,26 +188,27 @@ func RunSSH(conf *setting.BaseStruct) {
 		},
 	}
 
-	// keyPath := filepath.Join(conf.Paths.DataPath, "ssh/sorcia.rsa")
-	keyPath := "/home/git/.ssh/id_rsa"
-	// if _, err := os.Stat(keyPath); err != nil || !os.IsExist(err) {
-	// 	if err := os.MkdirAll(filepath.Dir(keyPath), os.ModePerm); err != nil {
-	// 		fmt.Errorf("Couldn't create the directory %v", err)
-	// 		return
-	// 	}
+	keyDir := "/home/git/.ssh"
+	keyPath := filepath.Join(keyDir, "id_rsa")
+	if _, err := os.Stat(keyPath); err != nil || !os.IsExist(err) {
+		if err := os.MkdirAll(filepath.Dir(keyDir), os.ModePerm); err != nil {
+			fmt.Println(err)
+			return
+		}
 
-	// 	cmd := exec.Command("ssh-keygen", "-f", keyPath, "-t", "rsa", "-m", "PEM", "-N", "")
-	// 	privateKeyFile, err := os.Create(keyPath)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	cmd.Dir(keyPath)
+		cmd := exec.Command("ssh-keygen", "-f", keyPath, "-t", "rsa", "-m", "PEM", "-N", "")
+		cmd.Dir = keyDir
 
-	// 	if err != nil {
-	// 		panic(fmt.Sprintf("Fail to generate private key: %v - %s", err, stderr))
-	// 	}
-	// 	log.Trace("SSH: New private key is generateed: %s", keyPath)
-	// }
+		var out, stderr bytes.Buffer
+		cmd.Stderr = &stderr
+		cmd.Stdout = &out
+
+		err := cmd.Run()
+		if err != nil {
+			fmt.Println(stderr.String())
+		}
+		fmt.Printf("SSH: New private key is generateed: %s", keyPath)
+	}
 
 	privateBytes, err := ioutil.ReadFile(keyPath)
 	if err != nil {
@@ -218,5 +221,5 @@ func RunSSH(conf *setting.BaseStruct) {
 	}
 	config.AddHostKey(private)
 
-	runSSH(config, "0.0.0.0", "22")
+	runSSH(config, sorciaConf, "0.0.0.0", "22")
 }
