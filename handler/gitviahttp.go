@@ -232,10 +232,6 @@ func getProjectRootDir() string {
 }
 
 func processRepoAccess(db *sql.DB, gh gitHandler, reponame string) bool {
-	rts := model.RepoTypeStruct{
-		Reponame: reponame,
-	}
-
 	userID := model.GetUserIDFromReponame(db, reponame)
 	username := model.GetUsernameFromUserID(db, userID)
 
@@ -245,19 +241,20 @@ func processRepoAccess(db *sql.DB, gh gitHandler, reponame string) bool {
 	sphjwtr := model.SelectPasswordHashAndJWTToken(db, sphjwt)
 	passwordHash := sphjwtr.PasswordHash
 
-	// Check if repository is private
-	if isRepoPrivate := model.GetRepoType(db, &rts); isRepoPrivate {
-		hasRepoAccess := model.CheckRepoAccessFromUserID(db, userID)
-
-		if hasRepoAccess {
-			if gh.basicAuth(username, passwordHash, "Please enter your username and password") {
-				return true
-			}
-		} else {
-			return false
+	if gh.basicAuth(username, passwordHash, "Please enter your username and password") {
+		rts := model.RepoTypeStruct{
+			Reponame: reponame,
 		}
-	} else {
-		if gh.basicAuth(username, passwordHash, "Please enter your username and password") {
+
+		// Check if repository is private
+		if isRepoPrivate := model.GetRepoType(db, &rts); isRepoPrivate {
+			if model.CheckRepoAccessFromUserID(db, userID) {
+				return true
+			} else {
+				return false
+			}
+
+		} else {
 			return true
 		}
 	}
