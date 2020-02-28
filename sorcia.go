@@ -22,6 +22,8 @@ func main() {
 		cmd.RunWeb(conf)
 	case "gitviassh":
 		cmd.RunSSH(conf)
+	case "usermod":
+		cmd.UserMod(conf)
 	case "version":
 		fmt.Println(conf.Version)
 	default:
