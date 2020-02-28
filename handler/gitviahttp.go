@@ -171,7 +171,9 @@ func getInfoRefs(gh gitHandler) {
 	gh.w.Write([]byte("0000"))
 	gh.w.Write(refs)
 
-	go util.PullFromAllBranches(gh.dir)
+	if rpc == "receive-pack" {
+		go util.PullFromAllBranches(gh.dir)
+	}
 }
 
 func getTextFile(gh gitHandler) {
@@ -229,6 +231,40 @@ func getProjectRootDir() string {
 	return projectRootDir
 }
 
+func processRepoAccess(db *sql.DB, gh gitHandler, reponame string) bool {
+	rts := model.RepoTypeStruct{
+		Reponame: reponame,
+	}
+
+	userID := model.GetUserIDFromReponame(db, reponame)
+	username := model.GetUsernameFromUserID(db, userID)
+
+	sphjwt := model.SelectPasswordHashAndJWTTokenStruct{
+		Username: username,
+	}
+	sphjwtr := model.SelectPasswordHashAndJWTToken(db, sphjwt)
+	passwordHash := sphjwtr.PasswordHash
+
+	// Check if repository is private
+	if isRepoPrivate := model.GetRepoType(db, &rts); isRepoPrivate {
+		hasRepoAccess := model.CheckRepoAccessFromUserID(db, userID)
+
+		if hasRepoAccess {
+			if gh.basicAuth(username, passwordHash, "Please enter your username and password") {
+				return true
+			}
+		} else {
+			return false
+		}
+	} else {
+		if gh.basicAuth(username, passwordHash, "Please enter your username and password") {
+			return true
+		}
+	}
+
+	return false
+}
+
 // GitviaHTTP ...
 func GitviaHTTP(w http.ResponseWriter, r *http.Request, db *sql.DB, dir string) {
 	for _, route := range routes {
@@ -269,30 +305,7 @@ func GitviaHTTP(w http.ResponseWriter, r *http.Request, db *sql.DB, dir string) 
 
 		reponame := strings.TrimSuffix(strings.TrimPrefix(routeMatch[1], "/"), ".git")
 
-		rts := model.RepoTypeStruct{
-			Reponame: reponame,
-		}
-
-		// Check if repository is private
-		if isRepoPrivate := model.GetRepoType(db, &rts); isRepoPrivate {
-			userID := model.GetUserIDFromReponame(db, reponame)
-			hasRepoAccess := model.CheckRepoAccessFromUserID(db, userID)
-
-			if hasRepoAccess {
-				username := model.GetUsernameFromUserID(db, userID)
-				sphjwt := model.SelectPasswordHashAndJWTTokenStruct{
-					Username: username,
-				}
-				sphjwtr := model.SelectPasswordHashAndJWTToken(db, sphjwt)
-				passwordHash := sphjwtr.PasswordHash
-
-				if gh.basicAuth(username, passwordHash, "Please enter your username and password") {
-					route.handler(gh)
-				}
-			} else {
-				return
-			}
-		} else {
+		if processRepoAccess(db, gh, reponame) {
 			route.handler(gh)
 		}
 
