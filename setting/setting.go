@@ -61,7 +61,7 @@ func init() {
 		DBConn: nil,
 	}
 
-	db, err := sql.Open("sqlite3", path.Join(conf.Paths.DBPath, "sorcia.db"))
+	db, err := sql.Open("sqlite3", path.Join(conf.Paths.DBPath, "sorcia.db?_foreign_keys=on"))
 	errorhandler.CheckError(err)
 
 	conf.DBConn = db

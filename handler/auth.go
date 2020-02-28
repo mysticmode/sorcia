@@ -18,7 +18,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func hashPassword(password string) (string, error) {
+// HashPassword ...
+func HashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 	return string(bytes), err
 }
@@ -29,7 +30,8 @@ func CheckPasswordHash(password, hash string) bool {
 	return err == nil
 }
 
-func generateJWTToken(passwordHash string) (string, error) {
+// GenerateJWTToken ...
+func GenerateJWTToken(passwordHash string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{})
 	tokenString, err := token.SignedString([]byte(passwordHash))
 	return tokenString, err
@@ -195,11 +197,11 @@ func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVers
 
 	if registerRequest.Username != "" && registerRequest.Email != "" && registerRequest.Password != "" {
 		// Generate password hash using bcrypt
-		passwordHash, err := hashPassword(registerRequest.Password)
+		passwordHash, err := HashPassword(registerRequest.Password)
 		errorhandler.CheckError(err)
 
 		// Generate JWT token using the hash password above
-		token, err := generateJWTToken(passwordHash)
+		token, err := GenerateJWTToken(passwordHash)
 		errorhandler.CheckError(err)
 
 		s := registerRequest.Username

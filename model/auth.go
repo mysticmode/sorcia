@@ -129,3 +129,53 @@ func CheckIfFirstUserExists(db *sql.DB) bool {
 
 	return userExists
 }
+
+// ResetUserPasswordbyUsernameStruct struct
+type ResetUserPasswordbyUsernameStruct struct {
+	PasswordHash string
+	JwtToken     string
+	Username     string
+}
+
+// ResetUserPasswordbyUsername ...
+func ResetUserPasswordbyUsername(db *sql.DB, resetPass ResetUserPasswordbyUsernameStruct) {
+	stmt, err := db.Prepare("UPDATE account SET password_hash = ?, jwt_token = ? WHERE username = ?")
+	errorhandler.CheckError(err)
+
+	_, err = stmt.Exec(resetPass.PasswordHash, resetPass.JwtToken, resetPass.Username)
+	errorhandler.CheckError(err)
+}
+
+// ResetUserPasswordbyEmailStruct struct
+type ResetUserPasswordbyEmailStruct struct {
+	PasswordHash string
+	JwtToken     string
+	Email        string
+}
+
+// ResetUserPasswordbyEmail ...
+func ResetUserPasswordbyEmail(db *sql.DB, resetPass ResetUserPasswordbyEmailStruct) {
+	stmt, err := db.Prepare("UPDATE account SET password_hash = ?, jwt_token = ? WHERE email = ?")
+	errorhandler.CheckError(err)
+
+	_, err = stmt.Exec(resetPass.PasswordHash, resetPass.JwtToken, resetPass.Email)
+	errorhandler.CheckError(err)
+}
+
+// DeleteUserbyUsername ...
+func DeleteUserbyUsername(db *sql.DB, username string) {
+	stmt, err := db.Prepare("DELETE FROM account WHERE username = ?")
+	errorhandler.CheckError(err)
+
+	_, err = stmt.Exec(username)
+	errorhandler.CheckError(err)
+}
+
+// DeleteUserbyEmail ...
+func DeleteUserbyEmail(db *sql.DB, email string) {
+	stmt, err := db.Prepare("DELETE FROM account WHERE email = ?")
+	errorhandler.CheckError(err)
+
+	_, err = stmt.Exec(email)
+	errorhandler.CheckError(err)
+}
