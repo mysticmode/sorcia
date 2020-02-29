@@ -13,6 +13,7 @@ import (
 	"sorcia/setting"
 )
 
+// UserMod ...
 func UserMod(conf *setting.BaseStruct) {
 	// Open postgres database
 	db := conf.DBConn
@@ -34,7 +35,7 @@ func UserMod(conf *setting.BaseStruct) {
 
 			return
 		case "2":
-			deleteUser(db)
+			deleteUser(db, conf)
 
 			return
 		default:
@@ -117,7 +118,7 @@ func generateHashandToken(password string) (string, string) {
 	return passwordHash, token
 }
 
-func deleteUser(db *sql.DB) {
+func deleteUser(db *sql.DB, conf *setting.BaseStruct) {
 	reader := bufio.NewReader(os.Stdin)
 
 	for {

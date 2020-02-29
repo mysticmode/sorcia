@@ -3,13 +3,14 @@
 <main class="container create-repo">
     <form method="post" action="/create-repo" class="form create-repo__form">
         <div class="form__title">create new repository</div>
+        <div class="create-repo__error">{{ .ReponameErrMessage }}</div>
         <div class="form__group">
             <label for="repoName">Name<i>*</i></label>
             <input type="text" class="form__input" id="repoName" name="name" maxlength="100" autocomplete="off" spellcheck="false" required="required" />
         </div>
         <div class="form__group">
             <label for="repoDescription">Description</label>
-            <input type="text" class="form__input" id="repoDescription" name="description" autocomplete="off" spellcheck="false" required="required" />
+            <input type="text" class="form__input" id="repoDescription" name="description" autocomplete="off" spellcheck="false" />
         </div>
         <div class="form__group form__radio-group">
             <div class="form__radio">

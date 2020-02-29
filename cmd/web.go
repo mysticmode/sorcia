@@ -53,7 +53,7 @@ func RunWeb(conf *setting.BaseStruct) {
 		handler.GetCreateRepo(w, r, db, conf.Version)
 	}).Methods("GET")
 	m.HandleFunc("/create-repo", func(w http.ResponseWriter, r *http.Request) {
-		handler.PostCreateRepo(w, r, db, decoder, conf.Paths.RepoPath)
+		handler.PostCreateRepo(w, r, db, decoder, conf.Version, conf.Paths.RepoPath)
 	}).Methods("POST")
 	m.HandleFunc("/r/{reponame}", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetRepo(w, r, db, conf.Version, conf.Paths.RepoPath)
@@ -61,7 +61,7 @@ func RunWeb(conf *setting.BaseStruct) {
 	m.HandleFunc("/r/{reponame}/tree", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetRepoTree(w, r, db, conf.Version, conf.Paths.RepoPath)
 	}).Methods("GET")
-	m.PathPrefix("/r/{reponame}/tree/{[a-zA-Z0-9]+}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	m.PathPrefix("/r/{reponame}/tree/{[[\\d\\w-_\\.]+}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		handler.GetRepoTreePath(w, r, db, conf.Version, conf.Paths.RepoPath)
 	}).Methods("GET")
 	m.HandleFunc("/r/{reponame}/log", func(w http.ResponseWriter, r *http.Request) {
