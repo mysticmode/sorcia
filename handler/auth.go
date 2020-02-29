@@ -12,6 +12,7 @@ import (
 
 	errorhandler "sorcia/error"
 	"sorcia/model"
+	"sorcia/util"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/schema"
@@ -172,15 +173,6 @@ func invalidLoginCredentials(w http.ResponseWriter, r *http.Request, sorciaVersi
 	tmpl.ExecuteTemplate(w, "layout", data)
 }
 
-func isAlnumOrHyphen(s string) bool {
-	for _, r := range s {
-		if (r < 'a' || r > 'z') && (r < 'A' || r > 'Z') && (r < '0' || r > '9') && r != '-' {
-			return false
-		}
-	}
-	return true
-}
-
 // RegisterRequest struct
 type RegisterRequest struct {
 	Username string `schema:"username"`
@@ -191,91 +183,102 @@ type RegisterRequest struct {
 
 // PostRegister ...
 func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion string, decoder *schema.Decoder, repoPath string) {
+	// NOTE: Invoke ParseForm or ParseMultipartForm before reading form values
+	if err := r.ParseForm(); err != nil {
+		fmt.Fprintf(w, "ParseForm() err: %v", err)
+		errorResponse := &errorhandler.Response{
+			Error: err.Error(),
+		}
+
+		errorJSON, err := json.Marshal(errorResponse)
+		errorhandler.CheckError(err)
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+
+		w.Write(errorJSON)
+	}
+
 	var registerRequest = &RegisterRequest{}
 	err := decoder.Decode(registerRequest, r.PostForm)
 	errorhandler.CheckError(err)
 
-	if registerRequest.Username != "" && registerRequest.Email != "" && registerRequest.Password != "" {
-		// Generate password hash using bcrypt
-		passwordHash, err := HashPassword(registerRequest.Password)
+	// Generate password hash using bcrypt
+	passwordHash, err := HashPassword(registerRequest.Password)
+	errorhandler.CheckError(err)
+
+	// Generate JWT token using the hash password above
+	token, err := GenerateJWTToken(passwordHash)
+	errorhandler.CheckError(err)
+
+	s := registerRequest.Username
+
+	if len(s) > 39 || len(s) < 1 {
+		layoutPage := path.Join("./templates", "layout.html")
+		headerPage := path.Join("./templates", "header.html")
+		loginPage := path.Join("./templates", "login.html")
+		footerPage := path.Join("./templates", "footer.html")
+
+		tmpl, err := template.ParseFiles(layoutPage, headerPage, loginPage, footerPage)
 		errorhandler.CheckError(err)
 
-		// Generate JWT token using the hash password above
-		token, err := GenerateJWTToken(passwordHash)
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
+
+		data := LoginPageResponse{
+			IsHeaderLogin:      true,
+			HeaderActiveMenu:   "",
+			SorciaVersion:      sorciaVersion,
+			IsShowSignUp:       !model.CheckIfFirstUserExists(db),
+			LoginErrMessage:    "",
+			RegisterErrMessage: "Username is too long (maximum is 39 characters).",
+		}
+
+		tmpl.ExecuteTemplate(w, "layout", data)
+		return
+	} else if strings.HasPrefix(s, "-") || strings.Contains(s, "--") || strings.HasSuffix(s, "-") || !util.IsAlnumOrHyphen(s) {
+		layoutPage := path.Join("./templates", "layout.html")
+		headerPage := path.Join("./templates", "header.html")
+		loginPage := path.Join("./templates", "login.html")
+		footerPage := path.Join("./templates", "footer.html")
+
+		tmpl, err := template.ParseFiles(layoutPage, headerPage, loginPage, footerPage)
 		errorhandler.CheckError(err)
 
-		s := registerRequest.Username
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
 
-		if len(s) > 39 || len(s) < 1 {
-			layoutPage := path.Join("./templates", "layout.html")
-			headerPage := path.Join("./templates", "header.html")
-			loginPage := path.Join("./templates", "login.html")
-			footerPage := path.Join("./templates", "footer.html")
-
-			tmpl, err := template.ParseFiles(layoutPage, headerPage, loginPage, footerPage)
-			errorhandler.CheckError(err)
-
-			w.Header().Set("Content-Type", "text/html; charset=utf-8")
-			w.WriteHeader(http.StatusOK)
-
-			data := LoginPageResponse{
-				IsHeaderLogin:      true,
-				HeaderActiveMenu:   "",
-				SorciaVersion:      sorciaVersion,
-				LoginErrMessage:    "",
-				RegisterErrMessage: "Username is too long (maximum is 39 characters).",
-			}
-
-			tmpl.ExecuteTemplate(w, "layout", data)
-
-			w.Header().Set("Content-Type", "text/html; charset=utf-8")
-			w.WriteHeader(http.StatusOK)
-
-			tmpl.Execute(w, data)
-			return
-		} else if strings.HasPrefix(s, "-") || strings.Contains(s, "--") || strings.HasSuffix(s, "-") || !isAlnumOrHyphen(s) {
-			layoutPage := path.Join("./templates", "layout.html")
-			headerPage := path.Join("./templates", "header.html")
-			loginPage := path.Join("./templates", "login.html")
-			footerPage := path.Join("./templates", "footer.html")
-
-			tmpl, err := template.ParseFiles(layoutPage, headerPage, loginPage, footerPage)
-			errorhandler.CheckError(err)
-
-			w.Header().Set("Content-Type", "text/html; charset=utf-8")
-			w.WriteHeader(http.StatusOK)
-
-			data := LoginPageResponse{
-				IsHeaderLogin:      true,
-				HeaderActiveMenu:   "",
-				SorciaVersion:      sorciaVersion,
-				LoginErrMessage:    "",
-				RegisterErrMessage: "Username may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen.",
-			}
-
-			tmpl.ExecuteTemplate(w, "layout", data)
-			return
+		data := LoginPageResponse{
+			IsHeaderLogin:      true,
+			HeaderActiveMenu:   "",
+			SorciaVersion:      sorciaVersion,
+			IsShowSignUp:       !model.CheckIfFirstUserExists(db),
+			LoginErrMessage:    "",
+			RegisterErrMessage: "Username may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen.",
 		}
 
-		rr := model.CreateAccountStruct{
-			Username:     registerRequest.Username,
-			Email:        registerRequest.Email,
-			PasswordHash: passwordHash,
-			Token:        token,
-			IsAdmin:      1,
-		}
-
-		model.InsertAccount(db, rr)
-
-		// Set cookie
-		now := time.Now()
-		duration := now.Add(365 * 24 * time.Hour).Sub(now)
-		maxAge := int(duration.Seconds())
-		c := &http.Cookie{Name: "sorcia-token", Value: token, Path: "/", Domain: strings.Split(r.Host, ":")[0], MaxAge: maxAge}
-		http.SetCookie(w, c)
-
-		http.Redirect(w, r, "/", http.StatusFound)
+		tmpl.ExecuteTemplate(w, "layout", data)
+		return
 	}
+
+	rr := model.CreateAccountStruct{
+		Username:     registerRequest.Username,
+		Email:        registerRequest.Email,
+		PasswordHash: passwordHash,
+		Token:        token,
+		IsAdmin:      1,
+	}
+
+	model.InsertAccount(db, rr)
+
+	// Set cookie
+	now := time.Now()
+	duration := now.Add(365 * 24 * time.Hour).Sub(now)
+	maxAge := int(duration.Seconds())
+	c := &http.Cookie{Name: "sorcia-token", Value: token, Path: "/", Domain: strings.Split(r.Host, ":")[0], MaxAge: maxAge}
+	http.SetCookie(w, c)
+
+	http.Redirect(w, r, "/", http.StatusFound)
 }
 
 // GetLogout ...

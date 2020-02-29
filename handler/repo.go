@@ -30,9 +30,10 @@ import (
 
 // GetCreateRepoResponse struct
 type GetCreateRepoResponse struct {
-	IsHeaderLogin    bool
-	HeaderActiveMenu string
-	SorciaVersion    string
+	IsHeaderLogin      bool
+	HeaderActiveMenu   string
+	ReponameErrMessage string
+	SorciaVersion      string
 }
 
 // GetCreateRepo ...
@@ -71,7 +72,7 @@ type CreateRepoRequest struct {
 }
 
 // PostCreateRepo ...
-func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder *schema.Decoder, repoPath string) {
+func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder *schema.Decoder, sorciaVersion, repoPath string) {
 	// NOTE: Invoke ParseForm or ParseMultipartForm before reading form values
 	if err := r.ParseForm(); err != nil {
 		fmt.Fprintf(w, "ParseForm() err: %v", err)
@@ -91,6 +92,51 @@ func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder 
 	var createRepoRequest = &CreateRepoRequest{}
 	err := decoder.Decode(createRepoRequest, r.PostForm)
 	errorhandler.CheckError(err)
+
+	s := createRepoRequest.Name
+	if len(s) > 100 || len(s) < 1 {
+		layoutPage := path.Join("./templates", "layout.html")
+		headerPage := path.Join("./templates", "header.html")
+		createRepoPage := path.Join("./templates", "create-repo.html")
+		footerPage := path.Join("./templates", "footer.html")
+
+		tmpl, err := template.ParseFiles(layoutPage, headerPage, createRepoPage, footerPage)
+		errorhandler.CheckError(err)
+
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
+
+		data := GetCreateRepoResponse{
+			IsHeaderLogin:      false,
+			HeaderActiveMenu:   "",
+			ReponameErrMessage: "Repository name is too long (maximum is 100 characters).",
+			SorciaVersion:      sorciaVersion,
+		}
+
+		tmpl.ExecuteTemplate(w, "layout", data)
+		return
+	} else if strings.HasPrefix(s, "-") || strings.Contains(s, "--") || strings.HasSuffix(s, "-") || !util.IsAlnumOrHyphen(s) {
+		layoutPage := path.Join("./templates", "layout.html")
+		headerPage := path.Join("./templates", "header.html")
+		createRepoPage := path.Join("./templates", "create-repo.html")
+		footerPage := path.Join("./templates", "footer.html")
+
+		tmpl, err := template.ParseFiles(layoutPage, headerPage, createRepoPage, footerPage)
+		errorhandler.CheckError(err)
+
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
+
+		data := GetCreateRepoResponse{
+			IsHeaderLogin:      false,
+			HeaderActiveMenu:   "",
+			ReponameErrMessage: "Repository name may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen.",
+			SorciaVersion:      sorciaVersion,
+		}
+
+		tmpl.ExecuteTemplate(w, "layout", data)
+		return
+	}
 
 	token := w.Header().Get("sorcia-cookie-token")
 
