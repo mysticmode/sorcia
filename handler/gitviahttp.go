@@ -116,7 +116,21 @@ func serviceReceivePack(gh gitHandler) {
 }
 
 func postServiceRPC(gh gitHandler, rpc string) {
-	if rpc == "receive-pack" && processRepoAccess(gh) != true {
+	rts := model.RepoTypeStruct{
+		Reponame: gh.reponame,
+	}
+
+	// Check if repository is private
+	if isRepoPrivate := model.GetRepoType(gh.db, &rts); isRepoPrivate {
+		userID := model.GetUserIDFromReponame(gh.db, gh.reponame)
+		if model.CheckRepoAccessFromUserID(gh.db, userID) {
+			if processRepoAccess(gh) == false {
+				return
+			}
+		}
+	}
+
+	if rpc == "receive-pack" && processRepoAccess(gh) == false {
 		gh.w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -171,7 +185,21 @@ func getInfoRefs(gh gitHandler) {
 		return
 	}
 
-	if rpc == "receive-pack" && processRepoAccess(gh) != true {
+	rts := model.RepoTypeStruct{
+		Reponame: gh.reponame,
+	}
+
+	// Check if repository is private
+	if isRepoPrivate := model.GetRepoType(gh.db, &rts); isRepoPrivate {
+		userID := model.GetUserIDFromReponame(gh.db, gh.reponame)
+		if model.CheckRepoAccessFromUserID(gh.db, userID) {
+			if processRepoAccess(gh) == false {
+				return
+			}
+		}
+	}
+
+	if rpc == "receive-pack" && processRepoAccess(gh) == false {
 		return
 	}
 
@@ -253,19 +281,6 @@ func processRepoAccess(gh gitHandler) bool {
 	passwordHash := sphjwtr.PasswordHash
 
 	if gh.basicAuth(username, passwordHash, "Please enter your username and password") {
-		rts := model.RepoTypeStruct{
-			Reponame: gh.reponame,
-		}
-
-		// Check if repository is private
-		if isRepoPrivate := model.GetRepoType(gh.db, &rts); isRepoPrivate {
-			if model.CheckRepoAccessFromUserID(gh.db, userID) {
-				return true
-			}
-
-			return false
-		}
-
 		return true
 	}
 
