@@ -10,7 +10,7 @@ import (
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println("Expected 'web' or 'gitviassh' or 'version' subcommands")
+		fmt.Println("Expected 'web' / 'gitviassh' / 'usermod' / 'version' subcommands.")
 		os.Exit(1)
 	}
 
@@ -27,7 +27,7 @@ func main() {
 	case "version":
 		fmt.Println(conf.Version)
 	default:
-		fmt.Println("Expected 'web' or 'gitviassh' or 'version' subcommands")
+		fmt.Println("Expected 'web' / 'gitviassh' / 'usermod' / 'version' subcommands.")
 		os.Exit(1)
 	}
 }
