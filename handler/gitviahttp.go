@@ -21,11 +21,13 @@ import (
 )
 
 type gitHandler struct {
-	w    http.ResponseWriter
-	r    *http.Request
-	rpc  string
-	dir  string
-	file string
+	w        http.ResponseWriter
+	r        *http.Request
+	rpc      string
+	dir      string
+	file     string
+	reponame string
+	db       *sql.DB
 }
 
 func (gh *gitHandler) basicAuth(username, passwordHash, realm string) bool {
@@ -114,6 +116,11 @@ func serviceReceivePack(gh gitHandler) {
 }
 
 func postServiceRPC(gh gitHandler, rpc string) {
+	if rpc == "receive-pack" && processRepoAccess(gh) != true {
+		gh.w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
 	if gh.r.Header.Get("Content-Type") != fmt.Sprintf("application/x-git-%s-request", rpc) {
 		gh.w.WriteHeader(http.StatusUnauthorized)
 		return
@@ -161,6 +168,10 @@ func getInfoRefs(gh gitHandler) {
 		gh := gitHandler{}
 		updateServerInfo(gh.dir)
 		gh.sendFile("text/plain; charset=utf-8")
+		return
+	}
+
+	if rpc == "receive-pack" && processRepoAccess(gh) != true {
 		return
 	}
 
@@ -231,32 +242,31 @@ func getProjectRootDir() string {
 	return projectRootDir
 }
 
-func processRepoAccess(db *sql.DB, gh gitHandler, reponame string) bool {
-	userID := model.GetUserIDFromReponame(db, reponame)
-	username := model.GetUsernameFromUserID(db, userID)
+func processRepoAccess(gh gitHandler) bool {
+	userID := model.GetUserIDFromReponame(gh.db, gh.reponame)
+	username := model.GetUsernameFromUserID(gh.db, userID)
 
 	sphjwt := model.SelectPasswordHashAndJWTTokenStruct{
 		Username: username,
 	}
-	sphjwtr := model.SelectPasswordHashAndJWTToken(db, sphjwt)
+	sphjwtr := model.SelectPasswordHashAndJWTToken(gh.db, sphjwt)
 	passwordHash := sphjwtr.PasswordHash
 
 	if gh.basicAuth(username, passwordHash, "Please enter your username and password") {
 		rts := model.RepoTypeStruct{
-			Reponame: reponame,
+			Reponame: gh.reponame,
 		}
 
 		// Check if repository is private
-		if isRepoPrivate := model.GetRepoType(db, &rts); isRepoPrivate {
-			if model.CheckRepoAccessFromUserID(db, userID) {
+		if isRepoPrivate := model.GetRepoType(gh.db, &rts); isRepoPrivate {
+			if model.CheckRepoAccessFromUserID(gh.db, userID) {
 				return true
-			} else {
-				return false
 			}
 
-		} else {
-			return true
+			return false
 		}
+
+		return true
 	}
 
 	return false
@@ -292,19 +302,18 @@ func GitviaHTTP(w http.ResponseWriter, r *http.Request, db *sql.DB, dir string) 
 		}
 
 		file := strings.TrimPrefix(reqPath, routeMatch[1]+"/")
-
-		gh := gitHandler{
-			w:    w,
-			r:    r,
-			dir:  repoDir,
-			file: file,
-		}
-
 		reponame := strings.TrimSuffix(strings.TrimPrefix(routeMatch[1], "/"), ".git")
 
-		if processRepoAccess(db, gh, reponame) {
-			route.handler(gh)
+		gh := gitHandler{
+			w:        w,
+			r:        r,
+			dir:      repoDir,
+			file:     file,
+			reponame: reponame,
+			db:       db,
 		}
+
+		route.handler(gh)
 
 		return
 	}
