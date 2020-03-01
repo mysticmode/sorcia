@@ -1,0 +1,39 @@
+{{define "title"}}meta{{end}}
+{{define "content"}}
+<main class="container meta">
+    <div class="repo__menu">
+        <a href="/meta" class="repo__menu__item">general</a>
+        <a href="/meta/keys" class="repo__menu__item">keys</a>
+        <a href="" class="repo__menu__item repo__menu__item--active">manage users</a>
+    </div>
+    <div class="meta__detail">
+        <div class="meta__users">
+            <div class="meta__users__title">users</div>
+            <table class="meta__users__table">
+                <tr>
+                    <th>Username</th>
+                    <th>Email address</th>
+                </tr>
+                <tr>
+                    <td>mysticmode</td>
+                    <td>yo@mysticmode.org</td>
+                    <td><a href="" class="button button--primary">Change password</a></td>
+                    <td><a href="" class="button button--danger">Delete user</a></td>
+                </tr>
+                <tr>
+                    <td>mysticmode</td>
+                    <td>yo@mysticmode.org</td>
+                    <td><a href="" class="button button--primary">Change password</a></td>
+                    <td><a href="" class="button button--danger">Delete user</a></td>
+                </tr>
+                <tr>
+                    <td>mysticmode</td>
+                    <td>yo@mysticmode.org</td>
+                    <td><a href="" class="button button--primary">Change password</a></td>
+                    <td><a href="" class="button button--danger">Delete user</a></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</main>
+{{end}}

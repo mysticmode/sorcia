@@ -1,0 +1,43 @@
+{{define "title"}}meta{{end}}
+{{define "content"}}
+<main class="container meta">
+    <div class="repo__menu">
+        <a href="/meta" class="repo__menu__item">general</a>
+        <a href="" class="repo__menu__item repo__menu__item--active">keys</a>
+        <a href="/meta/users" class="repo__menu__item">manage users</a>
+    </div>
+    <div class="meta__detail">
+        <form class="form meta__detail__form" method="POST" action="/meta/keys">
+            <div class="form__title">ssh keys</div>
+            <div class="form__group">
+                <textarea name="sshkey"></textarea>
+            </div>
+            <input type="submit" class="button button--primary" value="Save" />
+        </form>
+        <div class="meta__keys">
+            <div class="meta__keys__title">your ssh keys</div>
+            <table class="meta__keys__table">
+                <tr>
+                    <th>Name</th>
+                    <th>Fingerprint</th>
+                </tr>
+                <tr>
+                    <td>yo@mysticmode.org</td>
+                    <td>7e:1f:16:81:cf:b6:31:ef:1e:aa:71:6a:8a:d1:38:e2</td>
+                    <td><a href="" class="button button--danger">Delete</a></td>
+                </tr>
+                <tr>
+                    <td>yo@mysticmode.org</td>
+                    <td>7e:1f:16:81:cf:b6:31:ef:1e:aa:71:6a:8a:d1:38:e2</td>
+                    <td><a href="" class="button button--danger">Delete</a></td>
+                </tr>
+                <tr>
+                    <td>yo@mysticmode.org</td>
+                    <td>7e:1f:16:81:cf:b6:31:ef:1e:aa:71:6a:8a:d1:38:e2</td>
+                    <td><a href="" class="button button--danger">Delete</a></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</main>
+{{end}}

@@ -23,7 +23,7 @@
         
         color: $text-color;
 
-        & a {
+        &__item {
             text-decoration: none;
             color: $text-color-2;
             margin-right: 20px;
@@ -32,7 +32,7 @@
                 margin-right: 0;
             }
 
-            &:hover {
+            &--active, &:hover {
                 color: $text-color;
             }
         }
