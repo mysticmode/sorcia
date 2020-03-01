@@ -20,8 +20,8 @@ func IsAlnumOrHyphen(s string) bool {
 	return true
 }
 
-// SSHFingerPrintAndEmail ...
-func SSHFingerPrintAndEmail(sshPath string) (string, string) {
+// SSHFingerPrint ...
+func SSHFingerPrint(sshPath string) string {
 	key, err := ioutil.ReadFile(filepath.Join(sshPath, "id_rsa.pub"))
 	if err != nil {
 		log.Fatal(err)
@@ -30,11 +30,6 @@ func SSHFingerPrintAndEmail(sshPath string) (string, string) {
 	parts := strings.Fields(string(key))
 	if len(parts) < 2 {
 		log.Fatal("bad key")
-	}
-
-	var email string
-	if len(parts) <= 3 && parts[2] != "" {
-		email = parts[2]
 	}
 
 	k, err := base64.StdEncoding.DecodeString(parts[1])
@@ -51,5 +46,5 @@ func SSHFingerPrintAndEmail(sshPath string) (string, string) {
 		}
 	}
 
-	return fingerPrint, email
+	return fingerPrint
 }
