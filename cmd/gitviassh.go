@@ -191,7 +191,7 @@ func RunSSH(sorciaConf *setting.BaseStruct) {
 		},
 	}
 
-	keyDir := "/home/git/ssh"
+	keyDir := sorciaConf.Paths.SSHPath
 	keyPath := filepath.Join(keyDir, "id_rsa")
 	if _, err := os.Stat(keyPath); err != nil || os.IsNotExist(err) {
 		if err := os.MkdirAll(filepath.Dir(keyDir), os.ModePerm); err != nil {
