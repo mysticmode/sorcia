@@ -7,6 +7,23 @@
         <a href="" class="repo__menu__item repo__menu__item--active">manage users</a>
     </div>
     <div class="meta__detail">
+        <form class="form meta__detail__form" method="POST" action="/meta/profile">
+            <div class="form__title">invite new user</div>
+            <div class="meta__error"></div>
+            <div class="form__group">
+                <label for="newUsername">Username<i>*</i></label>
+                <input type="text" class="form__input" id="newUsername" name="username" value="mysticmode" autocomplete="off" spellcheck="false"/>
+            </div>
+            <div class="form__group">
+                <label for="newEmail">Email address<i>*</i></label>
+                <input type="text" class="form__input" id="newEmail" name="email" value="yo@mysticmode.org" autocomplete="off" spellcheck="false"/>
+            </div>
+            <div class="form__group">
+                <label for="newPassword">Password<i>*</i></label>
+                <input type="password" class="form__input" id="newPassword" name="password" value="sorcia" autocomplete="off" spellcheck="false" />
+            </div>
+            <input type="submit" class="button button--primary" value="Save" />
+        </form>
         <div class="meta__users">
             <div class="meta__users__title">users</div>
             <table class="meta__users__table">
@@ -17,20 +34,14 @@
                 <tr>
                     <td>mysticmode</td>
                     <td>yo@mysticmode.org</td>
-                    <td><a href="" class="button button--primary">Change password</a></td>
-                    <td><a href="" class="button button--danger">Delete user</a></td>
                 </tr>
                 <tr>
                     <td>mysticmode</td>
                     <td>yo@mysticmode.org</td>
-                    <td><a href="" class="button button--primary">Change password</a></td>
-                    <td><a href="" class="button button--danger">Delete user</a></td>
                 </tr>
                 <tr>
                     <td>mysticmode</td>
                     <td>yo@mysticmode.org</td>
-                    <td><a href="" class="button button--primary">Change password</a></td>
-                    <td><a href="" class="button button--danger">Delete user</a></td>
                 </tr>
             </table>
         </div>
