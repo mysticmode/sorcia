@@ -5,6 +5,7 @@ version = 0.1.0-alpha
 project_root = /home/git/sorcia
 repo_path = /home/git/repositories
 db_path = /home/git
+ssh_path = /home/git/ssh
 
 [server]
 http_port = 1937
