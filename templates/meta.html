@@ -1,0 +1,46 @@
+{{define "title"}}meta{{end}}
+{{define "content"}}
+<main class="container meta">
+    <div class="repo__menu">
+        <a href="" class="repo__menu__item repo__menu__item--active">general</a>
+        <a href="/meta/keys" class="repo__menu__item">keys</a>
+        <a href="/meta/users" class="repo__menu__item">manage users</a>
+    </div>
+    <div class="meta__detail">
+        <form class="form meta__detail__form" method="POST" action="/meta/profile">
+            <div class="form__title">your profile</div>
+            <div class="meta__error"></div>
+            <div class="form__group">
+                <label for="profileUsername">Username (You can't edit this - ask the admin to change username)</label>
+                <input type="text" class="form__input" id="profileUsername" name="username" value="mysticmode" autocomplete="off" spellcheck="false" readonly="" />
+            </div>
+            <div class="form__group">
+                <label for="profileEmail">Email address (You can't edit this - ask the admin to change email)</label>
+                <input type="text" class="form__input" id="profileEmail" name="email" value="yo@mysticmode.org" autocomplete="off" spellcheck="false" readonly="" />
+            </div>
+            <div class="form__group">
+                <label for="profilePassword">Password<i>*</i></label>
+                <input type="password" class="form__input" id="profilePassword" name="password" value="sorcia" autocomplete="off" spellcheck="false" />
+            </div>
+            <input type="submit" class="button button--primary" value="Save" />
+        </form>
+        <form class="form meta__detail__form" method="POST" action="/meta/site">
+            <div class="form__title">site settings</div>
+            <div class="meta__error"></div>
+            <div class="form__group">
+                <label for="siteTitle">Title<i>*</i></label>
+                <input type="text" class="form__input" id="siteTitle" name="title" value="asdf" autocomplete="off" spellcheck="false" />
+            </div>
+            <div class="form__group">
+                <label for="siteFavicon">Favicon (Supports ico/png/jpg formats)<i>*</i></label>
+                <input type="file" class="form__input" id="siteFavicon" name="title" />
+            </div>
+            <div class="form__group">
+                <label for="siteLogo">Logo (Supports svg/png/jpg formats. Max-height: 80px, Max-width: 200px)<i>*</i></label>
+                <input type="file" class="form__input" id="siteLogo" name="title" />
+            </div>
+            <input type="submit" class="button button--primary" value="Save" />
+        </form>
+    </div>
+</main>
+{{end}}

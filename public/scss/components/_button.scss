@@ -11,4 +11,13 @@
         background: darken($color: #2680a4, $amount: 10%);
         color: white;
     }
+
+    &--danger {
+        background: $brand-danger;
+
+        &:hover {
+            background: darken($color: #d15555, $amount: 10%);
+            color: white;
+        }
+    }
 }

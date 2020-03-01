@@ -55,6 +55,15 @@ func RunWeb(conf *setting.BaseStruct) {
 	m.HandleFunc("/create-repo", func(w http.ResponseWriter, r *http.Request) {
 		handler.PostCreateRepo(w, r, db, decoder, conf.Version, conf.Paths.RepoPath)
 	}).Methods("POST")
+	m.HandleFunc("/meta", func(w http.ResponseWriter, r *http.Request) {
+		GetMeta(w, r, db, conf.Version)
+	}).Methods("GET")
+	m.HandleFunc("/meta/keys", func(w http.ResponseWriter, r *http.Request) {
+		GetMetaKeys(w, r, db, conf.Version)
+	}).Methods("GET")
+	m.HandleFunc("/meta/users", func(w http.ResponseWriter, r *http.Request) {
+		GetMetaUsers(w, r, db, conf.Version)
+	}).Methods("GET")
 	m.HandleFunc("/r/{reponame}", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetRepo(w, r, db, conf.Version, conf.Paths.RepoPath)
 	}).Methods("GET")
@@ -117,7 +126,112 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 
 		data := IndexPageResponse{
 			IsHeaderLogin:    false,
-			HeaderActiveMenu: "header__menu--dashboard",
+			HeaderActiveMenu: "",
+			SorciaVersion:    sorciaVersion,
+			Username:         username,
+			Repos:            repos,
+		}
+
+		tmpl.ExecuteTemplate(w, "layout", data)
+	} else {
+		http.Redirect(w, r, "/login", http.StatusFound)
+	}
+}
+
+// GetMeta ...
+func GetMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion string) {
+	userPresent := w.Header().Get("user-present")
+
+	if userPresent == "true" {
+		token := w.Header().Get("sorcia-cookie-token")
+		userID := model.GetUserIDFromToken(db, token)
+		username := model.GetUsernameFromToken(db, token)
+		repos := model.GetReposFromUserID(db, userID)
+
+		layoutPage := path.Join("./templates", "layout.html")
+		headerPage := path.Join("./templates", "header.html")
+		metaPage := path.Join("./templates", "meta.html")
+		footerPage := path.Join("./templates", "footer.html")
+
+		tmpl, err := template.ParseFiles(layoutPage, headerPage, metaPage, footerPage)
+		errorhandler.CheckError(err)
+
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
+
+		data := IndexPageResponse{
+			IsHeaderLogin:    false,
+			HeaderActiveMenu: "meta",
+			SorciaVersion:    sorciaVersion,
+			Username:         username,
+			Repos:            repos,
+		}
+
+		tmpl.ExecuteTemplate(w, "layout", data)
+	} else {
+		http.Redirect(w, r, "/login", http.StatusFound)
+	}
+}
+
+// GetMetaKeys ...
+func GetMetaKeys(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion string) {
+	userPresent := w.Header().Get("user-present")
+
+	if userPresent == "true" {
+		token := w.Header().Get("sorcia-cookie-token")
+		userID := model.GetUserIDFromToken(db, token)
+		username := model.GetUsernameFromToken(db, token)
+		repos := model.GetReposFromUserID(db, userID)
+
+		layoutPage := path.Join("./templates", "layout.html")
+		headerPage := path.Join("./templates", "header.html")
+		metaPage := path.Join("./templates", "meta-keys.html")
+		footerPage := path.Join("./templates", "footer.html")
+
+		tmpl, err := template.ParseFiles(layoutPage, headerPage, metaPage, footerPage)
+		errorhandler.CheckError(err)
+
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
+
+		data := IndexPageResponse{
+			IsHeaderLogin:    false,
+			HeaderActiveMenu: "meta",
+			SorciaVersion:    sorciaVersion,
+			Username:         username,
+			Repos:            repos,
+		}
+
+		tmpl.ExecuteTemplate(w, "layout", data)
+	} else {
+		http.Redirect(w, r, "/login", http.StatusFound)
+	}
+}
+
+// GetMetaUsers ...
+func GetMetaUsers(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion string) {
+	userPresent := w.Header().Get("user-present")
+
+	if userPresent == "true" {
+		token := w.Header().Get("sorcia-cookie-token")
+		userID := model.GetUserIDFromToken(db, token)
+		username := model.GetUsernameFromToken(db, token)
+		repos := model.GetReposFromUserID(db, userID)
+
+		layoutPage := path.Join("./templates", "layout.html")
+		headerPage := path.Join("./templates", "header.html")
+		metaPage := path.Join("./templates", "meta-users.html")
+		footerPage := path.Join("./templates", "footer.html")
+
+		tmpl, err := template.ParseFiles(layoutPage, headerPage, metaPage, footerPage)
+		errorhandler.CheckError(err)
+
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
+
+		data := IndexPageResponse{
+			IsHeaderLogin:    false,
+			HeaderActiveMenu: "meta",
 			SorciaVersion:    sorciaVersion,
 			Username:         username,
 			Repos:            repos,

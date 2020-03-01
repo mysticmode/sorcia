@@ -1,0 +1,50 @@
+.meta {
+    &__detail {
+        margin-top: 20px;
+    }
+
+    #profileUsername, #profileEmail {
+        background: $brand-bg-1;
+
+        &:focus {
+            border: 1px solid #e0e4e7;
+        }
+    }
+
+    textarea {
+        width: 600px;
+        min-height: 100px;
+    }
+
+    &__keys, &__users {
+        &__title {
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        &__table {
+            & th, & td {
+                border: 1px solid $brand-border;
+                padding: 7px 10px;
+            }
+
+            & td {
+                &:last-child {
+                    border: none;
+                    padding: 0;
+                }
+            }
+        }
+    }
+
+    &__users {
+        &__table {
+            & td {
+                &:nth-child(3), &:last-child {
+                    border: none;
+                    padding: 0;
+                }
+            }
+        }
+    }
+}

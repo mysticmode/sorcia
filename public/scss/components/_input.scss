@@ -1,4 +1,4 @@
-input[type="text"], input[type="email"], input[type="password"] {
+input[type="text"], input[type="email"], input[type="password"], textarea {
     font-family: $font-default;
     background: white;
     color: $text-color;
@@ -10,4 +10,9 @@ input[type="text"], input[type="email"], input[type="password"] {
     &:focus {
         border: 1px solid $brand-primary;
     }
+}
+
+textarea {
+    resize: vertical;
+    overflow: auto;
 }

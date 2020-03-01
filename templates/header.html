@@ -19,8 +19,13 @@
             </a>
         </div>
         <div class="header__right">
-            <a href="/meta">meta</a>
-            <a href="/logout">logout</a>
+            {{if eq .HeaderActiveMenu "meta"}}
+            <a href="/meta" class="header__right__item header__right__item--active">meta</a>
+            <a href="/logout" class="header__right__item">logout</a>
+            {{else}}
+            <a href="/meta" class="header__right__item">meta</a>
+            <a href="/logout" class="header__right__item">logout</a>
+            {{end}}
         </div>
     </header>
     {{end}}
