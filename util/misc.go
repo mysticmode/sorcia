@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"path/filepath"
 	"strings"
 )
 
@@ -21,7 +22,7 @@ func IsAlnumOrHyphen(s string) bool {
 
 // SSHFingerPrintAndEmail ...
 func SSHFingerPrintAndEmail(sshPath string) (string, string) {
-	key, err := ioutil.ReadFile(sshPath)
+	key, err := ioutil.ReadFile(filepath.Join(sshPath, "id_rsa.pub"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -32,7 +33,7 @@ func SSHFingerPrintAndEmail(sshPath string) (string, string) {
 	}
 
 	var email string
-	if parts[2] != "" {
+	if len(parts) <= 3 && parts[2] != "" {
 		email = parts[2]
 	}
 

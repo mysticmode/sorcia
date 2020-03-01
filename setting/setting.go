@@ -30,6 +30,7 @@ type PathsStruct struct {
 	ProjectRoot string
 	RepoPath    string
 	DBPath      string
+	SSHPath     string
 }
 
 // ServerStruct struct
@@ -54,6 +55,7 @@ func init() {
 			ProjectRoot: cfg.Section("paths").Key("project_root").String(),
 			RepoPath:    cfg.Section("paths").Key("repo_path").String(),
 			DBPath:      cfg.Section("paths").Key("db_path").String(),
+			SSHPath:     cfg.Section("paths").Key("ssh_path").String(),
 		},
 		Server: ServerStruct{
 			HTTPPort: cfg.Section("server").Key("http_port").String(),
