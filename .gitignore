@@ -6,5 +6,7 @@ sorcia
 sorcia.exe
 sorcia.db
 
+app.ini
+
 repositories/
 ssh/
