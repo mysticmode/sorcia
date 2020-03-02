@@ -267,19 +267,12 @@ func PostAuthKey(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 	model.InsertSSHPubKey(db, ispk)
 
 	keyPath := filepath.Join(sshPath, "authorized_keys")
-	if _, err := os.Stat(keyPath); err != nil || os.IsNotExist(err) {
-		if err := os.MkdirAll(filepath.Dir(sshPath), os.ModePerm); err != nil {
-			fmt.Println(err)
-			return
-		}
+	f, err := os.OpenFile(keyPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, os.ModePerm)
+	errorhandler.CheckError(err)
+	defer f.Close()
 
-		f, err := os.OpenFile(keyPath, os.O_APPEND|os.O_WRONLY, os.ModePerm)
-		errorhandler.CheckError(err)
-		defer f.Close()
-
-		if _, err := f.WriteString(authKey + "\n"); err != nil {
-			log.Println(err)
-		}
+	if _, err := f.WriteString(authKey + "\n"); err != nil {
+		log.Println(err)
 	}
 
 	http.Redirect(w, r, "/meta/keys", http.StatusFound)
