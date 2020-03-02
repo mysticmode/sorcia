@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 	"path"
 	"path/filepath"
 	"strings"
@@ -66,7 +67,7 @@ func RunWeb(conf *setting.BaseStruct) {
 		GetMetaKeys(w, r, db, conf.Version)
 	}).Methods("GET")
 	m.HandleFunc("/meta/keys", func(w http.ResponseWriter, r *http.Request) {
-		PostAuthKey(w, r, db, conf.Version, decoder)
+		PostAuthKey(w, r, db, conf.Version, conf.Paths.SSHPath, decoder)
 	}).Methods("POST")
 	m.HandleFunc("/meta/users", func(w http.ResponseWriter, r *http.Request) {
 		GetMetaUsers(w, r, db, conf.Version)
@@ -196,7 +197,7 @@ func GetMetaKeys(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 		token := w.Header().Get("sorcia-cookie-token")
 		userID := model.GetUserIDFromToken(db, token)
 
-		sshKeys := model.GetSSHKeys(db, userID)
+		sshKeys := model.GetSSHKeysFromUserId(db, userID)
 
 		layoutPage := path.Join("./templates", "layout.html")
 		headerPage := path.Join("./templates", "header.html")
@@ -229,7 +230,7 @@ type CreateAuthKeyRequest struct {
 }
 
 // PostAuthKey ...
-func PostAuthKey(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion string, decoder *schema.Decoder) {
+func PostAuthKey(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion string, sshPath string, decoder *schema.Decoder) {
 	// NOTE: Invoke ParseForm or ParseMultipartForm before reading form values
 	if err := r.ParseForm(); err != nil {
 		fmt.Fprintf(w, "ParseForm() err: %v", err)
@@ -264,6 +265,22 @@ func PostAuthKey(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 	}
 
 	model.InsertSSHPubKey(db, ispk)
+
+	keyPath := filepath.Join(sshPath, "authorized_keys")
+	if _, err := os.Stat(keyPath); err != nil || os.IsNotExist(err) {
+		if err := os.MkdirAll(filepath.Dir(sshPath), os.ModePerm); err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		f, err := os.OpenFile(keyPath, os.O_APPEND|os.O_WRONLY, os.ModePerm)
+		errorhandler.CheckError(err)
+		defer f.Close()
+
+		if _, err := f.WriteString(authKey + "\n"); err != nil {
+			log.Println(err)
+		}
+	}
 
 	http.Redirect(w, r, "/meta/keys", http.StatusFound)
 }
