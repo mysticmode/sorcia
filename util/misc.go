@@ -4,9 +4,7 @@ import (
 	"crypto/md5"
 	"encoding/base64"
 	"fmt"
-	"io/ioutil"
 	"log"
-	"path/filepath"
 	"strings"
 )
 
@@ -21,13 +19,8 @@ func IsAlnumOrHyphen(s string) bool {
 }
 
 // SSHFingerPrint ...
-func SSHFingerPrint(sshPath string) string {
-	key, err := ioutil.ReadFile(filepath.Join(sshPath, "id_rsa.pub"))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	parts := strings.Fields(string(key))
+func SSHFingerPrint(authKey string) string {
+	parts := strings.Fields(string(authKey))
 	if len(parts) < 2 {
 		log.Fatal("bad key")
 	}
