@@ -179,3 +179,59 @@ func DeleteUserbyEmail(db *sql.DB, email string) {
 	_, err = stmt.Exec(email)
 	errorhandler.CheckError(err)
 }
+
+// CreateSSHPubKey ...
+func CreateSSHPubKey(db *sql.DB) {
+	stmt, err := db.Prepare("CREATE TABLE IF NOT EXISTS ssh (id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, title TEXT UNIQUE NOT NULL, authorized_key TEXT UNIQUE NOT NULL, fingerprint TEXT UNIQUE NOT NULL, FOREIGN KEY (user_id) REFERENCES account (id) ON DELETE CASCADE)")
+	errorhandler.CheckError(err)
+
+	_, err = stmt.Exec()
+	errorhandler.CheckError(err)
+}
+
+// InsertSSHPubKey struct
+type InsertSSHPubKeyStruct struct {
+	AuthKey     string
+	Title       string
+	Fingerprint string
+	UserID      int
+}
+
+// InsertRepo ...
+func InsertSSHPubKey(db *sql.DB, ispk InsertSSHPubKeyStruct) {
+	stmt, err := db.Prepare("INSERT INTO ssh (user_id, title, authorized_key, fingerprint) VALUES (?, ?, ?, ?)")
+	errorhandler.CheckError(err)
+
+	_, err = stmt.Exec(ispk.UserID, ispk.Title, ispk.AuthKey, ispk.Fingerprint)
+	errorhandler.CheckError(err)
+}
+
+// SSHKeysResponse struct
+type SSHKeysResponse struct {
+	SSHKeys []SSHDetail
+}
+
+// SSHDetailResponse struct
+type SSHDetail struct {
+	Title       string
+	Fingerprint string
+}
+
+// GetSSHKeys ...
+func GetSSHKeys(db *sql.DB, userID int) *SSHKeysResponse {
+	rows, err := db.Query("SELECT title, fingerprint FROM ssh WHERE user_id = ?", userID)
+	errorhandler.CheckError(err)
+
+	var sdr SSHDetail
+	var skr SSHKeysResponse
+
+	for rows.Next() {
+		err = rows.Scan(&sdr.Title, &sdr.Fingerprint)
+		errorhandler.CheckError(err)
+
+		skr.SSHKeys = append(skr.SSHKeys, sdr)
+	}
+	rows.Close()
+
+	return &skr
+}

@@ -26,6 +26,8 @@
             & th, & td {
                 border: 1px solid $brand-border;
                 padding: 7px 10px;
+                width: 240px;
+                word-wrap: break-word;
             }
 
             & td {

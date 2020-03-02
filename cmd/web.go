@@ -2,18 +2,21 @@ package cmd
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"log"
 	"net/http"
 	"path"
 	"path/filepath"
+	"strings"
 
 	errorhandler "sorcia/error"
 	"sorcia/handler"
 	"sorcia/middleware"
 	"sorcia/model"
 	"sorcia/setting"
+	"sorcia/util"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -32,6 +35,7 @@ func RunWeb(conf *setting.BaseStruct) {
 	defer db.Close()
 
 	model.CreateAccount(db)
+	model.CreateSSHPubKey(db)
 	model.CreateRepo(db)
 
 	m.Use(middleware.Middleware)
@@ -61,6 +65,9 @@ func RunWeb(conf *setting.BaseStruct) {
 	m.HandleFunc("/meta/keys", func(w http.ResponseWriter, r *http.Request) {
 		GetMetaKeys(w, r, db, conf.Version)
 	}).Methods("GET")
+	m.HandleFunc("/meta/keys", func(w http.ResponseWriter, r *http.Request) {
+		PostAuthKey(w, r, db, conf.Version, decoder)
+	}).Methods("POST")
 	m.HandleFunc("/meta/users", func(w http.ResponseWriter, r *http.Request) {
 		GetMetaUsers(w, r, db, conf.Version)
 	}).Methods("GET")
@@ -173,6 +180,14 @@ func GetMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 	}
 }
 
+// MetaKeysResponse struct
+type MetaKeysResponse struct {
+	IsHeaderLogin    bool
+	HeaderActiveMenu string
+	SorciaVersion    string
+	SSHKeys          *model.SSHKeysResponse
+}
+
 // GetMetaKeys ...
 func GetMetaKeys(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion string) {
 	userPresent := w.Header().Get("user-present")
@@ -180,8 +195,8 @@ func GetMetaKeys(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 	if userPresent == "true" {
 		token := w.Header().Get("sorcia-cookie-token")
 		userID := model.GetUserIDFromToken(db, token)
-		username := model.GetUsernameFromToken(db, token)
-		repos := model.GetReposFromUserID(db, userID)
+
+		sshKeys := model.GetSSHKeys(db, userID)
 
 		layoutPage := path.Join("./templates", "layout.html")
 		headerPage := path.Join("./templates", "header.html")
@@ -194,18 +209,63 @@ func GetMetaKeys(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
 
-		data := IndexPageResponse{
+		data := MetaKeysResponse{
 			IsHeaderLogin:    false,
 			HeaderActiveMenu: "meta",
 			SorciaVersion:    sorciaVersion,
-			Username:         username,
-			Repos:            repos,
+			SSHKeys:          sshKeys,
 		}
 
 		tmpl.ExecuteTemplate(w, "layout", data)
 	} else {
 		http.Redirect(w, r, "/login", http.StatusFound)
 	}
+}
+
+// CreateMetaKeysRequest struct
+type CreateAuthKeyRequest struct {
+	Title   string `schema:"sshtitle"`
+	AuthKey string `schema:"sshkey"`
+}
+
+// PostAuthKey ...
+func PostAuthKey(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion string, decoder *schema.Decoder) {
+	// NOTE: Invoke ParseForm or ParseMultipartForm before reading form values
+	if err := r.ParseForm(); err != nil {
+		fmt.Fprintf(w, "ParseForm() err: %v", err)
+		errorResponse := &errorhandler.Response{
+			Error: err.Error(),
+		}
+
+		errorJSON, err := json.Marshal(errorResponse)
+		errorhandler.CheckError(err)
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+
+		w.Write(errorJSON)
+	}
+
+	var createAuthKeyRequest = &CreateAuthKeyRequest{}
+	err := decoder.Decode(createAuthKeyRequest, r.PostForm)
+	errorhandler.CheckError(err)
+
+	token := w.Header().Get("sorcia-cookie-token")
+	userID := model.GetUserIDFromToken(db, token)
+
+	authKey := strings.TrimSpace(createAuthKeyRequest.AuthKey)
+	fingerPrint := util.SSHFingerPrint(authKey)
+
+	ispk := model.InsertSSHPubKeyStruct{
+		AuthKey:     authKey,
+		Title:       strings.TrimSpace(createAuthKeyRequest.Title),
+		Fingerprint: fingerPrint,
+		UserID:      userID,
+	}
+
+	model.InsertSSHPubKey(db, ispk)
+
+	http.Redirect(w, r, "/meta/keys", http.StatusFound)
 }
 
 // GetMetaUsers ...

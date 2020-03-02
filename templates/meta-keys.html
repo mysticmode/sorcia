@@ -11,11 +11,11 @@
             <div class="form__title">add new ssh key</div>
             <div class="form__group">
                 <label for="sshTitle">Title<i>*</i></label>
-                <input type="text" class="form__input" id="sshTitle" name="sshtitle" value="" autocomplete="off" spellcheck="false"/>
+                <input type="text" class="form__input" id="sshTitle" name="sshtitle" value="" autocomplete="off" spellcheck="false" required="required" />
             </div>
             <div class="form__group">
                 <label for="sshKey">Key<i>*</i></label>
-                <textarea name="sshkey" id="sshKey"></textarea>
+                <textarea name="sshkey" id="sshKey" required="required"></textarea>
             </div>
             <input type="submit" class="button button--primary" value="Save" />
         </form>
@@ -26,21 +26,13 @@
                     <th>Title</th>
                     <th>Fingerprint</th>
                 </tr>
+                {{range .SSHKeys.SSHKeys}}
                 <tr>
-                    <td>Home-Desktop-Debian10</td>
-                    <td>7e:1f:16:81:cf:b6:31:ef:1e:aa:71:6a:8a:d1:38:e2</td>
+                    <td>{{.Title}}</td>
+                    <td>{{.Fingerprint}}</td>
                     <td><a href="" class="button button--danger">Delete</a></td>
                 </tr>
-                <tr>
-                    <td>Home-Desktop-Debian10</td>
-                    <td>7e:1f:16:81:cf:b6:31:ef:1e:aa:71:6a:8a:d1:38:e2</td>
-                    <td><a href="" class="button button--danger">Delete</a></td>
-                </tr>
-                <tr>
-                    <td>Home-Desktop-Debian10</td>
-                    <td>7e:1f:16:81:cf:b6:31:ef:1e:aa:71:6a:8a:d1:38:e2</td>
-                    <td><a href="" class="button button--danger">Delete</a></td>
-                </tr>
+                {{end}}
             </table>
         </div>
     </div>
