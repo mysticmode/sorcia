@@ -11,6 +11,7 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	errorhandler "sorcia/error"
 	"sorcia/handler"
@@ -38,6 +39,19 @@ func RunWeb(conf *setting.BaseStruct) {
 	model.CreateAccount(db)
 	model.CreateSSHPubKey(db)
 	model.CreateRepo(db)
+
+	var wg sync.WaitGroup
+	c := make(chan bool)
+	wg.Add(1)
+	go func() {
+		_, ok := <-c
+		if !ok {
+			fmt.Println("SSH server is shutting down.")
+			defer wg.Done()
+		}
+		RunSSH(conf)
+	}()
+	wg.Wait()
 
 	m.Use(middleware.Middleware)
 
@@ -67,7 +81,7 @@ func RunWeb(conf *setting.BaseStruct) {
 		GetMetaKeys(w, r, db, conf.Version)
 	}).Methods("GET")
 	m.HandleFunc("/meta/keys", func(w http.ResponseWriter, r *http.Request) {
-		PostAuthKey(w, r, db, conf.Version, conf.Paths.SSHPath, decoder)
+		PostAuthKey(w, r, db, conf.Version, conf.Paths.SSHPath, conf, decoder, c)
 	}).Methods("POST")
 	m.HandleFunc("/meta/users", func(w http.ResponseWriter, r *http.Request) {
 		GetMetaUsers(w, r, db, conf.Version)
@@ -223,14 +237,14 @@ func GetMetaKeys(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 	}
 }
 
-// CreateMetaKeysRequest struct
+// CreateAuthKeyRequest struct
 type CreateAuthKeyRequest struct {
 	Title   string `schema:"sshtitle"`
 	AuthKey string `schema:"sshkey"`
 }
 
 // PostAuthKey ...
-func PostAuthKey(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion string, sshPath string, decoder *schema.Decoder) {
+func PostAuthKey(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion string, sshPath string, conf *setting.BaseStruct, decoder *schema.Decoder, c chan bool) {
 	// NOTE: Invoke ParseForm or ParseMultipartForm before reading form values
 	if err := r.ParseForm(); err != nil {
 		fmt.Fprintf(w, "ParseForm() err: %v", err)
@@ -274,6 +288,21 @@ func PostAuthKey(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 	if _, err := f.WriteString(authKey + "\n"); err != nil {
 		log.Println(err)
 	}
+
+	close(c)
+
+	var wg sync.WaitGroup
+	c = make(chan bool)
+	wg.Add(1)
+	go func() {
+		_, ok := <-c
+		if !ok {
+			fmt.Println("SSH server is shutting down.")
+			defer wg.Done()
+		}
+		RunSSH(conf)
+	}()
+	wg.Wait()
 
 	http.Redirect(w, r, "/meta/keys", http.StatusFound)
 }
