@@ -40,19 +40,6 @@ func RunWeb(conf *setting.BaseStruct) {
 	model.CreateSSHPubKey(db)
 	model.CreateRepo(db)
 
-	var wg sync.WaitGroup
-	c := make(chan bool)
-	wg.Add(1)
-	go func() {
-		_, ok := <-c
-		if !ok {
-			fmt.Println("SSH server is shutting down.")
-			defer wg.Done()
-		}
-		RunSSH(conf)
-	}()
-	wg.Wait()
-
 	m.Use(middleware.Middleware)
 
 	// Web handlers
@@ -81,7 +68,7 @@ func RunWeb(conf *setting.BaseStruct) {
 		GetMetaKeys(w, r, db, conf.Version)
 	}).Methods("GET")
 	m.HandleFunc("/meta/keys", func(w http.ResponseWriter, r *http.Request) {
-		PostAuthKey(w, r, db, conf.Version, conf.Paths.SSHPath, conf, decoder, c)
+		PostAuthKey(w, r, db, conf.Version, conf.Paths.SSHPath, conf, decoder)
 	}).Methods("POST")
 	m.HandleFunc("/meta/users", func(w http.ResponseWriter, r *http.Request) {
 		GetMetaUsers(w, r, db, conf.Version)
@@ -244,7 +231,7 @@ type CreateAuthKeyRequest struct {
 }
 
 // PostAuthKey ...
-func PostAuthKey(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion string, sshPath string, conf *setting.BaseStruct, decoder *schema.Decoder, c chan bool) {
+func PostAuthKey(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion string, sshPath string, conf *setting.BaseStruct, decoder *schema.Decoder) {
 	// NOTE: Invoke ParseForm or ParseMultipartForm before reading form values
 	if err := r.ParseForm(); err != nil {
 		fmt.Fprintf(w, "ParseForm() err: %v", err)
@@ -288,8 +275,6 @@ func PostAuthKey(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 	if _, err := f.WriteString(authKey + "\n"); err != nil {
 		log.Println(err)
 	}
-
-	close(c)
 
 	var wg sync.WaitGroup
 	c = make(chan bool)
