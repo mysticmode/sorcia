@@ -11,7 +11,6 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
-	"sync"
 
 	errorhandler "sorcia/error"
 	"sorcia/handler"
@@ -275,19 +274,6 @@ func PostAuthKey(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 	if _, err := f.WriteString(authKey + "\n"); err != nil {
 		log.Println(err)
 	}
-
-	var wg sync.WaitGroup
-	c = make(chan bool)
-	wg.Add(1)
-	go func() {
-		_, ok := <-c
-		if !ok {
-			fmt.Println("SSH server is shutting down.")
-			defer wg.Done()
-		}
-		RunSSH(conf)
-	}()
-	wg.Wait()
 
 	http.Redirect(w, r, "/meta/keys", http.StatusFound)
 }
