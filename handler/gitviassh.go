@@ -1,7 +1,8 @@
-package cmd
+package handler
 
 import (
 	"bytes"
+	"database/sql"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -151,7 +152,7 @@ func runSSH(config *ssh.ServerConfig, sorciaConf *setting.BaseStruct, host, port
 }
 
 // RunSSH ...
-func RunSSH(sorciaConf *setting.BaseStruct) {
+func RunSSH(sorciaConf *setting.BaseStruct, db *sql.DB) {
 	// Public key authentication is done by comparing
 	// the public key of a received connection
 	// with the entries in the authorized_keys file.
