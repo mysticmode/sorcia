@@ -39,6 +39,8 @@ func RunWeb(conf *setting.BaseStruct) {
 	model.CreateSSHPubKey(db)
 	model.CreateRepo(db)
 
+	handler.RunSSH(conf, db)
+
 	m.Use(middleware.Middleware)
 
 	// Web handlers
