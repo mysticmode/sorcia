@@ -2,6 +2,7 @@ package handler
 
 import (
 	"database/sql"
+	"fmt"
 	"io"
 	"log"
 	"os/exec"
@@ -122,6 +123,7 @@ func RunSSH(conf *setting.BaseStruct, db *sql.DB) {
 		return false
 	})
 
-	log.Println("starting ssh server on port 2222...")
-	log.Fatal(ssh.ListenAndServe(":2222", nil, ssh.NoPty(), publicKeyOption, ssh.HostKeyFile(filepath.Join(conf.Paths.SSHPath, "id_rsa"))))
+	log.Printf("Starting ssh server on port %s...", conf.Server.SSHPort)
+	sshPort := fmt.Sprintf(":%s", conf.Server.SSHPort)
+	log.Fatal(ssh.ListenAndServe(sshPort, nil, ssh.NoPty(), publicKeyOption, ssh.HostKeyFile(filepath.Join(conf.Paths.SSHPath, "id_rsa"))))
 }
