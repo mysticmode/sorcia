@@ -25,7 +25,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
-	"gopkg.in/russross/blackfriday.v2"
+	"github.com/russross/blackfriday/v2"
 )
 
 // GetCreateRepoResponse struct

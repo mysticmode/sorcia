@@ -8,12 +8,13 @@ require (
 	github.com/flynn/go-shlex v0.0.0-20150515145356-3f9db97f8568 // indirect
 	github.com/gliderlabs/ssh v0.2.2
 	github.com/gorilla/handlers v1.4.2
-	github.com/gorilla/mux v1.7.3
+	github.com/gorilla/mux v1.7.4
 	github.com/gorilla/schema v1.1.0
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/russross/blackfriday/v2 v2.0.1
 	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
 	github.com/smartystreets/goconvey v1.6.4 // indirect
-	golang.org/x/crypto v0.0.0-20191112222119-e1110fd1c708
-	gopkg.in/ini.v1 v1.51.0
-	gopkg.in/russross/blackfriday.v2 v2.0.0
+	golang.org/x/crypto v0.0.0-20200302210943-78000ba7a073
+	gopkg.in/ini.v1 v1.52.0
 )
