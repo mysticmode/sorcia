@@ -3,7 +3,9 @@ module sorcia
 go 1.14
 
 require (
+	github.com/anmitsu/go-shlex v0.0.0-20161002113705-648efa622239 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/gliderlabs/ssh v0.2.2
 	github.com/gomarkdown/markdown v0.0.0-20200127000047-1813ea067497
 	github.com/gorilla/handlers v1.4.2
 	github.com/gorilla/mux v1.7.3

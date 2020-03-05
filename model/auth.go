@@ -236,9 +236,9 @@ func GetSSHKeysFromUserId(db *sql.DB, userID int) *SSHKeysResponse {
 	return &skr
 }
 
-// GetSSHAuthKeysFromUserID ...
-func GetSSHAuthKeysFromUserID(db *sql.DB, userID int) []string {
-	rows, err := db.Query("SELECT authorized_key FROM ssh WHERE user_id = ?", userID)
+// GetSSHAllAuthKeys ...
+func GetSSHAllAuthKeys(db *sql.DB) []string {
+	rows, err := db.Query("SELECT authorized_key FROM ssh")
 	errorhandler.CheckError(err)
 
 	var authKeys []string
