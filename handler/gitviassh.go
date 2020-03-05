@@ -13,6 +13,7 @@ import (
 	errorhandler "sorcia/error"
 	"sorcia/model"
 	"sorcia/setting"
+	"sorcia/util"
 
 	"github.com/gliderlabs/ssh"
 	gossh "golang.org/x/crypto/ssh"
@@ -102,6 +103,11 @@ func RunSSH(conf *setting.BaseStruct, db *sql.DB) {
 		}
 
 		s.SendRequest("exit-status", false, []byte{0, 0, 0, 0})
+
+		if gitRPC == "git-receive-pack" {
+			repoDir := filepath.Join(conf.Paths.RepoPath, reponame)
+			go util.PullFromAllBranches(repoDir)
+		}
 
 		return
 	})
