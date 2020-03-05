@@ -33,14 +33,15 @@ func RunSSH(conf *setting.BaseStruct, db *sql.DB) {
 			gitRPC = s.Command()[0]
 			gitRepo = s.Command()[1]
 
-			rs := strings.Split(gitRepo, "/")
-			if len(rs) > 1 {
-				gitRepo = rs[1]
+			if strings.HasPrefix(gitRepo, "/") {
+				gitRepo = strings.Split(gitRepo, "/")[1]
 			}
 
-			repoSplit := strings.Split(gitRepo, ".git")
-			if len(repoSplit) > 1 {
-				reponame = repoSplit[0]
+			if !strings.HasSuffix(gitRepo, ".git") {
+				log.Printf("ssh: invalid git repository name")
+				return
+			} else {
+				reponame = strings.Split(gitRepo, ".git")[0]
 			}
 
 			for _, userID := range userIDs {
