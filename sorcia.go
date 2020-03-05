@@ -20,8 +20,6 @@ func main() {
 	switch os.Args[1] {
 	case "web":
 		cmd.RunWeb(conf)
-	case "gitviassh":
-		cmd.RunSSH()
 	case "usermod":
 		cmd.UserMod(conf)
 	case "version":
