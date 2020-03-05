@@ -119,19 +119,19 @@ func GetRepoType(db *sql.DB, rts *RepoTypeStruct) bool {
 }
 
 // CheckRepoAccessFromUserID ...
-func CheckRepoAccessFromUserID(db *sql.DB, userID int) bool {
-	rows, err := db.Query("SELECT name FROM repository WHERE user_id = ?", userID)
+func CheckRepoAccessFromUserIDAndReponame(db *sql.DB, userID int, reponame string) bool {
+	rows, err := db.Query("SELECT id FROM repository WHERE user_id = ? AND name = ?", userID, reponame)
 	errorhandler.CheckError(err)
 
-	var reponame string
+	var id int
 
 	if rows.Next() {
-		err = rows.Scan(&reponame)
+		err = rows.Scan(&id)
 		errorhandler.CheckError(err)
 	}
 	rows.Close()
 
-	if reponame != "" {
+	if id > 0 {
 		return true
 	}
 

@@ -2,11 +2,12 @@ package handler
 
 import (
 	"database/sql"
-	"fmt"
 	"io"
 	"log"
 	"os/exec"
 	"path/filepath"
+	"strconv"
+	"strings"
 
 	errorhandler "sorcia/error"
 	"sorcia/model"
@@ -18,16 +19,49 @@ import (
 
 var authorizedKey []byte
 var gitRPC, gitRepo string
+var userIDs []string
+var reponame string
+var repoAccess bool
 
 func RunSSH(conf *setting.BaseStruct, db *sql.DB) {
 	ssh.Handle(func(s ssh.Session) {
 		authorizedKey = gossh.MarshalAuthorizedKey(s.PublicKey())
 
+		repoAccess = false
+
 		if len(s.Command()) == 2 {
 			gitRPC = s.Command()[0]
 			gitRepo = s.Command()[1]
-			fmt.Println(gitRPC)
-			fmt.Println(gitRepo)
+
+			rs := strings.Split(gitRepo, "/")
+			if len(rs) > 1 {
+				gitRepo = rs[1]
+			}
+
+			repoSplit := strings.Split(gitRepo, ".git")
+			if len(repoSplit) > 1 {
+				reponame = repoSplit[0]
+			}
+
+			for _, userID := range userIDs {
+				userIDInt, err := strconv.Atoi(userID)
+				if err != nil {
+					log.Printf("ssh: cannot convert userID to integer")
+					return
+				}
+
+				if model.CheckRepoAccessFromUserIDAndReponame(db, userIDInt, reponame) {
+					repoAccess = true
+				}
+			}
+
+			if !repoAccess {
+				log.Printf("ssh: no repo access")
+				return
+			}
+		} else {
+			log.Printf("ssh: no git command")
+			return
 		}
 
 		cmd := exec.Command(gitRPC, gitRepo)
@@ -68,29 +102,25 @@ func RunSSH(conf *setting.BaseStruct, db *sql.DB) {
 		s.SendRequest("exit-status", false, []byte{0, 0, 0, 0})
 
 		return
-		// io.WriteString(s, fmt.Sprintf("public key used by %s:\n", s.User()))
-		// s.Write(authorizedKey)
 	})
 
 	publicKeyOption := ssh.PublicKeyAuth(func(ctx ssh.Context, key ssh.PublicKey) bool {
-		authKeys := model.GetSSHAllAuthKeys(db)
-		fmt.Println(authKeys)
-		for _, authKey := range authKeys {
-			authKeyByte := []byte(authKey)
-			out, _, _, _, err := gossh.ParseAuthorizedKey(authKeyByte)
+		sshDetail := model.GetSSHAllAuthKeys(db)
+		userIDs = sshDetail.UserIDs
+
+		for i := 0; i < len(sshDetail.AuthKeys); i++ {
+			authKeyByte := []byte(sshDetail.AuthKeys[i])
+			allowed, _, _, _, err := gossh.ParseAuthorizedKey(authKeyByte)
 			errorhandler.CheckError(err)
 
-			isEqual := ssh.KeysEqual(key, out)
-			if isEqual {
-				fmt.Println("Key matched")
+			if ssh.KeysEqual(key, allowed) {
 				return true
 			}
 		}
-		// return true // allow all keys, or use ssh.KeysEqual() to compare against known keys
-		fmt.Println("Failed to handshake")
+		log.Printf("Failed to handshake")
 		return false
 	})
 
 	log.Println("starting ssh server on port 2222...")
-	log.Fatal(ssh.ListenAndServe(":22", nil, publicKeyOption, ssh.HostKeyFile(filepath.Join(conf.Paths.SSHPath, "id_rsa"))))
+	log.Fatal(ssh.ListenAndServe(":2222", nil, ssh.NoPty(), publicKeyOption, ssh.HostKeyFile(filepath.Join(conf.Paths.SSHPath, "id_rsa"))))
 }

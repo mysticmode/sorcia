@@ -236,21 +236,32 @@ func GetSSHKeysFromUserId(db *sql.DB, userID int) *SSHKeysResponse {
 	return &skr
 }
 
+type SSHAllAuthKeysResponse struct {
+	UserIDs  []string
+	AuthKeys []string
+}
+
 // GetSSHAllAuthKeys ...
-func GetSSHAllAuthKeys(db *sql.DB) []string {
-	rows, err := db.Query("SELECT authorized_key FROM ssh")
+func GetSSHAllAuthKeys(db *sql.DB) *SSHAllAuthKeysResponse {
+	rows, err := db.Query("SELECT user_id, authorized_key FROM ssh")
 	errorhandler.CheckError(err)
 
-	var authKeys []string
-	var authKey string
+	var userID, authKey string
+	var userIDs, authKeys []string
 
 	for rows.Next() {
-		err = rows.Scan(&authKey)
+		err = rows.Scan(&userID, &authKey)
 		errorhandler.CheckError(err)
 
+		userIDs = append(userIDs, userID)
 		authKeys = append(authKeys, authKey)
 	}
 	rows.Close()
 
-	return authKeys
+	saks := &SSHAllAuthKeysResponse{
+		userIDs,
+		authKeys,
+	}
+
+	return saks
 }

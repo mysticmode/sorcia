@@ -594,7 +594,7 @@ func writeRepoResponse(w http.ResponseWriter, r *http.Request, db *sql.DB, repon
 			userIDFromToken := model.GetUserIDFromToken(db, token)
 
 			// Check if the logged in user has access to view the repository.
-			if hasRepoAccess := model.CheckRepoAccessFromUserID(db, userIDFromToken); hasRepoAccess {
+			if hasRepoAccess := model.CheckRepoAccessFromUserIDAndReponame(db, userIDFromToken, reponame); hasRepoAccess {
 				data.IsRepoPrivate = true
 				tmpl := parseTemplates(w, mainPage)
 				tmpl.ExecuteTemplate(w, "layout", data)
