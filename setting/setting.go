@@ -36,6 +36,7 @@ type PathsStruct struct {
 // ServerStruct struct
 type ServerStruct struct {
 	HTTPPort string
+	SSHPort  string
 }
 
 func init() {
@@ -59,6 +60,7 @@ func init() {
 		},
 		Server: ServerStruct{
 			HTTPPort: cfg.Section("server").Key("http_port").String(),
+			SSHPort:  cfg.Section("server").Key("ssh_port").String(),
 		},
 		DBConn: nil,
 	}

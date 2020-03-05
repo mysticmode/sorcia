@@ -9,3 +9,4 @@ ssh_path = /home/git/ssh
 
 [server]
 http_port = 1937
+ssh_port = 22
