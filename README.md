@@ -1,6 +1,11 @@
 ## sorcia
 Sorcia is a self-hosted web frontend for git repositories which is written in Golang.
 
+### community
+Ask your questions on [sorcia@googlegroups.com](https://groups.google.com/d/forum/sorcia)
+Subscribe to release announcements on [sorcia-announce@googlegroups.com](https://groups.google.com/d/forum/sorcia-announce)
+Send patches to [sorcia-devel@googlegroups.com](https://groups.google.com/d/forum/sorcia-devel)
+
 ### pre-requisites
   - Ubuntu 18.04 LTS
   - SQLite3
@@ -78,7 +83,7 @@ sudo ln -s /etc/nginx/sites-available/git.example.com /etc/nginx/sites-enabled/
 
 Now open the Nginx config file as shown below in order to mention your domain address.
 ```
-sudo vim /etc/nginx/sites-available/git.mysticmode.org
+sudo vim /etc/nginx/sites-available/git.example.com
 ```
 and change the `git.example.com` to your domain address.
 
@@ -100,14 +105,14 @@ sudo systemctl reload nginx
 
 Now you can go to your domain and see the Sorcia software running. AND if you want to configure `https` certificate with Let's Encrypt, follow below commands.
 
-Change the `git.example.com` to your domain address. Follow the Let's Encrypt prompt and obtain the certificate.
+Change the `git.example.com` to your domain address in the below certbot command. Follow the Let's Encrypt prompt and obtain the certificate.
 ```
 sudo add-apt-repository ppa:certbot/certbot
 sudo apt install python-certbot-nginx
 sudo certbot --nginx -d git.example.com
 ```
 
-Once you had successfully got the Let's Encrypt certificate. You have to go to the Nginx config file and uncomment these lines.
+Once you had successfully obtained the Let's Encrypt certificate. You have to go to the Nginx config file and uncomment these lines. Again, change the `git.example.com` to your domain address.
 ```
 # ssl on;
 # ssl_certificate /etc/letsencrypt/live/git.example.com/fullchain.pem; # managed by Certbot
@@ -123,3 +128,19 @@ sudo systemctl reload nginx
 ```
 
 You can now see your domain with https served by Let's Encrypt.
+
+### post installation
+There is this important CLI utility from Sorcia which I need to mention. It can be used to change:
+- Username of any user
+- Email address of any user
+- Password of any user
+- Delete any user
+
+Remember, this can only be done by the server admin who can SSH into the sorcia instance.
+
+With the root user or user with root privileges, do `cd /home/git/sorcia` and enter the following command
+```
+sudo ./sorcia usermod
+```
+
+The command will prompt you for each of those above lists and by selecting one and following the further prompts, you can do those changes.
