@@ -261,8 +261,9 @@
         margin-bottom: 15px;
     }
 
-    & ul {
-        margin-bottom: 15px;
+    & ul, & ol {
+        list-style: inherit;
+        margin: 0 20px 15px;
     }
 
     & li {
