@@ -1,45 +1,125 @@
 ## sorcia
-Sorcia is a self-hosted software development platform with Git and mailing lists. This project is under development.
+Sorcia is a self-hosted web frontend for git repositories which is written in Golang.
 
 ### pre-requisites
   - Ubuntu 18.04 LTS
-  - PostgreSQL 11
-  - Go 1.13
+  - SQLite3
+  - Go 1.14 (only for contributors)
  
 ### installation
-Let's create a user and databse on PostgreSQL 11
+At this moment, this documentation assumes that you are using Ubuntu 18.04 LTS for the installation. This will get updated to the platforms that Go can compile for as soon as possible. If you had installed Sorcia on a different OS or Architecture successfully, please feel free to send patches and update this README section.
+
+SSH into your server as a root user or a user who has root privleges. For commands that needs root privileges, this documentation will prefix the command with `sudo`.
+
+First, update and upgrade your OS utilities and packages.
 ```
-CREATE DATABASE sorciadb;
-CREATE USER sorcia WITH PASSWORD 'your-secure-password';
-GRANT ALL PRIVILEGES ON DATABASE sorciadb to sorcia;
+sudo apt update
+sudo apt upgrade
 ```
 
-Now create a `git` user on your machine and clone the sorcia repository
+Install the necessary packages in order to run the Sorcia binary on your server.
+```
+sudo apt -y install software-properties-common build-essential git-core sqlite3 wget vim nginx
+```
+
+Now create a `git` user on your machine.
 ```
 sudo adduser --disabled-login --gecos 'sorcia' git
 sudo su - git
-git clone --depth 1 https://github.com/getsorcia/sorcia.git sorcia
-```
-
-Move to sorcia directory and change the `config/app.ini` file to match with the database, user and password that we had created above.
-```
+download the tar.gz package
+tar -C sorcia -xzf sorcia.linux-amd64.tar.gz
 cd sorcia
+chmod +x sorcia
 ```
 
-Open `config/app.ini` with your favorite editor
+When you are in the project root directory,
 ```
-[postgres]
-hostname = localhost # localhost or external IP of your postgresql database server
-port = 5432
-name = sorciadb
-username = sorcia
-password = your-secure-password
-sslmode = disable # either "disable", "require" or "verify-full"
+cp config/app.ini.sample config/app.ini
+```
+and change the `app.ini` config file if you only prefer. Otherwise the default config is fine to go with.
+
+Move back to the root user or user with root privileges with `exit` command. Change the SSH port from `22` to something else. Sorcia by default config which is in `config/app.ini` will run the Git SSH server on port 22. You can change this in the config file if you need. Anyway, For example: in order to change the SSH port
+```
+sudo vim /etc/ssh/sshd_config
 ```
 
-Now that we have configured `app.ini`, let's build and start the sorcia web server from the project root which is `sorcia`.
+Look for `Port` section and change from `22` to whatever port your want. And restart SSH server.
 ```
-go build sorcia.go
-./sorcia web
+sudo systemctl restart sshd
+sudo systemctl restart ssh
 ```
-That's it, sorcia will run on port `1937` (you can configure this in `app.ini`). So, if you are running locally - it should be `http://localhost:1937`
+
+Then go to the sorcia directory which is under the git user.
+```
+cd /home/git/sorcia
+```
+
+Now, let's start the sorcia server.
+```
+sudo ./sorcia web
+```
+
+That's it, sorcia will run on port `1937` (you can configure this in `app.ini`).
+
+If you want to move further and setup your systemd service with your domain configured with Nginx, please follow
+```
+sudo cp /home/git/sorcia/config/sorcia-web.service /etc/systemd/system/
+sudo systemctl start sorcia-web.service
+sudo systemctl enable sorcia-web.service
+```
+
+Let's configure Nginx now. **Note**: Change the `git.example.com` to your domain address.
+```
+sudo mv /etc/nginx/sites-available/default /etc/nginx/sites-available/default.backup
+sudo rm /etc/nginx/sites-enabled/default
+sudo cp /home/git/sorcia/config/nginx.conf /etc/nginx/sites-available/git.example.com
+sudo ln -s /etc/nginx/sites-available/git.example.com /etc/nginx/sites-enabled/
+```
+
+Now open the Nginx config file as shown below in order to mention your domain address.
+```
+sudo vim /etc/nginx/sites-available/git.mysticmode.org
+```
+and change the `git.example.com` to your domain address.
+
+Now check if there is any problem with our Nginx config by
+```
+sudo nginx -t
+```
+
+if your Nginx config is correct. It will show you:
+```
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+```
+
+Reload the Nginx service.
+```
+sudo systemctl reload nginx
+```
+
+Now you can go to your domain and see the Sorcia software running. AND if you want to configure `https` certificate with Let's Encrypt, follow below commands.
+
+Change the `git.example.com` to your domain address. Follow the Let's Encrypt prompt and obtain the certificate.
+```
+sudo add-apt-repository ppa:certbot/certbot
+sudo apt install python-certbot-nginx
+sudo certbot --nginx -d git.example.com
+```
+
+Once you had successfully got the Let's Encrypt certificate. You have to go to the Nginx config file and uncomment these lines.
+```
+# ssl on;
+# ssl_certificate /etc/letsencrypt/live/git.example.com/fullchain.pem; # managed by Certbot
+# ssl_certificate_key /etc/letsencrypt/live/git.example.com/privkey.pem; # managed by Certbot
+# include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+# ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+```
+
+And check and reload Nginx.
+```
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+You can now see your domain with https served by Let's Encrypt.

@@ -25,6 +25,7 @@ var userIDs []string
 var reponame string
 var repoAccess bool
 
+// RunSSH ...
 func RunSSH(conf *setting.BaseStruct, db *sql.DB) {
 	ssh.Handle(func(s ssh.Session) {
 		authorizedKey = gossh.MarshalAuthorizedKey(s.PublicKey())
@@ -42,9 +43,9 @@ func RunSSH(conf *setting.BaseStruct, db *sql.DB) {
 			if !strings.HasSuffix(gitRepo, ".git") {
 				log.Printf("ssh: invalid git repository name")
 				return
-			} else {
-				reponame = strings.Split(gitRepo, ".git")[0]
 			}
+
+			reponame = strings.Split(gitRepo, ".git")[0]
 
 			for _, userID := range userIDs {
 				userIDInt, err := strconv.Atoi(userID)

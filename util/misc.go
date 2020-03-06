@@ -5,6 +5,10 @@ import (
 	"encoding/base64"
 	"fmt"
 	"log"
+	"os"
+	"os/exec"
+	"path/filepath"
+	errorhandler "sorcia/error"
 	"strings"
 )
 
@@ -40,4 +44,19 @@ func SSHFingerPrint(authKey string) string {
 	}
 
 	return fingerPrint
+}
+
+// CreateSSHDirAndGenerateKey ...
+func CreateSSHDirAndGenerateKey(sshPath string) {
+	if _, err := os.Stat(sshPath); os.IsNotExist(err) {
+		err := os.Mkdir(sshPath, os.ModePerm)
+		errorhandler.CheckError(err)
+	}
+
+	keyPath := filepath.Join(sshPath, "id_rsa")
+	if _, err := os.Stat(keyPath); os.IsNotExist(err) {
+		cmd := exec.Command("ssh-keygen", "-f", keyPath, "-t", "rsa", "-m", "PEM", "-N", "")
+		err := cmd.Run()
+		errorhandler.CheckError(err)
+	}
 }
