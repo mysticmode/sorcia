@@ -8,7 +8,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"os/exec"
 	"path"
 	"path/filepath"
 	"strings"
@@ -40,8 +39,8 @@ func RunWeb(conf *setting.BaseStruct) {
 	model.CreateSSHPubKey(db)
 	model.CreateRepo(db)
 
-	createRepoDir(conf.Paths.RepoPath)
-	createSSHDirAndGenerateKey(conf.Paths.SSHPath)
+	util.CreateRepoDir(conf.Paths.RepoPath)
+	util.CreateSSHDirAndGenerateKey(conf.Paths.SSHPath)
 
 	go handler.RunSSH(conf, db)
 
@@ -106,24 +105,6 @@ func RunWeb(conf *setting.BaseStruct) {
 	allowedMethods := []string{"GET", "POST"}
 
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", conf.Server.HTTPPort), handlers.CORS(handlers.AllowedOrigins(allowedOrigins), handlers.AllowedMethods(allowedMethods))(m)))
-}
-
-func createRepoDir(repoPath string) {
-	if _, err := os.Stat(repoPath); os.IsNotExist(err) {
-		err := os.Mkdir(repoPath, os.ModePerm)
-		errorhandler.CheckError(err)
-	}
-}
-
-func createSSHDirAndGenerateKey(sshPath string) {
-	if _, err := os.Stat(sshPath); os.IsNotExist(err) {
-		err := os.Mkdir(sshPath, os.ModePerm)
-		errorhandler.CheckError(err)
-	}
-
-	cmd := exec.Command("ssh-keygen", "-f", filepath.Join(sshPath, "id_rsa"), "-t", "rsa", "-m", "PEM", "-N", "\"\"")
-	err := cmd.Run()
-	errorhandler.CheckError(err)
 }
 
 // IndexPageResponse struct
