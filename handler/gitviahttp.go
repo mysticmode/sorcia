@@ -121,18 +121,13 @@ func postServiceRPC(gh gitHandler, rpc string) {
 	}
 
 	// Check if repository is private
-	if isRepoPrivate := model.GetRepoType(gh.db, &rts); isRepoPrivate {
+	if isRepoPrivate := model.GetRepoType(gh.db, &rts); isRepoPrivate || rpc == "receive-pack" {
 		userID := model.GetUserIDFromReponame(gh.db, gh.reponame)
 		if model.CheckRepoAccessFromUserIDAndReponame(gh.db, userID, gh.reponame) {
 			if processRepoAccess(gh) == false {
 				return
 			}
 		}
-	}
-
-	if rpc == "receive-pack" && processRepoAccess(gh) == false {
-		gh.w.WriteHeader(http.StatusUnauthorized)
-		return
 	}
 
 	if gh.r.Header.Get("Content-Type") != fmt.Sprintf("application/x-git-%s-request", rpc) {
@@ -190,17 +185,13 @@ func getInfoRefs(gh gitHandler) {
 	}
 
 	// Check if repository is private
-	if isRepoPrivate := model.GetRepoType(gh.db, &rts); isRepoPrivate {
+	if isRepoPrivate := model.GetRepoType(gh.db, &rts); isRepoPrivate || rpc == "receive-pack" {
 		userID := model.GetUserIDFromReponame(gh.db, gh.reponame)
 		if model.CheckRepoAccessFromUserIDAndReponame(gh.db, userID, gh.reponame) {
 			if processRepoAccess(gh) == false {
 				return
 			}
 		}
-	}
-
-	if rpc == "receive-pack" && processRepoAccess(gh) == false {
-		return
 	}
 
 	refs := gitCommand(gh.dir, rpc, "--stateless-rpc", "--advertise-refs", ".")

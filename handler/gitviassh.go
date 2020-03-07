@@ -45,23 +45,25 @@ func RunSSH(conf *setting.BaseStruct, db *sql.DB) {
 				return
 			}
 
-			reponame = strings.Split(gitRepo, ".git")[0]
+			if gitRPC == "git-receive-pack" {
+				reponame = strings.Split(gitRepo, ".git")[0]
 
-			for _, userID := range userIDs {
-				userIDInt, err := strconv.Atoi(userID)
-				if err != nil {
-					log.Printf("ssh: cannot convert userID to integer")
+				for _, userID := range userIDs {
+					userIDInt, err := strconv.Atoi(userID)
+					if err != nil {
+						log.Printf("ssh: cannot convert userID to integer")
+						return
+					}
+
+					if model.CheckRepoAccessFromUserIDAndReponame(db, userIDInt, reponame) {
+						repoAccess = true
+					}
+				}
+
+				if !repoAccess {
+					log.Printf("ssh: no repo access")
 					return
 				}
-
-				if model.CheckRepoAccessFromUserIDAndReponame(db, userIDInt, reponame) {
-					repoAccess = true
-				}
-			}
-
-			if !repoAccess {
-				log.Printf("ssh: no repo access")
-				return
 			}
 		} else {
 			log.Printf("ssh: no git command")
