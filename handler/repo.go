@@ -182,6 +182,7 @@ type GetRepoResponse struct {
 	RepoDescription  string
 	IsRepoPrivate    bool
 	Host             string
+	TotalCommits     string
 	RepoDetail       RepoDetail
 	RepoLogs         RepoLogs
 }
@@ -233,6 +234,7 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 	userID := model.GetUserIDFromReponame(db, reponame)
 	username := model.GetUsernameFromUserID(db, userID)
 	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
+	totalCommits := util.GetCommitCounts(repoPath, reponame)
 
 	data := GetRepoResponse{
 		IsHeaderLogin:    false,
@@ -243,6 +245,7 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 		RepoDescription:  repoDescription,
 		IsRepoPrivate:    false,
 		Host:             r.Host,
+		TotalCommits:     totalCommits,
 	}
 
 	data.RepoDetail.Readme = processREADME(repoPath, reponame)
@@ -521,7 +524,7 @@ func GetRepoLog(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersio
 		IsRepoPrivate:    false,
 	}
 
-	// commitCounts := getCommitCounts(repoPath, reponame)
+	// commitCounts := util.GetCommitCounts(repoPath, reponame)
 
 	commits := getCommits(repoPath, reponame, -10)
 	data.RepoLogs = *commits
@@ -620,23 +623,6 @@ func parseTemplates(w http.ResponseWriter, mainPage string) *template.Template {
 	w.WriteHeader(http.StatusOK)
 
 	return tmpl
-}
-
-func getCommitCounts(repoPath, reponame string) string {
-	dirPath := filepath.Join(repoPath, reponame+".git")
-	cmd := exec.Command("/bin/git", "rev-list", "HEAD", "--count")
-	cmd.Dir = dirPath
-
-	var out, stderr bytes.Buffer
-	cmd.Stderr = &stderr
-	cmd.Stdout = &out
-
-	err := cmd.Run()
-	if err != nil {
-		fmt.Println(stderr.String())
-	}
-
-	return strings.TrimSpace(out.String())
 }
 
 // RepoLogs struct

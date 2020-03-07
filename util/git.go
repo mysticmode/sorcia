@@ -71,3 +71,21 @@ func CreateRepoDir(repoPath string) {
 		errorhandler.CheckError(err)
 	}
 }
+
+// GetCommitCounts ...
+func GetCommitCounts(repoPath, reponame string) string {
+	dirPath := filepath.Join(repoPath, reponame+".git")
+	cmd := exec.Command("/bin/git", "rev-list", "HEAD", "--count")
+	cmd.Dir = dirPath
+
+	var out, stderr bytes.Buffer
+	cmd.Stderr = &stderr
+	cmd.Stdout = &out
+
+	err := cmd.Run()
+	if err != nil {
+		fmt.Println(stderr.String())
+	}
+
+	return strings.TrimSpace(out.String())
+}
