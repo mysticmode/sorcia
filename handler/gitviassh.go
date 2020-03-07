@@ -45,9 +45,13 @@ func RunSSH(conf *setting.BaseStruct, db *sql.DB) {
 				return
 			}
 
-			if gitRPC == "git-receive-pack" {
-				reponame = strings.Split(gitRepo, ".git")[0]
+			reponame = strings.Split(gitRepo, ".git")[0]
+			rts := model.RepoTypeStruct{
+				Reponame: reponame,
+			}
 
+			// Check if repository is private
+			if isRepoPrivate := model.GetRepoType(db, &rts); isRepoPrivate || gitRPC == "git-receive-pack" {
 				for _, userID := range userIDs {
 					userIDInt, err := strconv.Atoi(userID)
 					if err != nil {
