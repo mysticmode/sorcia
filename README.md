@@ -31,9 +31,35 @@ Now create a `git` user on your machine.
 ```
 sudo adduser --disabled-login --gecos 'sorcia' git
 sudo su - git
+```
+
+**Install from binary**
+```
 download the tar.gz package
 tar -C sorcia -xzf sorcia.linux-amd64.tar.gz
 cd sorcia
+chmod +x sorcia
+```
+
+**(or) Install from source**
+Download Go 1.14 from https://golang.org/dl/ using `wget`.
+```
+mkdir go local
+tar -C local -xzf <go.tar.gz>
+```
+
+Open `.bashrc` using your favorite editor and add these lines at the bottom of the file.
+```
+export PATH=$PATH:$HOME/local/go/bin
+export GOPATH=$HOME/go
+source ~/.bashrc
+```
+
+Now download the Sorcia repository and build from source.
+```
+git clone https://git.mysticmode.org/r/sorcia.git
+cd sorcia
+go build sorcia.go
 chmod +x sorcia
 ```
 
