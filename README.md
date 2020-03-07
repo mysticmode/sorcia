@@ -92,6 +92,7 @@ sudo ./sorcia web
 
 That's it, sorcia will run on port `1937` (you can configure this in `app.ini`).
 
+**Systemd, Nginx and Let's Encrypt configuration**
 If you want to move further and setup your systemd service with your domain configured with Nginx, please follow
 ```
 sudo cp /home/git/sorcia/config/sorcia-web.service /etc/systemd/system/
