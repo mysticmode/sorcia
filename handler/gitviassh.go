@@ -21,16 +21,13 @@ import (
 
 var authorizedKey []byte
 var gitRPC, gitRepo string
-var userIDs []string
+var userID string
 var reponame string
-var repoAccess bool
 
 // RunSSH ...
 func RunSSH(conf *setting.BaseStruct, db *sql.DB) {
 	ssh.Handle(func(s ssh.Session) {
 		authorizedKey = gossh.MarshalAuthorizedKey(s.PublicKey())
-
-		repoAccess = false
 
 		if len(s.Command()) == 2 {
 			gitRPC = s.Command()[0]
@@ -52,19 +49,13 @@ func RunSSH(conf *setting.BaseStruct, db *sql.DB) {
 
 			// Check if repository is private
 			if isRepoPrivate := model.GetRepoType(db, &rts); isRepoPrivate || gitRPC == "git-receive-pack" {
-				for _, userID := range userIDs {
-					userIDInt, err := strconv.Atoi(userID)
-					if err != nil {
-						log.Printf("ssh: cannot convert userID to integer")
-						return
-					}
-
-					if model.CheckRepoAccessFromUserIDAndReponame(db, userIDInt, reponame) {
-						repoAccess = true
-					}
+				userIDInt, err := strconv.Atoi(userID)
+				if err != nil {
+					log.Printf("ssh: cannot convert userID to integer")
+					return
 				}
 
-				if !repoAccess {
+				if !model.CheckRepoAccessFromUserIDAndReponame(db, userIDInt, reponame) {
 					log.Printf("ssh: no repo access")
 					return
 				}
@@ -121,7 +112,6 @@ func RunSSH(conf *setting.BaseStruct, db *sql.DB) {
 
 	publicKeyOption := ssh.PublicKeyAuth(func(ctx ssh.Context, key ssh.PublicKey) bool {
 		sshDetail := model.GetSSHAllAuthKeys(db)
-		userIDs = sshDetail.UserIDs
 
 		for i := 0; i < len(sshDetail.AuthKeys); i++ {
 			authKeyByte := []byte(sshDetail.AuthKeys[i])
@@ -129,6 +119,7 @@ func RunSSH(conf *setting.BaseStruct, db *sql.DB) {
 			errorhandler.CheckError(err)
 
 			if ssh.KeysEqual(key, allowed) {
+				userID = sshDetail.UserIDs[i]
 				return true
 			}
 		}
