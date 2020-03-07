@@ -1,1 +1,0 @@
-ssh-keygen -f /home/git/ssh/id_rsa -t rsa -m PEM -N ""
