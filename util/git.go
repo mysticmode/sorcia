@@ -75,7 +75,8 @@ func CreateRepoDir(repoPath string) {
 // GetCommitCounts ...
 func GetCommitCounts(repoPath, reponame string) string {
 	dirPath := filepath.Join(repoPath, reponame+".git")
-	cmd := exec.Command("/bin/git", "rev-list", "HEAD", "--count")
+	gitPath := GetGitBinPath()
+	cmd := exec.Command(gitPath, "rev-list", "HEAD", "--count")
 	cmd.Dir = dirPath
 
 	var out, stderr bytes.Buffer
