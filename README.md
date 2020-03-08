@@ -12,7 +12,7 @@ Sorcia is a self-hosted web frontend for git repositories which is written in Go
  * Go 1.14 (only for contributors)
  
 ### installation
-At this moment, this documentation assumes that you are using Ubuntu 18.04 LTS for the installation. This will get updated to the platforms that Go can compile for as soon as possible. If you had installed Sorcia on a different OS or Architecture successfully, please feel free to send patches and update this README section.
+At this moment, this documentation assumes that you are using a freshly installed Ubuntu 18.04 LTS box for the Sorcia installation. This will get updated to the platforms that Go can compile for as soon as possible. If you had installed Sorcia on a different OS or Architecture successfully, please feel free to send patches and update this README section.
 
 SSH into your server as a root user or a user who has root privleges. For commands that needs root privileges, this documentation will prefix the command with `sudo`.
 
@@ -90,7 +90,7 @@ Now, let's start the sorcia server.
 sudo ./sorcia web
 ```
 
-That's it, sorcia will run on port `1937` (you can configure this in `app.ini`).
+That's it, sorcia will run on port `1937`.
 
 **Systemd, Nginx and Let's Encrypt configuration**
 
@@ -101,7 +101,7 @@ sudo systemctl start sorcia-web.service
 sudo systemctl enable sorcia-web.service
 ```
 
-Let's configure Nginx now. **Note**: Change the `git.example.com` to your domain address.
+Let's configure Nginx now. **Note:** Change the `git.example.com` to your domain address.
 ```
 sudo mv /etc/nginx/sites-available/default /etc/nginx/sites-available/default.backup
 sudo rm /etc/nginx/sites-enabled/default
