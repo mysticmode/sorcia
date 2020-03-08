@@ -163,9 +163,9 @@ There is this important CLI utility from Sorcia which I need to mention. It can 
  * Username of any user
  * Email address of any user
  * Password of any user
- * Delete any user
+ * Delete any user. If it is an admin, the prompt will ask you to select another user as an admin before deletion of the current admin.
 
-Remember, this can only be done by the server admin who can SSH into the sorcia instance.
+Remember, this can only be done by the server administrator who can SSH into the sorcia instance.
 
 With the root user or user with root privileges, do `cd /home/git/sorcia` and enter the following command
 ```
