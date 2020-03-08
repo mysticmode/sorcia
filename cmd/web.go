@@ -40,6 +40,7 @@ func RunWeb(conf *setting.BaseStruct) {
 	model.CreateRepo(db)
 
 	util.CreateRepoDir(conf.Paths.RepoPath)
+	util.CreateRefsDir(conf.Paths.RefsPath)
 	util.CreateSSHDirAndGenerateKey(conf.Paths.SSHPath)
 
 	go handler.RunSSH(conf, db)
@@ -93,7 +94,7 @@ func RunWeb(conf *setting.BaseStruct) {
 		handler.GetRepoContributors(w, r, db, conf.Version, conf.Paths.RepoPath)
 	}).Methods("GET")
 	m.PathPrefix("/r/{reponame[\\d\\w-_\\.]+\\.git$}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		handler.GitviaHTTP(w, r, db, conf.Paths.RepoPath)
+		handler.GitviaHTTP(w, r, db, conf.Paths.RepoPath, conf.Paths.RefsPath)
 	}).Methods("GET", "POST")
 
 	staticDir := filepath.Join(conf.Paths.ProjectRoot, "public")
