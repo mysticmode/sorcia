@@ -9,7 +9,6 @@ Sorcia is a self-hosted web frontend for git repositories which is written in Go
 ### pre-requisites
  * Ubuntu 18.04 LTS
  * SQLite3
- * Go 1.14 (only for contributors)
  
 ### installation
 At this moment, this documentation assumes that you are using a freshly installed Ubuntu 18.04 LTS box for the Sorcia installation. This will get updated to the platforms that Go can compile for as soon as possible. If you had installed Sorcia on a different OS or Architecture successfully, please feel free to send patches and update this README section.
@@ -158,12 +157,12 @@ sudo systemctl reload nginx
 You can now see your domain with https served by Let's Encrypt.
 
 ### post installation
-There is this important CLI utility from Sorcia which I need to mention. It can be used to change:
+There is this important CLI utility from Sorcia which I need to mention. As Sorcia doesn't rely on SMTP settings, this CLI utility can be used to change:
 
  * Username of any user
  * Email address of any user
  * Password of any user
- * Delete any user. If it is an admin, the prompt will ask you to select another user as an admin before deletion of the current admin.
+ * Delete any user. If it is an admin user you want to delete, the prompt will ask you to select another user as an admin before deletion of the current admin.
 
 Remember, this can only be done by the server administrator who can SSH into the sorcia instance.
 
