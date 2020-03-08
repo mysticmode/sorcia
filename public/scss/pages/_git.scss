@@ -138,6 +138,17 @@
         }
     }
 
+    &__contributors {
+        margin-top: 20px;
+
+        &__table {
+            & th, & td {
+                border: 1px solid $brand-border;
+                padding: 7px 10px;
+            }
+        }
+    }
+
     &__clone {
         margin-top: 20px;
         

@@ -10,23 +10,24 @@
     <div class="repo__menu">
         <a href="/r/{{ .Reponame }}" class="repo__menu__item">summary</a>
         <a href="/r/{{ .Reponame }}/tree" class="repo__menu__item">tree</a>
-        <a href="/r/{{ .Reponame }}/log" class="repo__menu__item repo__menu__item--active">log</a>
+        <a href="/r/{{ .Reponame }}/log" class="repo__menu__item">log</a>
         <a href="/r/{{ .Reponame }}/refs" class="repo__menu__item">refs</a>
-        <a href="/r/{{ .Reponame }}/contributors" class="repo__menu__item">contributors</a>
+        <a href="/r/{{ .Reponame }}/contributors" class="repo__menu__item repo__menu__item--active">contributors</a>
         <a href="/r/{{ .Reponame }}/meta" class="repo__menu__item">meta</a>
     </div>
-    <div class="repo__log">
-        <ul>
-            {{range .RepoLogs.History}}
-            <li>
-                <div>
-                    <p class="repo__log__info"><a href="">{{.Hash}}</a> - <img class="repo__log__dp" src="{{.DP}}" width="23px" /><span>{{.Author}}</span></p>
-                    <p>{{.Date}}</p>
-                </div>
-                <p class="repo__commit-message">{{.Message}}</p>
-            </li>
+    <div class="repo__contributors">
+        <table class="repo__contributors__table">
+            <tr>
+                <th>Name</th>
+                <th>Commits</th>
+            </tr>
+            {{range .Contributors.Detail}}
+            <tr>
+                <td>{{.Name}}</td>
+                <td>{{.Commits}}</td>
+            </tr>
             {{end}}
-        </ul>
+        </table>
     </div>
 </main>
 {{end}}
