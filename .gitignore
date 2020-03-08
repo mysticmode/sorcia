@@ -9,4 +9,5 @@ sorcia.db
 app.ini
 
 repositories/
+refs/
 ssh/

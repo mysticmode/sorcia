@@ -27,6 +27,7 @@ type gitHandler struct {
 	dir      string
 	file     string
 	reponame string
+	refsPath string
 	db       *sql.DB
 }
 
@@ -165,6 +166,7 @@ func postServiceRPC(gh gitHandler, rpc string) {
 
 	if rpc == "receive-pack" {
 		go util.PullFromAllBranches(gh.dir)
+		go util.GenerateRefs(gh.dir, gh.refsPath, gh.reponame)
 	}
 }
 
@@ -203,6 +205,7 @@ func getInfoRefs(gh gitHandler) {
 
 	if rpc == "receive-pack" {
 		go util.PullFromAllBranches(gh.dir)
+		go util.GenerateRefs(gh.dir, gh.refsPath, gh.reponame)
 	}
 }
 
@@ -279,7 +282,7 @@ func processRepoAccess(gh gitHandler) bool {
 }
 
 // GitviaHTTP ...
-func GitviaHTTP(w http.ResponseWriter, r *http.Request, db *sql.DB, dir string) {
+func GitviaHTTP(w http.ResponseWriter, r *http.Request, db *sql.DB, dir, refsPath string) {
 	for _, route := range routes {
 		reqPath := strings.ToLower(r.URL.Path)
 		reqPath = "/" + strings.Split(reqPath, "/r/")[1]
@@ -316,6 +319,7 @@ func GitviaHTTP(w http.ResponseWriter, r *http.Request, db *sql.DB, dir string) 
 			dir:      repoDir,
 			file:     file,
 			reponame: reponame,
+			refsPath: refsPath,
 			db:       db,
 		}
 

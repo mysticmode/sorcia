@@ -29,6 +29,7 @@ type BaseStruct struct {
 type PathsStruct struct {
 	ProjectRoot string
 	RepoPath    string
+	RefsPath    string
 	DBPath      string
 	SSHPath     string
 }
@@ -55,6 +56,7 @@ func init() {
 		Paths: PathsStruct{
 			ProjectRoot: cfg.Section("paths").Key("project_root").String(),
 			RepoPath:    cfg.Section("paths").Key("repo_path").String(),
+			RefsPath:    cfg.Section("paths").Key("refs_path").String(),
 			DBPath:      cfg.Section("paths").Key("db_path").String(),
 			SSHPath:     cfg.Section("paths").Key("ssh_path").String(),
 		},

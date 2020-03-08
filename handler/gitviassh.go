@@ -105,6 +105,7 @@ func RunSSH(conf *setting.BaseStruct, db *sql.DB) {
 		if gitRPC == "git-receive-pack" {
 			repoDir := filepath.Join(conf.Paths.RepoPath, gitRepo)
 			go util.PullFromAllBranches(repoDir)
+			go util.GenerateRefs(repoDir, conf.Paths.RefsPath, reponame)
 		}
 
 		return

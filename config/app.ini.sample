@@ -4,6 +4,7 @@ version = 0.2.0
 [paths]
 project_root = /home/git/sorcia
 repo_path = /home/git/repositories
+refs_path = /home/git/refs
 db_path = /home/git
 ssh_path = /home/git/ssh
 
