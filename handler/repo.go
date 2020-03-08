@@ -185,6 +185,7 @@ type GetRepoResponse struct {
 	TotalCommits     string
 	RepoDetail       RepoDetail
 	RepoLogs         RepoLogs
+	Contributors     Contributors
 }
 
 // RepoDetail struct
@@ -252,6 +253,9 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 
 	commits := getCommits(repoPath, reponame, -3)
 	data.RepoLogs = *commits
+
+	contributors := getContributors(repoPath, reponame, false)
+	data.Contributors = *contributors
 
 	writeRepoResponse(w, r, db, reponame, "repo-summary.html", data)
 	return
@@ -531,6 +535,81 @@ func GetRepoLog(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersio
 
 	writeRepoResponse(w, r, db, reponame, "repo-log.html", data)
 	return
+}
+
+// GetRepoContributors ...
+func GetRepoContributors(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion, repoPath string) {
+	vars := mux.Vars(r)
+	reponame := vars["reponame"]
+
+	if repoExists := model.CheckRepoExists(db, reponame); !repoExists {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
+
+	data := GetRepoResponse{
+		IsHeaderLogin:    false,
+		HeaderActiveMenu: "",
+		SorciaVersion:    sorciaVersion,
+		Reponame:         reponame,
+		RepoDescription:  repoDescription,
+		IsRepoPrivate:    false,
+	}
+
+	contributors := getContributors(repoPath, reponame, true)
+
+	data.Contributors = *contributors
+
+	writeRepoResponse(w, r, db, reponame, "repo-contributors.html", data)
+	return
+}
+
+type Contributors struct {
+	Detail []Contributor
+	Total  string
+}
+
+type Contributor struct {
+	Name    string
+	Commits string
+}
+
+func getContributors(repoPath, reponame string, getDetail bool) *Contributors {
+	gitPath := util.GetGitBinPath()
+	dirPath := filepath.Join(repoPath, reponame+".git")
+	cmd := exec.Command(gitPath, "shortlog", "HEAD", "-ns")
+	cmd.Dir = dirPath
+
+	var out, stderr bytes.Buffer
+	cmd.Stderr = &stderr
+	cmd.Stdout = &out
+
+	err := cmd.Run()
+	if err != nil {
+		fmt.Println(stderr.String())
+	}
+
+	cString := out.String()
+	cStringRmLastLn := strings.TrimSuffix(cString, "\n")
+	lines := strings.Split(cStringRmLastLn, "\n")
+
+	var contributors Contributors
+
+	contributors.Total = strconv.Itoa(len(lines))
+
+	if getDetail {
+		for _, line := range lines {
+			lineDetail := strings.Fields(line)
+			var contributor Contributor
+			contributor.Commits = lineDetail[0]
+			contributor.Name = strings.Join(lineDetail[1:], " ")
+			contributors.Detail = append(contributors.Detail, contributor)
+		}
+	}
+
+	return &contributors
 }
 
 // Walk through files and folders

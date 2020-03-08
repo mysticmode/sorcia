@@ -11,16 +11,16 @@
         <a href="" class="repo__menu__item repo__menu__item--active">summary</a>
         <a href="/r/{{ .Reponame }}/tree" class="repo__menu__item">tree</a>
         <a href="/r/{{ .Reponame }}/log" class="repo__menu__item">log</a>
-        <a href="" class="repo__menu__item">refs</a>
-        <a href="" class="repo__menu__item">contributors</a>
-        <a href="" class="repo__menu__item">meta</a>
+        <a href="/r/{{ .Reponame }}/refs" class="repo__menu__item">refs</a>
+        <a href="/r/{{ .Reponame }}/contributors" class="repo__menu__item">contributors</a>
+        <a href="/r/{{ .Reponame }}/meta" class="repo__menu__item">meta</a>
     </div>
     <div class="repo__sub-menu">
         <a href="/r/{{ .Reponame }}/log" class="repo__sub-menu__item">{{.TotalCommits}} commits</a>
         <p class="repo__sub-menu__bullet">&bull;</p>
-        <a href="" class="repo__sub-menu__item">2 refs</a>
+        <a href="/r/{{ .Reponame }}/refs" class="repo__sub-menu__item">2 refs</a>
         <p class="repo__sub-menu__bullet">&bull;</p>
-        <a href="" class="repo__sub-menu__item">23 contributors</a>
+        <a href="/r/{{ .Reponame }}/contributors" class="repo__sub-menu__item">{{.Contributors.Total}} contributors</a>
     </div>
     <div class="repo__summary">
         <div class="repo__summary__left">
