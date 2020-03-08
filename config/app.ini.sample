@@ -1,5 +1,5 @@
 app_mode = production
-version = 0.1.0-alpha
+version = 0.2.0
 
 [paths]
 project_root = /home/git/sorcia
