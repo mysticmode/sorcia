@@ -349,6 +349,9 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 		data.RepoDetail.RepoFilesDetail = append(data.RepoDetail.RepoFilesDetail, repoFileDetail)
 	}
 
+	commit := getCommits(repoPath, reponame, "", -2)
+	data.RepoLogs = *commit
+
 	writeRepoResponse(w, r, db, reponame, "repo-tree.html", data)
 	return
 }
