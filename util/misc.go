@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
 	errorhandler "sorcia/error"
 	"strings"
@@ -55,8 +54,7 @@ func CreateSSHDirAndGenerateKey(sshPath string) {
 
 	keyPath := filepath.Join(sshPath, "id_rsa")
 	if _, err := os.Stat(keyPath); os.IsNotExist(err) {
-		cmd := exec.Command("ssh-keygen", "-f", keyPath, "-t", "rsa", "-m", "PEM", "-N", "")
-		err := cmd.Run()
-		errorhandler.CheckError(err)
+		args := []string{"-f", keyPath, "-t", "rsa", "-m", "PEM", "-N", ""}
+		_ = ForkExec("ssh-keygen", args, ".")
 	}
 }

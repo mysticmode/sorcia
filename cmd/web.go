@@ -39,8 +39,8 @@ func RunWeb(conf *setting.BaseStruct) {
 	model.CreateSSHPubKey(db)
 	model.CreateRepo(db)
 
-	util.CreateRepoDir(conf.Paths.RepoPath)
-	util.CreateRefsDir(conf.Paths.RefsPath)
+	util.CreateDir(conf.Paths.RepoPath)
+	util.CreateDir(conf.Paths.RefsPath)
 	util.CreateSSHDirAndGenerateKey(conf.Paths.SSHPath)
 
 	go handler.RunSSH(conf, db)
