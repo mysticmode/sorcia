@@ -2,7 +2,6 @@ package handler
 
 import (
 	"bufio"
-	"bytes"
 	"crypto/md5"
 	"database/sql"
 	"encoding/hex"
@@ -13,7 +12,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"os/exec"
 	"path"
 	"path/filepath"
 	"strconv"
@@ -158,16 +156,15 @@ func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder 
 
 	// Create Git bare repository
 	bareRepoDir := filepath.Join(repoPath, createRepoRequest.Name+".git")
+	gitPath := util.GetGitBinPath()
 
-	cmd := exec.Command("git", "init", "--bare", bareRepoDir)
-	err = cmd.Run()
-	errorhandler.CheckError(err)
+	args := []string{"init", "--bare", bareRepoDir}
+	_ = util.ForkExec(gitPath, args, ".")
 
 	// Clone from the bare repository created above
 	repoDir := filepath.Join(repoPath, createRepoRequest.Name)
-	cmd = exec.Command("git", "clone", bareRepoDir, repoDir)
-	err = cmd.Run()
-	errorhandler.CheckError(err)
+	args = []string{"clone", bareRepoDir, repoDir}
+	_ = util.ForkExec(gitPath, args, ".")
 
 	http.Redirect(w, r, "/", http.StatusFound)
 }
@@ -312,19 +309,10 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 
 	for _, dir := range dirs {
 		repoDirDetail := RepoDirDetail{}
-		cmd := exec.Command(gitPath, "log", "master", "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", dir)
-		cmd.Dir = dirPath
+		args := []string{"log", "master", "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", dir}
+		out := util.ForkExec(gitPath, args, dirPath)
 
-		var out, stderr bytes.Buffer
-		cmd.Stderr = &stderr
-		cmd.Stdout = &out
-
-		err := cmd.Run()
-		if err != nil {
-			fmt.Println(stderr.String())
-		}
-
-		ss := strings.Split(out.String(), "||srca-sptra||")
+		ss := strings.Split(out, "||srca-sptra||")
 
 		repoDirDetail.DirName = dir
 		repoDirDetail.DirCommit = ss[0]
@@ -334,19 +322,10 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 
 	for _, file := range files {
 		repoFileDetail := RepoFileDetail{}
-		cmd := exec.Command(gitPath, "log", "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", file)
-		cmd.Dir = dirPath
+		args := []string{"log", "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", file}
+		out := util.ForkExec(gitPath, args, dirPath)
 
-		var out, stderr bytes.Buffer
-		cmd.Stderr = &stderr
-		cmd.Stdout = &out
-
-		err := cmd.Run()
-		if err != nil {
-			fmt.Println(stderr.String())
-		}
-
-		ss := strings.Split(out.String(), "||srca-sptra||")
+		ss := strings.Split(out, "||srca-sptra||")
 
 		repoFileDetail.FileName = file
 		repoFileDetail.FileCommit = ss[0]
@@ -461,19 +440,10 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 
 	for _, dir := range dirs {
 		repoDirDetail := RepoDirDetail{}
-		cmd := exec.Command(gitPath, "log", "master", "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", dir)
-		cmd.Dir = dirPath
+		args := []string{"log", "master", "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", dir}
+		out := util.ForkExec(gitPath, args, dirPath)
 
-		var out, stderr bytes.Buffer
-		cmd.Stderr = &stderr
-		cmd.Stdout = &out
-
-		err := cmd.Run()
-		if err != nil {
-			fmt.Println(stderr.String())
-		}
-
-		ss := strings.Split(out.String(), "||srca-sptra||")
+		ss := strings.Split(out, "||srca-sptra||")
 
 		repoDirDetail.DirName = dir
 		repoDirDetail.DirCommit = ss[0]
@@ -483,19 +453,10 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 
 	for _, file := range files {
 		repoFileDetail := RepoFileDetail{}
-		cmd := exec.Command(gitPath, "log", "master", "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", file)
-		cmd.Dir = dirPath
+		args := []string{"log", "master", "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", file}
+		out := util.ForkExec(gitPath, args, dirPath)
 
-		var out, stderr bytes.Buffer
-		cmd.Stderr = &stderr
-		cmd.Stdout = &out
-
-		err := cmd.Run()
-		if err != nil {
-			fmt.Println(stderr.String())
-		}
-
-		ss := strings.Split(out.String(), "||srca-sptra||")
+		ss := strings.Split(out, "||srca-sptra||")
 
 		repoFileDetail.FileName = file
 		repoFileDetail.FileCommit = ss[0]
@@ -604,20 +565,11 @@ type Contributor struct {
 func getContributors(repoPath, reponame string, getDetail bool) *Contributors {
 	gitPath := util.GetGitBinPath()
 	dirPath := filepath.Join(repoPath, reponame+".git")
-	cmd := exec.Command(gitPath, "shortlog", "HEAD", "-ns")
-	cmd.Dir = dirPath
 
-	var out, stderr bytes.Buffer
-	cmd.Stderr = &stderr
-	cmd.Stdout = &out
+	args := []string{"shortlog", "HEAD", "-ns"}
+	out := util.ForkExec(gitPath, args, dirPath)
 
-	err := cmd.Run()
-	if err != nil {
-		fmt.Println(stderr.String())
-	}
-
-	cString := out.String()
-	cStringRmLastLn := strings.TrimSuffix(cString, "\n")
+	cStringRmLastLn := strings.TrimSuffix(out, "\n")
 	lines := strings.Split(cStringRmLastLn, "\n")
 
 	var contributors Contributors
@@ -641,19 +593,10 @@ func getContributors(repoPath, reponame string, getDetail bool) *Contributors {
 func walkThrough(dirPath, gitPath string) ([]string, []string) {
 	var dirs, files []string
 
-	cmd := exec.Command(gitPath, "ls-tree", "--name-only", "master", "HEAD", ".")
-	cmd.Dir = dirPath
+	args := []string{"ls-tree", "--name-only", "master", "HEAD", "."}
+	out := util.ForkExec(gitPath, args, dirPath)
 
-	var out, stderr bytes.Buffer
-	cmd.Stderr = &stderr
-	cmd.Stdout = &out
-
-	err := cmd.Run()
-	if err != nil {
-		fmt.Println(stderr.String())
-	}
-
-	ss := strings.Split(out.String(), "\n")
+	ss := strings.Split(out, "\n")
 	entries := ss[:len(ss)-1]
 
 	for _, entry := range entries {
@@ -764,19 +707,10 @@ func getCommits(repoPath, reponame string, commits int) *RepoLogs {
 func getGitCommits(commits int, dirPath string) []string {
 	gitPath := util.GetGitBinPath()
 
-	cmd := exec.Command(gitPath, "log", strconv.Itoa(commits), "--pretty=format:%h||srca-sptra||%d||srca-sptra||%s||srca-sptra||%cr||srca-sptra||%an||srca-sptra||%ae")
-	cmd.Dir = dirPath
+	args := []string{"log", strconv.Itoa(commits), "--pretty=format:%h||srca-sptra||%d||srca-sptra||%s||srca-sptra||%cr||srca-sptra||%an||srca-sptra||%ae"}
+	out := util.ForkExec(gitPath, args, dirPath)
 
-	var out, stderr bytes.Buffer
-	cmd.Stderr = &stderr
-	cmd.Stdout = &out
-
-	err := cmd.Run()
-	if err != nil {
-		fmt.Println(stderr.String())
-	}
-
-	ss := strings.Split(out.String(), "\n")
+	ss := strings.Split(out, "\n")
 
 	return ss
 }

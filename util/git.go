@@ -36,17 +36,8 @@ func PullFromAllBranches(gitDirPath string) {
 		}
 
 		// by default fast-forward is allowed. Add + to allow non-fast-forward
-		cmd := exec.Command(gitPath, "pull", "origin", fmt.Sprintf("%s:%s", branch, branch))
-		cmd.Dir = workDir
-
-		var out, stderr bytes.Buffer
-		cmd.Stderr = &stderr
-		cmd.Stdout = &out
-
-		err := cmd.Run()
-		if err != nil {
-			fmt.Println(stderr.String())
-		}
+		args := []string{"pull", "origin", fmt.Sprintf("%s:%s", branch, branch)}
+		_ = ForkExec(gitPath, args, workDir)
 	}
 }
 
@@ -56,21 +47,12 @@ func GenerateRefs(refsPath, repoPath, repoGitName string) {
 
 	repoDir := filepath.Join(repoPath, repoGitName)
 
-	cmd := exec.Command(gitPath, "tag", "-l")
-	cmd.Dir = repoDir
-
-	var out, stderr bytes.Buffer
-	cmd.Stderr = &stderr
-	cmd.Stdout = &out
-
-	err := cmd.Run()
-	if err != nil {
-		log.Printf("%v", err)
-	}
+	args := []string{"tag", "-l"}
+	out := ForkExec(gitPath, args, repoDir)
 
 	var tags []string
 
-	lineSplit := strings.Split(out.String(), "\n")
+	lineSplit := strings.Split(out, "\n")
 	tags = lineSplit[:len(lineSplit)-1]
 
 	// example.git -> example
@@ -90,17 +72,8 @@ func GenerateRefs(refsPath, repoPath, repoGitName string) {
 		tarRefPath := filepath.Join(refsPath, tarFilename)
 
 		if _, err := os.Stat(tarRefPath); os.IsNotExist(err) {
-			cmd := exec.Command(gitPath, "archive", "--format=tar.gz", "-o", tarRefPath, tag)
-			cmd.Dir = repoDir // /home/git/repositories/example.git
-
-			var out, stderr bytes.Buffer
-			cmd.Stderr = &stderr
-			cmd.Stdout = &out
-
-			err := cmd.Run()
-			if err != nil {
-				log.Printf("%v", err)
-			}
+			args := []string{"archive", "--format=tar.gz", "-o", tarRefPath, tag}
+			_ = ForkExec(gitPath, args, repoDir)
 		}
 
 		// Generate zip file
@@ -108,19 +81,21 @@ func GenerateRefs(refsPath, repoPath, repoGitName string) {
 		zipRefPath := filepath.Join(refsPath, zipFilename)
 
 		if _, err := os.Stat(zipRefPath); os.IsNotExist(err) {
-			cmd := exec.Command(gitPath, "archive", "--format=zip", "-o", zipRefPath, tag)
-			cmd.Dir = repoDir // /home/git/repositories/example.git
-
-			var out, stderr bytes.Buffer
-			cmd.Stderr = &stderr
-			cmd.Stdout = &out
-
-			err = cmd.Run()
-			if err != nil {
-				log.Printf("%v", err)
-			}
+			args := []string{"archive", "--format=zip", "-o", zipRefPath, tag}
+			_ = ForkExec(gitPath, args, repoDir)
 		}
 	}
+}
+
+// GetCommitCounts ...
+func GetCommitCounts(repoPath, reponame string) string {
+	dirPath := filepath.Join(repoPath, reponame+".git")
+	gitPath := GetGitBinPath()
+
+	args := []string{"rev-list", "HEAD", "--count"}
+	out := ForkExec(gitPath, args, dirPath)
+
+	return strings.TrimSpace(out)
 }
 
 // GetGitBinPath ...
@@ -140,27 +115,17 @@ func GetGitBinPath() string {
 	return gitPath
 }
 
-// CreateRepoDir ...
-func CreateRepoDir(repoPath string) {
-	if _, err := os.Stat(repoPath); os.IsNotExist(err) {
-		err := os.Mkdir(repoPath, os.ModePerm)
+// CreateDir
+func CreateDir(dir string) {
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		err := os.Mkdir(dir, os.ModePerm)
 		errorhandler.CheckError(err)
 	}
 }
 
-// CreateRefsDir ...
-func CreateRefsDir(refPath string) {
-	if _, err := os.Stat(refPath); os.IsNotExist(err) {
-		err := os.Mkdir(refPath, os.ModePerm)
-		errorhandler.CheckError(err)
-	}
-}
-
-// GetCommitCounts ...
-func GetCommitCounts(repoPath, reponame string) string {
-	dirPath := filepath.Join(repoPath, reponame+".git")
-	gitPath := GetGitBinPath()
-	cmd := exec.Command(gitPath, "rev-list", "HEAD", "--count")
+// ForkExec ...
+func ForkExec(legendArg string, restArgs []string, dirPath string) string {
+	cmd := exec.Command(legendArg, restArgs...)
 	cmd.Dir = dirPath
 
 	var out, stderr bytes.Buffer
@@ -169,8 +134,8 @@ func GetCommitCounts(repoPath, reponame string) string {
 
 	err := cmd.Run()
 	if err != nil {
-		fmt.Println(stderr.String())
+		log.Printf(stderr.String())
 	}
 
-	return strings.TrimSpace(out.String())
+	return out.String()
 }
