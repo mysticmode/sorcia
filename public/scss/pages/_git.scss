@@ -338,12 +338,14 @@
 }
 
 .repo-refs {
-    margin-top: 20px;
-
     &__info {
         background: $brand-bg-1;
         margin-bottom: 10px;
         padding: 10px;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
     }
 
     &__files {
@@ -371,12 +373,14 @@
 }
 
 .repo-contributors {
-    margin-top: 20px;
-
     &__info {
         background: $brand-bg-1;
         margin-bottom: 10px;
         padding: 10px;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
     }
 
     &__title {
