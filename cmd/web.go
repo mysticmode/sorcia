@@ -91,7 +91,7 @@ func RunWeb(conf *setting.BaseStruct) {
 		handler.GetRepoLog(w, r, db, conf.Version, conf.Paths.RepoPath)
 	}).Methods("GET")
 	m.HandleFunc("/r/{reponame}/refs", func(w http.ResponseWriter, r *http.Request) {
-		handler.GetRepoRefs(w, r, db, conf.Version, conf.Paths.RefsPath)
+		handler.GetRepoRefs(w, r, db, conf.Version, conf.Paths.RepoPath, conf.Paths.RefsPath)
 	}).Methods("GET")
 	m.HandleFunc("/r/{reponame}/contributors", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetRepoContributors(w, r, db, conf.Version, conf.Paths.RepoPath)

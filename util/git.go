@@ -41,26 +41,36 @@ func PullFromAllBranches(gitDirPath string) {
 	}
 }
 
+func GetGitTags(repoDir string) ([]string, int) {
+	gitPath := GetGitBinPath()
+
+	args := []string{"for-each-ref", "--sort=-taggerdate", "--format", "%(refname)", "refs/tags"}
+	out := ForkExec(gitPath, args, repoDir)
+
+	lines := strings.Fields(out)
+
+	var tags []string
+
+	for _, line := range lines {
+		tags = append(tags, strings.Split(line, "/")[2])
+	}
+
+	return tags, len(tags)
+}
+
 // GenerateRefs
 func GenerateRefs(refsPath, repoPath, repoGitName string) {
 	gitPath := GetGitBinPath()
 
 	repoDir := filepath.Join(repoPath, repoGitName)
-
-	args := []string{"tag", "-l"}
-	out := ForkExec(gitPath, args, repoDir)
-
-	var tags []string
-
-	lineSplit := strings.Split(out, "\n")
-	tags = lineSplit[:len(lineSplit)-1]
+	tags, _ := GetGitTags(repoDir)
 
 	// example.git -> example
 	repoName := strings.TrimSuffix(repoGitName, ".git")
 
 	for _, tag := range tags {
 
-		var tagname string
+		tagname := tag
 
 		// Remove 'v' prefix from version
 		if strings.HasPrefix(tag, "v") {

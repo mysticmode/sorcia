@@ -15,19 +15,16 @@
         <a href="/r/{{ .Reponame }}/contributors" class="repo__menu__item repo__menu__item--active">contributors</a>
         <a href="/r/{{ .Reponame }}/meta" class="repo__menu__item">meta</a>
     </div>
-    <div class="repo__contributors">
-        <table class="repo__contributors__table">
-            <tr>
-                <th>Name</th>
-                <th>Commits</th>
-            </tr>
-            {{range .Contributors.Detail}}
-            <tr>
-                <td>{{.Name}}</td>
-                <td>{{.Commits}}</td>
-            </tr>
-            {{end}}
-        </table>
+    <div class="repo-contributors">
+        {{range .Contributors.Detail}}
+        <div class="repo-contributors__info">
+            <div class="repo-contributors__title">
+                <img src="{{.DP}}" width="23px" />
+                <div class="repo-contributors__name">{{.Name}}</div>
+            </div>
+            <div class="repo-contributors__commits">{{.Commits}} commits</div>
+        </div>
+        {{end}}
     </div>
 </main>
 {{end}}

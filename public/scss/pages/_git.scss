@@ -138,17 +138,6 @@
         }
     }
 
-    &__contributors {
-        margin-top: 20px;
-
-        &__table {
-            & th, & td {
-                border: 1px solid $brand-border;
-                padding: 7px 10px;
-            }
-        }
-    }
-
     &__clone {
         margin-top: 20px;
         
@@ -345,5 +334,65 @@
         color: $text-color;
         padding: 0;
         overflow: hidden;
+    }
+}
+
+.repo-refs {
+    margin-top: 20px;
+
+    &__info {
+        background: $brand-bg-1;
+        margin-bottom: 10px;
+        padding: 10px;
+    }
+
+    &__files {
+        display: flex;
+        margin-top: 10px;
+
+        & a {
+            text-decoration: underline;
+            color: darken($color: $brand-primary, $amount: 15%);
+            margin-right: 20px;
+
+            &:last-child {
+                margin-right: 0;
+            }
+        }
+    }
+
+    &__version {
+        font-weight: bold;
+    }
+
+    &__message {
+        margin-top: 10px;
+    }
+}
+
+.repo-contributors {
+    margin-top: 20px;
+
+    &__info {
+        background: $brand-bg-1;
+        margin-bottom: 10px;
+        padding: 10px;
+    }
+
+    &__title {
+        display: flex;
+        margin-bottom: 10px;
+        
+        & img {
+            margin-right: 5px;
+        }
+    }
+
+    &__name {
+        word-wrap: break-word;
+    }
+
+    &__commits {
+        font-weight: bold;
     }
 }
