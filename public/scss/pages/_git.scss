@@ -138,6 +138,14 @@
         }
     }
 
+    &__pagination {
+        margin-top: 20px;
+        overflow: hidden;
+        & a {
+            float: right;
+        }
+    }
+
     &__clone {
         margin-top: 20px;
         
