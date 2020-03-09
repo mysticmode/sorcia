@@ -537,6 +537,31 @@ func GetRepoLog(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersio
 	return
 }
 
+// GetRepoRefs ...
+func GetRepoRefs(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion, repoPath string) {
+	vars := mux.Vars(r)
+	reponame := vars["reponame"]
+
+	if repoExists := model.CheckRepoExists(db, reponame); !repoExists {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
+
+	data := GetRepoResponse{
+		IsHeaderLogin:    false,
+		HeaderActiveMenu: "",
+		SorciaVersion:    sorciaVersion,
+		Reponame:         reponame,
+		RepoDescription:  repoDescription,
+		IsRepoPrivate:    false,
+	}
+
+	writeRepoResponse(w, r, db, reponame, "repo-refs.html", data)
+	return
+}
+
 // GetRepoContributors ...
 func GetRepoContributors(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion, repoPath string) {
 	vars := mux.Vars(r)
