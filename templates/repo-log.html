@@ -27,6 +27,11 @@
             </li>
             {{end}}
         </ul>
+        {{if .RepoLogs.IsNext}}
+        <div class="repo__pagination">
+            <a href="/r/{{.Reponame}}/log?from={{.RepoLogs.HashLink}}" class="button button--primary">Next</a>
+        </div>
+        {{end}}
     </div>
 </main>
 {{end}}

@@ -250,7 +250,7 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 
 	data.RepoDetail.Readme = processREADME(repoPath, reponame)
 
-	commits := getCommits(repoPath, reponame, -3)
+	commits := getCommits(repoPath, reponame, "", -4)
 	data.RepoLogs = *commits
 
 	repoDir := filepath.Join(repoPath, reponame+".git")
@@ -499,6 +499,15 @@ func GetRepoLog(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersio
 	vars := mux.Vars(r)
 	reponame := vars["reponame"]
 
+	q := r.URL.Query()
+	qFrom := q["from"]
+
+	var fromHash string
+
+	if len(qFrom) > 0 {
+		fromHash = qFrom[0]
+	}
+
 	if repoExists := model.CheckRepoExists(db, reponame); !repoExists {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -515,9 +524,7 @@ func GetRepoLog(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersio
 		IsRepoPrivate:    false,
 	}
 
-	// commitCounts := util.GetCommitCounts(repoPath, reponame)
-
-	commits := getCommits(repoPath, reponame, -10)
+	commits := getCommits(repoPath, reponame, fromHash, -11)
 	data.RepoLogs = *commits
 
 	writeRepoResponse(w, r, db, reponame, "repo-log.html", data)
@@ -775,25 +782,43 @@ func parseTemplates(w http.ResponseWriter, mainPage string) *template.Template {
 
 // RepoLogs struct
 type RepoLogs struct {
-	History []RepoLog
+	History  []RepoLog
+	HashLink string
+	IsNext   bool
 }
 
-func getCommits(repoPath, reponame string, commits int) *RepoLogs {
+func getCommits(repoPath, reponame, fromHash string, commits int) *RepoLogs {
 	dirPath := filepath.Join(repoPath, reponame+".git")
 
-	ss := getGitCommits(commits, dirPath)
+	ss := getGitCommits(commits, fromHash, dirPath)
 
 	rla := RepoLogs{}
 	rl := RepoLog{}
 
-	for i := 0; i < len(ss); i++ {
-		st := strings.Split(ss[i], "||srca-sptra||")
-		rl.Hash = st[0]
-		rl.Message = st[2]
-		rl.Date = st[3]
-		rl.Author = st[4]
+	var hashLink string
 
-		hash := md5.Sum([]byte(st[5]))
+	for i := 0; i < len(ss); i++ {
+		if i == (len(ss) - 1) {
+			hashLink = strings.Split(ss[i], "||srca-sptra||")[0]
+
+			gitPath := util.GetGitBinPath()
+			args := []string{"rev-list", "--max-parents=0", "HEAD"}
+			out := util.ForkExec(gitPath, args, dirPath)
+
+			lastHash := strings.Split(out, "\n")[0]
+
+			if hashLink != lastHash {
+				rla.IsNext = true
+				break
+			}
+		}
+		st := strings.Split(ss[i], "||srca-sptra||")
+		rl.Hash = st[1]
+		rl.Message = st[3]
+		rl.Date = st[4]
+		rl.Author = st[5]
+
+		hash := md5.Sum([]byte(st[6]))
 		stringHash := hex.EncodeToString(hash[:])
 		rl.DP = fmt.Sprintf("https://www.gravatar.com/avatar/%s", stringHash)
 
@@ -802,13 +827,20 @@ func getCommits(repoPath, reponame string, commits int) *RepoLogs {
 		}
 	}
 
+	rla.HashLink = hashLink
+
 	return &rla
 }
 
-func getGitCommits(commits int, dirPath string) []string {
+func getGitCommits(commits int, fromHash, dirPath string) []string {
 	gitPath := util.GetGitBinPath()
 
-	args := []string{"log", strconv.Itoa(commits), "--pretty=format:%h||srca-sptra||%d||srca-sptra||%s||srca-sptra||%cr||srca-sptra||%an||srca-sptra||%ae"}
+	var args []string
+	if fromHash == "" {
+		args = []string{"log", strconv.Itoa(commits), "--pretty=format:%H||srca-sptra||%h||srca-sptra||%d||srca-sptra||%s||srca-sptra||%cr||srca-sptra||%an||srca-sptra||%ae"}
+	} else {
+		args = []string{"log", fromHash, strconv.Itoa(commits), "--pretty=format:%H||srca-sptra||%h||srca-sptra||%d||srca-sptra||%s||srca-sptra||%cr||srca-sptra||%an||srca-sptra||%ae"}
+	}
 	out := util.ForkExec(gitPath, args, dirPath)
 
 	ss := strings.Split(out, "\n")
