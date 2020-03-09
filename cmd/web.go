@@ -96,6 +96,9 @@ func RunWeb(conf *setting.BaseStruct) {
 	m.HandleFunc("/r/{reponame}/contributors", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetRepoContributors(w, r, db, conf.Version, conf.Paths.RepoPath)
 	}).Methods("GET")
+	m.HandleFunc("/dl/{file}", func(w http.ResponseWriter, r *http.Request) {
+		handler.ServeRefFile(w, r, conf.Paths.RefsPath)
+	}).Methods("GET")
 	m.PathPrefix("/r/{reponame[\\d\\w-_\\.]+\\.git$}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		handler.GitviaHTTP(w, r, db, conf.Paths.RepoPath, conf.Paths.RepoPath, conf.Paths.RefsPath)
 	}).Methods("GET", "POST")

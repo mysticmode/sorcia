@@ -321,7 +321,12 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 		ss := strings.Split(out, "||srca-sptra||")
 
 		repoDirDetail.DirName = dir
-		repoDirDetail.DirCommit = ss[0]
+		commit := ss[0]
+		if len(commit) > 50 {
+			commit = util.LimitCharLengthInString(commit)
+		}
+
+		repoDirDetail.DirCommit = commit
 		repoDirDetail.DirCommitDate = ss[1]
 		data.RepoDetail.RepoDirsDetail = append(data.RepoDetail.RepoDirsDetail, repoDirDetail)
 	}
@@ -334,7 +339,12 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 		ss := strings.Split(out, "||srca-sptra||")
 
 		repoFileDetail.FileName = file
-		repoFileDetail.FileCommit = ss[0]
+		commit := ss[0]
+		if len(commit) > 50 {
+			commit = util.LimitCharLengthInString(commit)
+		}
+
+		repoFileDetail.FileCommit = commit
 		repoFileDetail.FileCommitDate = ss[1]
 		data.RepoDetail.RepoFilesDetail = append(data.RepoDetail.RepoFilesDetail, repoFileDetail)
 	}
@@ -452,7 +462,12 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 		ss := strings.Split(out, "||srca-sptra||")
 
 		repoDirDetail.DirName = dir
-		repoDirDetail.DirCommit = ss[0]
+		commit := ss[0]
+		if len(commit) > 50 {
+			commit = util.LimitCharLengthInString(commit)
+		}
+
+		repoDirDetail.DirCommit = commit
 		repoDirDetail.DirCommitDate = ss[1]
 		data.RepoDetail.RepoDirsDetail = append(data.RepoDetail.RepoDirsDetail, repoDirDetail)
 	}
@@ -465,7 +480,12 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 		ss := strings.Split(out, "||srca-sptra||")
 
 		repoFileDetail.FileName = file
-		repoFileDetail.FileCommit = ss[0]
+		commit := ss[0]
+		if len(commit) > 50 {
+			commit = util.LimitCharLengthInString(commit)
+		}
+
+		repoFileDetail.FileCommit = commit
 		repoFileDetail.FileCommitDate = ss[1]
 		data.RepoDetail.RepoFilesDetail = append(data.RepoDetail.RepoFilesDetail, repoFileDetail)
 	}
@@ -567,7 +587,7 @@ func GetRepoRefs(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 
 		if _, err := os.Stat(tarRefPath); !os.IsNotExist(err) {
 			rf.Targz = tarFilename
-			rf.TargzPath = tarRefPath
+			rf.TargzPath = fmt.Sprintf("/dl/%s", tarFilename)
 		}
 
 		// Generate zip file
@@ -576,7 +596,7 @@ func GetRepoRefs(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 
 		if _, err := os.Stat(zipRefPath); !os.IsNotExist(err) {
 			rf.Zip = zipFilename
-			rf.ZipPath = zipRefPath
+			rf.ZipPath = fmt.Sprintf("/dl/%s", zipFilename)
 		}
 
 		rfs = append(rfs, rf)
@@ -586,6 +606,13 @@ func GetRepoRefs(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 
 	writeRepoResponse(w, r, db, reponame, "repo-refs.html", data)
 	return
+}
+
+func ServeRefFile(w http.ResponseWriter, r *http.Request, refsPath string) {
+	vars := mux.Vars(r)
+	fileName := vars["file"]
+	dlPath := filepath.Join(refsPath, fileName)
+	http.ServeFile(w, r, dlPath)
 }
 
 // GetRepoContributors ...

@@ -7,8 +7,9 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	errorhandler "sorcia/error"
 	"strings"
+
+	errorhandler "sorcia/error"
 )
 
 // IsAlnumOrHyphen ...
@@ -57,4 +58,9 @@ func CreateSSHDirAndGenerateKey(sshPath string) {
 		args := []string{"-f", keyPath, "-t", "rsa", "-m", "PEM", "-N", ""}
 		_ = ForkExec("ssh-keygen", args, ".")
 	}
+}
+
+func LimitCharLengthInString(limitString string) string {
+	strManipulate := fmt.Sprintf("%s...", string(limitString[:50]))
+	return strManipulate
 }
