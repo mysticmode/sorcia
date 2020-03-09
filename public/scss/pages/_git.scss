@@ -303,10 +303,12 @@
         overflow: hidden;
 
         & a {
-            float: left;
-            width: 190px;
-            margin-right: 20px;
-            word-wrap: break-word;
+            &:first-child {
+                float: left;
+                width: 190px;
+                margin-right: 20px;
+                word-wrap: break-word;
+            }
         }
 
         &__message {
@@ -314,6 +316,11 @@
             width: 500px;
             margin-right: 20px;
             word-wrap: break-word;
+            color: $text-color;
+
+            &:hover {
+                text-decoration: underline;
+            }
         }
 
         &__date {
@@ -321,6 +328,7 @@
             width: 120px;
             word-wrap: break-word;
             text-align: right;
+            opacity: 0.7;
         }
     }
 
@@ -406,5 +414,30 @@
 
     &__commits {
         font-weight: bold;
+    }
+}
+
+.latest-commit {
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+
+    & img {
+        margin-right: 5px;
+    }
+
+    &__name {
+        font-weight: bold;
+        margin-right: 5px;
+    }
+
+    & a {
+        text-decoration: underline;
+        color: darken($color: $brand-primary, $amount: 15%);
+        margin-right: 5px;
+    }
+
+    &__date {
+        opacity: 0.8;
     }
 }

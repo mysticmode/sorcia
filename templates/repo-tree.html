@@ -16,33 +16,34 @@
         <a href="/r/{{ .Reponame }}/meta" class="repo__menu__item">meta</a>
     </div>
     <div class="repo__sub-menu">
-        <div class="repo__sub-menu__item branch">
-            <p>branch:</p>
-            <select>
-                <option value="master" selected="">master</option>
-                <option value="devel">devel</option>
-            </select>
+        {{if .RepoDetail.PathEmpty}}
+        {{range .RepoLogs.History}}
+        <div class="repo__sub-menu__item latest-commit">
+            <img src="{{.DP}}" width="23px">
+            <div class="latest-commit__name">{{.Author}}</div>
+            <a href="">{{.Message}}</a>
+            <div class="latest-commit__date">{{.Date}}</div>
         </div>
+        {{end}}        
+        {{else}}
         <div class="repo__sub-menu__item path">
-            {{if .RepoDetail.PathEmpty}}
-            {{else}}
             <p>path:</p>
             <div>{{.RepoDetail.LegendPath}}</div>
-            {{end}}
         </div>
+        {{end}}
     </div>
     <div class="repo-tree">
         {{range .RepoDetail.RepoDirsDetail}}
         <div class="repo-tree__info">
             <a href="{{ $.RepoDetail.WalkPath }}/{{.DirName}}" class="repo-tree__directory">{{.DirName}}</a>
-            <p class="repo-tree__info__message">{{.DirCommit}}</p>
+            <a href="" class="repo-tree__info__message">{{.DirCommit}}</a>
             <p class="repo-tree__info__date">{{.DirCommitDate}}</p>
         </div>
         {{end}}
         {{range .RepoDetail.RepoFilesDetail}}
         <div class="repo-tree__info">
             <a href="{{ $.RepoDetail.WalkPath }}/{{.FileName}}" class="repo-tree__file">{{.FileName}}</a>
-            <p class="repo-tree__info__message">{{.FileCommit}}</p>
+            <a class="repo-tree__info__message">{{.FileCommit}}</a>
             <p class="repo-tree__info__date">{{.FileCommitDate}}</p>
         </div>
         {{end}}
