@@ -180,8 +180,10 @@ type GetRepoResponse struct {
 	IsRepoPrivate    bool
 	Host             string
 	TotalCommits     string
+	TotalRefs        int
 	RepoDetail       RepoDetail
 	RepoLogs         RepoLogs
+	RepoRefs         []Refs
 	Contributors     Contributors
 }
 
@@ -250,6 +252,10 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 
 	commits := getCommits(repoPath, reponame, -3)
 	data.RepoLogs = *commits
+
+	repoDir := filepath.Join(repoPath, reponame+".git")
+	_, totalTags := util.GetGitTags(repoDir)
+	data.TotalRefs = totalTags
 
 	contributors := getContributors(repoPath, reponame, false)
 	data.Contributors = *contributors
@@ -498,8 +504,17 @@ func GetRepoLog(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersio
 	return
 }
 
+type Refs struct {
+	Version   string
+	Targz     string
+	TargzPath string
+	Zip       string
+	ZipPath   string
+	Message   string
+}
+
 // GetRepoRefs ...
-func GetRepoRefs(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion, repoPath string) {
+func GetRepoRefs(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion, repoPath, refsPath string) {
 	vars := mux.Vars(r)
 	reponame := vars["reponame"]
 
@@ -518,6 +533,56 @@ func GetRepoRefs(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 		RepoDescription:  repoDescription,
 		IsRepoPrivate:    false,
 	}
+
+	repoDir := filepath.Join(repoPath, reponame+".git")
+
+	gitPath := util.GetGitBinPath()
+	args := []string{"for-each-ref", "--sort=-taggerdate", "--format", "%(refname) %(contents:subject)", "refs/tags"}
+	out := util.ForkExec(gitPath, args, repoDir)
+
+	lineSplit := strings.Split(out, "\n")
+	lines := lineSplit[:len(lineSplit)-1]
+
+	var rfs []Refs
+
+	for _, line := range lines {
+		var rf Refs
+
+		refFields := strings.Fields(line)
+
+		rf.Version = strings.Split(refFields[0], "/")[2]
+
+		rf.Message = strings.Join(refFields[1:], " ")
+
+		tagname := rf.Version
+
+		// Remove 'v' prefix from version
+		if strings.HasPrefix(tagname, "v") {
+			tagname = strings.Split(tagname, "v")[1]
+		}
+
+		// Generate tar.gz file
+		tarFilename := fmt.Sprintf("%s-%s.tar.gz", reponame, tagname)
+		tarRefPath := filepath.Join(refsPath, tarFilename)
+
+		if _, err := os.Stat(tarRefPath); !os.IsNotExist(err) {
+			rf.Targz = tarFilename
+			rf.TargzPath = tarRefPath
+		}
+
+		// Generate zip file
+		zipFilename := fmt.Sprintf("%s-%s.zip", reponame, tagname)
+		zipRefPath := filepath.Join(refsPath, zipFilename)
+
+		if _, err := os.Stat(zipRefPath); !os.IsNotExist(err) {
+			rf.Zip = zipFilename
+			rf.ZipPath = zipRefPath
+		}
+
+		rfs = append(rfs, rf)
+	}
+
+	data.RepoRefs = rfs
 
 	writeRepoResponse(w, r, db, reponame, "repo-refs.html", data)
 	return
@@ -559,6 +624,7 @@ type Contributors struct {
 
 type Contributor struct {
 	Name    string
+	DP      string
 	Commits string
 }
 
@@ -566,7 +632,7 @@ func getContributors(repoPath, reponame string, getDetail bool) *Contributors {
 	gitPath := util.GetGitBinPath()
 	dirPath := filepath.Join(repoPath, reponame+".git")
 
-	args := []string{"shortlog", "HEAD", "-ns"}
+	args := []string{"shortlog", "HEAD", "-sne"}
 	out := util.ForkExec(gitPath, args, dirPath)
 
 	cStringRmLastLn := strings.TrimSuffix(out, "\n")
@@ -581,7 +647,15 @@ func getContributors(repoPath, reponame string, getDetail bool) *Contributors {
 			lineDetail := strings.Fields(line)
 			var contributor Contributor
 			contributor.Commits = lineDetail[0]
-			contributor.Name = strings.Join(lineDetail[1:], " ")
+			lineFurther := strings.Join(lineDetail[1:], " ")
+			contributor.Name = strings.Split(lineFurther, " <")[0]
+			emailSplit := strings.Split(lineFurther, " <")[1]
+			email := strings.Split(emailSplit, ">")[0]
+
+			hash := md5.Sum([]byte(email))
+			stringHash := hex.EncodeToString(hash[:])
+			contributor.DP = fmt.Sprintf("https://www.gravatar.com/avatar/%s", stringHash)
+
 			contributors.Detail = append(contributors.Detail, contributor)
 		}
 	}
