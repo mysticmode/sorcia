@@ -2,6 +2,7 @@ app_mode = production
 version = 0.2.0
 
 [paths]
+# all the paths should be in absolute path formats.
 project_root = /home/git/sorcia
 repo_path = /home/git/repositories
 refs_path = /home/git/refs
