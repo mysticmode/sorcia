@@ -50,47 +50,48 @@ func PullFromAllBranches(gitDirPath string) {
 	}
 }
 
-// GenerateRefs ...
-func GenerateRefs(gitDirPath, refsPath, reponame string) {
-	var files []string
-
+// GenerateRefs
+func GenerateRefs(refsPath, repoPath, repoGitName string) {
 	gitPath := GetGitBinPath()
 
-	dirSplit := strings.Split(gitDirPath, ".git")
-	workDir := dirSplit[0]
-	refPath := filepath.Join(gitDirPath, "refs", "tags")
-	err := filepath.Walk(refPath, func(path string, info os.FileInfo, err error) error {
-		files = append(files, path)
-		return nil
-	})
-	errorhandler.CheckError(err)
+	repoDir := filepath.Join(repoPath, repoGitName)
 
-	refsPath, err = filepath.Abs(refsPath)
+	cmd := exec.Command(gitPath, "tag", "-l")
+	cmd.Dir = repoDir
+
+	var out, stderr bytes.Buffer
+	cmd.Stderr = &stderr
+	cmd.Stdout = &out
+
+	err := cmd.Run()
 	if err != nil {
 		log.Printf("%v", err)
 	}
 
-	for i := 0; i < len(files); i++ {
-		ss := strings.Split(files[i], "/")
-		tag := ss[len(ss)-1]
+	var tags []string
 
-		if tag == "tags" {
-			continue
-		}
+	lineSplit := strings.Split(out.String(), "\n")
+	tags = lineSplit[:len(lineSplit)-1]
 
-		tagname := tag
+	// example.git -> example
+	repoName := strings.TrimSuffix(repoGitName, ".git")
+
+	for _, tag := range tags {
+
+		var tagname string
+
 		// Remove 'v' prefix from version
 		if strings.HasPrefix(tag, "v") {
 			tagname = strings.Split(tag, "v")[1]
 		}
 
 		// Generate tar.gz file
-		tarFilename := fmt.Sprintf("%s-%s.tar.gz", reponame, tagname)
+		tarFilename := fmt.Sprintf("%s-%s.tar.gz", repoName, tagname)
 		tarRefPath := filepath.Join(refsPath, tarFilename)
 
 		if _, err := os.Stat(tarRefPath); os.IsNotExist(err) {
 			cmd := exec.Command(gitPath, "archive", "--format=tar.gz", "-o", tarRefPath, tag)
-			cmd.Dir = workDir
+			cmd.Dir = repoDir // /home/git/repositories/example.git
 
 			var out, stderr bytes.Buffer
 			cmd.Stderr = &stderr
@@ -103,12 +104,12 @@ func GenerateRefs(gitDirPath, refsPath, reponame string) {
 		}
 
 		// Generate zip file
-		zipFilename := fmt.Sprintf("%s-%s.zip", reponame, tagname)
+		zipFilename := fmt.Sprintf("%s-%s.zip", repoName, tagname)
 		zipRefPath := filepath.Join(refsPath, zipFilename)
 
 		if _, err := os.Stat(zipRefPath); os.IsNotExist(err) {
 			cmd := exec.Command(gitPath, "archive", "--format=zip", "-o", zipRefPath, tag)
-			cmd.Dir = workDir
+			cmd.Dir = repoDir // /home/git/repositories/example.git
 
 			var out, stderr bytes.Buffer
 			cmd.Stderr = &stderr

@@ -21,14 +21,16 @@ import (
 )
 
 type gitHandler struct {
-	w        http.ResponseWriter
-	r        *http.Request
-	rpc      string
-	dir      string
-	file     string
-	reponame string
-	refsPath string
-	db       *sql.DB
+	w           http.ResponseWriter
+	r           *http.Request
+	rpc         string
+	dir         string
+	file        string
+	reponame    string
+	repoGitName string
+	repoPath    string
+	refsPath    string
+	db          *sql.DB
 }
 
 func (gh *gitHandler) basicAuth(username, passwordHash, realm string) bool {
@@ -166,7 +168,7 @@ func postServiceRPC(gh gitHandler, rpc string) {
 
 	if rpc == "receive-pack" {
 		go util.PullFromAllBranches(gh.dir)
-		go util.GenerateRefs(gh.dir, gh.refsPath, gh.reponame)
+		go util.GenerateRefs(gh.refsPath, gh.repoPath, gh.repoGitName)
 	}
 }
 
@@ -205,7 +207,7 @@ func getInfoRefs(gh gitHandler) {
 
 	if rpc == "receive-pack" {
 		go util.PullFromAllBranches(gh.dir)
-		go util.GenerateRefs(gh.dir, gh.refsPath, gh.reponame)
+		go util.GenerateRefs(gh.refsPath, gh.repoPath, gh.repoGitName)
 	}
 }
 
@@ -282,7 +284,7 @@ func processRepoAccess(gh gitHandler) bool {
 }
 
 // GitviaHTTP ...
-func GitviaHTTP(w http.ResponseWriter, r *http.Request, db *sql.DB, dir, refsPath string) {
+func GitviaHTTP(w http.ResponseWriter, r *http.Request, db *sql.DB, dir, repoPath, refsPath string) {
 	for _, route := range routes {
 		reqPath := strings.ToLower(r.URL.Path)
 		reqPath = "/" + strings.Split(reqPath, "/r/")[1]
@@ -311,16 +313,19 @@ func GitviaHTTP(w http.ResponseWriter, r *http.Request, db *sql.DB, dir, refsPat
 		}
 
 		file := strings.TrimPrefix(reqPath, routeMatch[1]+"/")
-		reponame := strings.TrimSuffix(strings.TrimPrefix(routeMatch[1], "/"), ".git")
+		repoGitName := strings.TrimPrefix(routeMatch[1], "/")
+		reponame := strings.TrimSuffix(repoGitName, ".git")
 
 		gh := gitHandler{
-			w:        w,
-			r:        r,
-			dir:      repoDir,
-			file:     file,
-			reponame: reponame,
-			refsPath: refsPath,
-			db:       db,
+			w:           w,
+			r:           r,
+			dir:         repoDir,
+			file:        file,
+			reponame:    reponame,
+			repoGitName: repoGitName,
+			repoPath:    repoPath,
+			refsPath:    refsPath,
+			db:          db,
 		}
 
 		route.handler(gh)
