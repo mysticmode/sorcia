@@ -43,12 +43,9 @@ func RunSSH(conf *setting.BaseStruct, db *sql.DB) {
 			}
 
 			reponame = strings.Split(gitRepo, ".git")[0]
-			rts := model.RepoTypeStruct{
-				Reponame: reponame,
-			}
 
 			// Check if repository is private
-			if isRepoPrivate := model.GetRepoType(db, &rts); isRepoPrivate || gitRPC == "git-receive-pack" {
+			if isRepoPrivate := model.GetRepoType(db, reponame); isRepoPrivate || gitRPC == "git-receive-pack" {
 				userIDInt, err := strconv.Atoi(userID)
 				if err != nil {
 					log.Printf("ssh: cannot convert userID to integer")

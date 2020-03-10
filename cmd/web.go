@@ -119,11 +119,12 @@ func RunWeb(conf *setting.BaseStruct) {
 
 // IndexPageResponse struct
 type IndexPageResponse struct {
-	IsHeaderLogin    bool
+	IsLoggedIn       bool
+	ShowLoginMenu    bool
 	HeaderActiveMenu string
 	SorciaVersion    string
-	Username         string
 	Repos            *model.GetReposFromUserIDResponse
+	AllPublicRepos   *model.GetAllPublicReposResponse
 }
 
 // GetHome ...
@@ -133,7 +134,6 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 	if userPresent == "true" {
 		token := w.Header().Get("sorcia-cookie-token")
 		userID := model.GetUserIDFromToken(db, token)
-		username := model.GetUsernameFromToken(db, token)
 		repos := model.GetReposFromUserID(db, userID)
 
 		layoutPage := path.Join("./templates", "layout.html")
@@ -148,16 +148,33 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 		w.WriteHeader(http.StatusOK)
 
 		data := IndexPageResponse{
-			IsHeaderLogin:    false,
+			IsLoggedIn:       true,
 			HeaderActiveMenu: "",
 			SorciaVersion:    sorciaVersion,
-			Username:         username,
 			Repos:            repos,
 		}
 
 		tmpl.ExecuteTemplate(w, "layout", data)
 	} else {
-		http.Redirect(w, r, "/login", http.StatusFound)
+		layoutPage := path.Join("./templates", "layout.html")
+		headerPage := path.Join("./templates", "header.html")
+		indexPage := path.Join("./templates", "index.html")
+		footerPage := path.Join("./templates", "footer.html")
+		repos := model.GetAllPublicRepos(db)
+
+		tmpl, err := template.ParseFiles(layoutPage, headerPage, indexPage, footerPage)
+		errorhandler.CheckError(err)
+
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
+
+		data := IndexPageResponse{
+			IsLoggedIn:     false,
+			ShowLoginMenu:  true,
+			AllPublicRepos: repos,
+		}
+
+		tmpl.ExecuteTemplate(w, "layout", data)
 	}
 }
 
@@ -168,7 +185,6 @@ func GetMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 	if userPresent == "true" {
 		token := w.Header().Get("sorcia-cookie-token")
 		userID := model.GetUserIDFromToken(db, token)
-		username := model.GetUsernameFromToken(db, token)
 		repos := model.GetReposFromUserID(db, userID)
 
 		layoutPage := path.Join("./templates", "layout.html")
@@ -183,10 +199,9 @@ func GetMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 		w.WriteHeader(http.StatusOK)
 
 		data := IndexPageResponse{
-			IsHeaderLogin:    false,
+			IsLoggedIn:       true,
 			HeaderActiveMenu: "meta",
 			SorciaVersion:    sorciaVersion,
-			Username:         username,
 			Repos:            repos,
 		}
 
@@ -198,7 +213,7 @@ func GetMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 
 // MetaKeysResponse struct
 type MetaKeysResponse struct {
-	IsHeaderLogin    bool
+	IsLoggedIn       bool
 	HeaderActiveMenu string
 	SorciaVersion    string
 	SSHKeys          *model.SSHKeysResponse
@@ -226,7 +241,7 @@ func GetMetaKeys(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 		w.WriteHeader(http.StatusOK)
 
 		data := MetaKeysResponse{
-			IsHeaderLogin:    false,
+			IsLoggedIn:       true,
 			HeaderActiveMenu: "meta",
 			SorciaVersion:    sorciaVersion,
 			SSHKeys:          sshKeys,
@@ -300,7 +315,6 @@ func GetMetaUsers(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVers
 	if userPresent == "true" {
 		token := w.Header().Get("sorcia-cookie-token")
 		userID := model.GetUserIDFromToken(db, token)
-		username := model.GetUsernameFromToken(db, token)
 		repos := model.GetReposFromUserID(db, userID)
 
 		layoutPage := path.Join("./templates", "layout.html")
@@ -315,10 +329,9 @@ func GetMetaUsers(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVers
 		w.WriteHeader(http.StatusOK)
 
 		data := IndexPageResponse{
-			IsHeaderLogin:    false,
+			IsLoggedIn:       true,
 			HeaderActiveMenu: "meta",
 			SorciaVersion:    sorciaVersion,
-			Username:         username,
 			Repos:            repos,
 		}
 
