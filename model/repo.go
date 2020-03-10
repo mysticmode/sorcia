@@ -63,6 +63,34 @@ func GetReposFromUserID(db *sql.DB, userID int) *GetReposFromUserIDResponse {
 	return &grfur
 }
 
+type GetAllPublicReposResponse struct {
+	Repositories []ReposDetail
+}
+
+type ReposDetail struct {
+	Name        string
+	Description string
+}
+
+// GetAllPublicRepos ...
+func GetAllPublicRepos(db *sql.DB) *GetAllPublicReposResponse {
+	rows, err := db.Query("SELECT name, description FROM repository WHERE is_private = ?", false)
+	errorhandler.CheckError(err)
+
+	var grfur GetAllPublicReposResponse
+	var rds ReposDetail
+
+	for rows.Next() {
+		err = rows.Scan(&rds.Name, &rds.Description)
+		errorhandler.CheckError(err)
+
+		grfur.Repositories = append(grfur.Repositories, rds)
+	}
+	rows.Close()
+
+	return &grfur
+}
+
 // GetRepoDescriptionFromRepoName ...
 func GetRepoDescriptionFromRepoName(db *sql.DB, reponame string) string {
 	rows, err := db.Query("SELECT description FROM repository WHERE name = ?", reponame)
@@ -97,14 +125,9 @@ func CheckRepoExists(db *sql.DB, reponame string) bool {
 	return false
 }
 
-// RepoTypeStruct struct
-type RepoTypeStruct struct {
-	Reponame string
-}
-
 // GetRepoType ...
-func GetRepoType(db *sql.DB, rts *RepoTypeStruct) bool {
-	rows, err := db.Query("SELECT is_private FROM repository WHERE name = ?", rts.Reponame)
+func GetRepoType(db *sql.DB, reponame string) bool {
+	rows, err := db.Query("SELECT is_private FROM repository WHERE name = ?", reponame)
 	errorhandler.CheckError(err)
 
 	var isPrivate bool

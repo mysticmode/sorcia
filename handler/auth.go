@@ -52,7 +52,8 @@ func validateJWTToken(tokenString string, passwordHash string) (bool, error) {
 
 // LoginPageResponse struct
 type LoginPageResponse struct {
-	IsHeaderLogin      bool
+	IsLoggedIn         bool
+	ShowLoginMenu      bool
 	HeaderActiveMenu   string
 	SorciaVersion      string
 	IsShowSignUp       bool
@@ -79,7 +80,8 @@ func GetLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion 
 		w.WriteHeader(http.StatusOK)
 
 		data := LoginPageResponse{
-			IsHeaderLogin:      true,
+			IsLoggedIn:         false,
+			ShowLoginMenu:      false,
 			HeaderActiveMenu:   "",
 			SorciaVersion:      sorciaVersion,
 			IsShowSignUp:       !model.CheckIfFirstUserExists(db),
@@ -164,7 +166,8 @@ func invalidLoginCredentials(w http.ResponseWriter, r *http.Request, sorciaVersi
 	w.WriteHeader(http.StatusOK)
 
 	data := LoginPageResponse{
-		IsHeaderLogin:      true,
+		IsLoggedIn:         false,
+		ShowLoginMenu:      false,
 		HeaderActiveMenu:   "",
 		LoginErrMessage:    "Your username or password is incorrect.",
 		RegisterErrMessage: "",
@@ -226,7 +229,8 @@ func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVers
 		w.WriteHeader(http.StatusOK)
 
 		data := LoginPageResponse{
-			IsHeaderLogin:      true,
+			IsLoggedIn:         false,
+			ShowLoginMenu:      false,
 			HeaderActiveMenu:   "",
 			SorciaVersion:      sorciaVersion,
 			IsShowSignUp:       !model.CheckIfFirstUserExists(db),
@@ -249,7 +253,8 @@ func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVers
 		w.WriteHeader(http.StatusOK)
 
 		data := LoginPageResponse{
-			IsHeaderLogin:      true,
+			IsLoggedIn:         false,
+			ShowLoginMenu:      false,
 			HeaderActiveMenu:   "",
 			SorciaVersion:      sorciaVersion,
 			IsShowSignUp:       !model.CheckIfFirstUserExists(db),

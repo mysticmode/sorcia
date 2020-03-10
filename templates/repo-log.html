@@ -13,7 +13,9 @@
         <a href="/r/{{ .Reponame }}/log" class="repo__menu__item repo__menu__item--active">log</a>
         <a href="/r/{{ .Reponame }}/refs" class="repo__menu__item">refs</a>
         <a href="/r/{{ .Reponame }}/contributors" class="repo__menu__item">contributors</a>
+        {{if .IsLoggedIn}}
         <a href="/r/{{ .Reponame }}/meta" class="repo__menu__item">meta</a>
+        {{end}}
     </div>
     <div class="repo__log">
         <ul>

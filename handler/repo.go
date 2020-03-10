@@ -28,7 +28,7 @@ import (
 
 // GetCreateRepoResponse struct
 type GetCreateRepoResponse struct {
-	IsHeaderLogin      bool
+	IsLoggedIn         bool
 	HeaderActiveMenu   string
 	ReponameErrMessage string
 	SorciaVersion      string
@@ -51,7 +51,7 @@ func GetCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVer
 		w.WriteHeader(http.StatusOK)
 
 		data := GetCreateRepoResponse{
-			IsHeaderLogin:    false,
+			IsLoggedIn:       true,
 			HeaderActiveMenu: "",
 			SorciaVersion:    sorciaVersion,
 		}
@@ -105,7 +105,7 @@ func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder 
 		w.WriteHeader(http.StatusOK)
 
 		data := GetCreateRepoResponse{
-			IsHeaderLogin:      false,
+			IsLoggedIn:         true,
 			HeaderActiveMenu:   "",
 			ReponameErrMessage: "Repository name is too long (maximum is 100 characters).",
 			SorciaVersion:      sorciaVersion,
@@ -126,7 +126,7 @@ func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder 
 		w.WriteHeader(http.StatusOK)
 
 		data := GetCreateRepoResponse{
-			IsHeaderLogin:      false,
+			IsLoggedIn:         true,
 			HeaderActiveMenu:   "",
 			ReponameErrMessage: "Repository name may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen.",
 			SorciaVersion:      sorciaVersion,
@@ -171,7 +171,8 @@ func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder 
 
 // GetRepoResponse struct
 type GetRepoResponse struct {
-	IsHeaderLogin    bool
+	IsLoggedIn       bool
+	ShowLoginMenu    bool
 	HeaderActiveMenu string
 	SorciaVersion    string
 	Username         string
@@ -221,6 +222,16 @@ type RepoLog struct {
 	DP      string
 }
 
+func checkUserLoggedIn(w http.ResponseWriter) bool {
+	userPresent := w.Header().Get("user-present")
+
+	if userPresent == "true" {
+		return true
+	}
+
+	return false
+}
+
 // GetRepo ...
 func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion string, repoPath string) {
 	vars := mux.Vars(r)
@@ -237,15 +248,21 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 	totalCommits := util.GetCommitCounts(repoPath, reponame)
 
 	data := GetRepoResponse{
-		IsHeaderLogin:    false,
+		IsLoggedIn:       checkUserLoggedIn(w),
+		ShowLoginMenu:    true,
 		HeaderActiveMenu: "",
 		SorciaVersion:    sorciaVersion,
 		Username:         username,
 		Reponame:         reponame,
 		RepoDescription:  repoDescription,
-		IsRepoPrivate:    false,
+		IsRepoPrivate:    model.GetRepoType(db, reponame),
 		Host:             r.Host,
 		TotalCommits:     totalCommits,
+	}
+
+	if !data.IsLoggedIn && data.IsRepoPrivate {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
 	}
 
 	data.RepoDetail.Readme = processREADME(repoPath, reponame)
@@ -297,12 +314,18 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
 
 	data := GetRepoResponse{
-		IsHeaderLogin:    false,
+		IsLoggedIn:       checkUserLoggedIn(w),
+		ShowLoginMenu:    true,
 		HeaderActiveMenu: "",
 		SorciaVersion:    sorciaVersion,
 		Reponame:         reponame,
 		RepoDescription:  repoDescription,
-		IsRepoPrivate:    false,
+		IsRepoPrivate:    model.GetRepoType(db, reponame),
+	}
+
+	if !data.IsLoggedIn && data.IsRepoPrivate {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
 	}
 
 	gitPath := util.GetGitBinPath()
@@ -372,12 +395,18 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
 
 	data := GetRepoResponse{
-		IsHeaderLogin:    false,
+		IsLoggedIn:       checkUserLoggedIn(w),
+		ShowLoginMenu:    true,
 		HeaderActiveMenu: "",
 		SorciaVersion:    sorciaVersion,
 		Reponame:         reponame,
 		RepoDescription:  repoDescription,
-		IsRepoPrivate:    false,
+		IsRepoPrivate:    model.GetRepoType(db, reponame),
+	}
+
+	if !data.IsLoggedIn && data.IsRepoPrivate {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
 	}
 
 	frdpath := strings.Split(r.URL.Path, "r/"+reponame+"/tree/")[1]
@@ -522,12 +551,18 @@ func GetRepoLog(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersio
 	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
 
 	data := GetRepoResponse{
-		IsHeaderLogin:    false,
+		IsLoggedIn:       checkUserLoggedIn(w),
+		ShowLoginMenu:    true,
 		HeaderActiveMenu: "",
 		SorciaVersion:    sorciaVersion,
 		Reponame:         reponame,
 		RepoDescription:  repoDescription,
-		IsRepoPrivate:    false,
+		IsRepoPrivate:    model.GetRepoType(db, reponame),
+	}
+
+	if !data.IsLoggedIn && data.IsRepoPrivate {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
 	}
 
 	commits := getCommits(repoPath, reponame, fromHash, -11)
@@ -559,12 +594,18 @@ func GetRepoRefs(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
 
 	data := GetRepoResponse{
-		IsHeaderLogin:    false,
+		IsLoggedIn:       checkUserLoggedIn(w),
+		ShowLoginMenu:    true,
 		HeaderActiveMenu: "",
 		SorciaVersion:    sorciaVersion,
 		Reponame:         reponame,
 		RepoDescription:  repoDescription,
-		IsRepoPrivate:    false,
+		IsRepoPrivate:    model.GetRepoType(db, reponame),
+	}
+
+	if !data.IsLoggedIn && data.IsRepoPrivate {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
 	}
 
 	repoDir := filepath.Join(repoPath, reponame+".git")
@@ -641,12 +682,18 @@ func GetRepoContributors(w http.ResponseWriter, r *http.Request, db *sql.DB, sor
 	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
 
 	data := GetRepoResponse{
-		IsHeaderLogin:    false,
+		IsLoggedIn:       checkUserLoggedIn(w),
+		ShowLoginMenu:    true,
 		HeaderActiveMenu: "",
 		SorciaVersion:    sorciaVersion,
 		Reponame:         reponame,
 		RepoDescription:  repoDescription,
-		IsRepoPrivate:    false,
+		IsRepoPrivate:    model.GetRepoType(db, reponame),
+	}
+
+	if !data.IsLoggedIn && data.IsRepoPrivate {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
 	}
 
 	contributors := getContributors(repoPath, reponame, true)
@@ -742,12 +789,8 @@ func noRepoAccess(w http.ResponseWriter) {
 }
 
 func writeRepoResponse(w http.ResponseWriter, r *http.Request, db *sql.DB, reponame string, mainPage string, data GetRepoResponse) {
-	rts := model.RepoTypeStruct{
-		Reponame: reponame,
-	}
-
 	// Check if repository is not private
-	if isRepoPrivate := model.GetRepoType(db, &rts); !isRepoPrivate {
+	if isRepoPrivate := model.GetRepoType(db, reponame); !isRepoPrivate {
 		tmpl := parseTemplates(w, mainPage)
 		tmpl.ExecuteTemplate(w, "layout", data)
 	} else {

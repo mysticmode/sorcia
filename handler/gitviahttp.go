@@ -119,12 +119,8 @@ func serviceReceivePack(gh gitHandler) {
 }
 
 func postServiceRPC(gh gitHandler, rpc string) {
-	rts := model.RepoTypeStruct{
-		Reponame: gh.reponame,
-	}
-
 	// Check if repository is private
-	if isRepoPrivate := model.GetRepoType(gh.db, &rts); isRepoPrivate || rpc == "receive-pack" {
+	if isRepoPrivate := model.GetRepoType(gh.db, gh.reponame); isRepoPrivate || rpc == "receive-pack" {
 		userID := model.GetUserIDFromReponame(gh.db, gh.reponame)
 		if model.CheckRepoAccessFromUserIDAndReponame(gh.db, userID, gh.reponame) {
 			if processRepoAccess(gh) == false {
@@ -184,12 +180,8 @@ func getInfoRefs(gh gitHandler) {
 		return
 	}
 
-	rts := model.RepoTypeStruct{
-		Reponame: gh.reponame,
-	}
-
 	// Check if repository is private
-	if isRepoPrivate := model.GetRepoType(gh.db, &rts); isRepoPrivate || rpc == "receive-pack" {
+	if isRepoPrivate := model.GetRepoType(gh.db, gh.reponame); isRepoPrivate || rpc == "receive-pack" {
 		userID := model.GetUserIDFromReponame(gh.db, gh.reponame)
 		if model.CheckRepoAccessFromUserIDAndReponame(gh.db, userID, gh.reponame) {
 			if processRepoAccess(gh) == false {
