@@ -171,6 +171,7 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 		data := IndexPageResponse{
 			IsLoggedIn:     false,
 			ShowLoginMenu:  true,
+			SorciaVersion:  sorciaVersion,
 			AllPublicRepos: repos,
 		}
 
