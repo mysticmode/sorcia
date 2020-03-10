@@ -9,20 +9,20 @@
     </div>
     <div class="repo__menu">
         <a href="/r/{{ .Reponame }}" class="repo__menu__item">summary</a>
-        <a href="/r/{{ .Reponame }}/tree" class="repo__menu__item repo__menu__item--active">tree</a>
-        <a href="/r/{{ .Reponame }}/log" class="repo__menu__item">log</a>
-        <a href="" class="repo__menu__item">refs</a>
-        <a href="" class="repo__menu__item">contributors</a>
-        <a href="" class="repo__menu__item">meta</a>
+        <a href="/r/{{ .Reponame }}/tree/master" class="repo__menu__item repo__menu__item--active">tree</a>
+        <a href="/r/{{ .Reponame }}/log/master" class="repo__menu__item">log</a>
+        <a href="/r/{{ .Reponame }}/refs" class="repo__menu__item">refs</a>
+        <a href="/r/{{ .Reponame }}/contributors" class="repo__menu__item">contributors</a>
+        {{if .IsLoggedIn}}
+        <a href="/r/{{ .Reponame }}/meta" class="repo__menu__item">meta</a>
+        {{end}}
     </div>
-    <div class="repo__sub-menu">
-        <div class="repo__sub-menu__item path">
-            {{if .RepoDetail.PathEmpty}}
-            {{else}}
-            <p>path:</p>
-            <div>{{.RepoDetail.LegendPath}}</div>
-            {{end}}
-        </div>
+    <div class="path">
+        {{if .RepoDetail.PathEmpty}}
+        {{else}}
+        <p>path:</p>
+        <div>{{.RepoDetail.LegendPath}}</div>
+        {{end}}
     </div>
     <div class="file-viewer">
         {{.RepoDetail.FileContent}}

@@ -81,13 +81,13 @@ func RunWeb(conf *setting.BaseStruct) {
 	m.HandleFunc("/r/{reponame}", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetRepo(w, r, db, conf.Version, conf.Paths.RepoPath)
 	}).Methods("GET")
-	m.HandleFunc("/r/{reponame}/tree", func(w http.ResponseWriter, r *http.Request) {
+	m.HandleFunc("/r/{reponame}/tree/{branch}", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetRepoTree(w, r, db, conf.Version, conf.Paths.RepoPath)
 	}).Methods("GET")
-	m.PathPrefix("/r/{reponame}/tree/{[[\\d\\w-_\\.]+}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	m.PathPrefix("/r/{reponame}/tree/{branch}/{path:[[\\d\\w-_\\.]+}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		handler.GetRepoTreePath(w, r, db, conf.Version, conf.Paths.RepoPath)
 	}).Methods("GET")
-	m.HandleFunc("/r/{reponame}/log", func(w http.ResponseWriter, r *http.Request) {
+	m.HandleFunc("/r/{reponame}/log/{branch}", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetRepoLog(w, r, db, conf.Version, conf.Paths.RepoPath)
 	}).Methods("GET")
 	m.HandleFunc("/r/{reponame}/refs", func(w http.ResponseWriter, r *http.Request) {

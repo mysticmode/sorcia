@@ -386,6 +386,7 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion, repoPath string) {
 	vars := mux.Vars(r)
 	reponame := vars["reponame"]
+	branch := vars["branch"]
 
 	if repoExists := model.CheckRepoExists(db, reponame); !repoExists {
 		w.WriteHeader(http.StatusNotFound)
@@ -409,24 +410,22 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 		return
 	}
 
-	frdpath := strings.Split(r.URL.Path, "r/"+reponame+"/tree/")[1]
+	frdpath := strings.Split(r.URL.Path, "r/"+reponame+"/tree/"+branch+"/")[1]
 
 	dirPath := filepath.Join(repoPath, reponame, frdpath)
 
+	legendHref := "\"/r/" + reponame + "/tree/" + branch + "\""
+	legendPath := "<a href=" + legendHref + ">" + reponame + "</a>"
+
 	legendPathSplit := strings.Split(frdpath, "/")
 
-	legendPathArr := make([]string, len(legendPathSplit))
+	for _, s := range legendPathSplit {
+		legendHref = strings.TrimSuffix(legendHref, "\"")
+		legendHref = fmt.Sprintf("%s/%s\"", legendHref, s)
 
-	for i, s := range legendPathSplit {
-		if i == 0 {
-			legendPathArr[i] = "<a href=\"/r/" + reponame + "/tree\">" + reponame + "</a> / <a href=\"/r/" + reponame + "/tree"
-		} else {
-			legendPathArr[i] = "<a href=\"/r/" + reponame + "/tree"
-		}
-		for j := 0; j <= i; j++ {
-			legendPathArr[i] = fmt.Sprintf("%s/%s", legendPathArr[i], legendPathSplit[j])
-		}
-		legendPathArr[i] = fmt.Sprintf("%s\">%s</a>", legendPathArr[i], s)
+		additionalPath := "<a href=" + legendHref + ">" + s + "</a>"
+
+		legendPath = fmt.Sprintf("%s / %s", legendPath, additionalPath)
 	}
 
 	fi, err := os.Stat(dirPath)
@@ -469,11 +468,9 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 		}
 		html := template.HTML(fileContent)
 
-		legendPath := template.HTML(strings.Join(legendPathArr, " / "))
-
 		data.RepoDetail.PathEmpty = false
 		data.RepoDetail.WalkPath = r.URL.Path
-		data.RepoDetail.LegendPath = legendPath
+		data.RepoDetail.LegendPath = template.HTML(legendPath)
 		data.RepoDetail.FileContent = html
 
 		writeRepoResponse(w, r, db, reponame, "file-viewer.html", data)
@@ -483,11 +480,9 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 	gitPath := util.GetGitBinPath()
 	dirs, files := walkThrough(dirPath, gitPath)
 
-	legendPath := template.HTML(strings.Join(legendPathArr, " / "))
-
 	data.RepoDetail.PathEmpty = false
 	data.RepoDetail.WalkPath = r.URL.Path
-	data.RepoDetail.LegendPath = legendPath
+	data.RepoDetail.LegendPath = template.HTML(legendPath)
 
 	for _, dir := range dirs {
 		repoDirDetail := RepoDirDetail{}
