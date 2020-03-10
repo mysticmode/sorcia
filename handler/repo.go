@@ -305,6 +305,7 @@ func processREADME(repoPath, repoName string) template.HTML {
 func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion, repoPath string) {
 	vars := mux.Vars(r)
 	reponame := vars["reponame"]
+	branch := vars["branch"]
 
 	if repoExists := model.CheckRepoExists(db, reponame); !repoExists {
 		w.WriteHeader(http.StatusNotFound)
@@ -331,14 +332,14 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 	gitPath := util.GetGitBinPath()
 
 	dirPath := filepath.Join(repoPath, reponame)
-	dirs, files := walkThrough(dirPath, gitPath)
+	dirs, files := walkThrough(dirPath, gitPath, branch)
 
 	data.RepoDetail.WalkPath = r.URL.Path
 	data.RepoDetail.PathEmpty = true
 
 	for _, dir := range dirs {
 		repoDirDetail := RepoDirDetail{}
-		args := []string{"log", "master", "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", dir}
+		args := []string{"log", branch, "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", dir}
 		out := util.ForkExec(gitPath, args, dirPath)
 
 		ss := strings.Split(out, "||srca-sptra||")
@@ -356,7 +357,7 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 
 	for _, file := range files {
 		repoFileDetail := RepoFileDetail{}
-		args := []string{"log", "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", file}
+		args := []string{"log", branch, "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", file}
 		out := util.ForkExec(gitPath, args, dirPath)
 
 		ss := strings.Split(out, "||srca-sptra||")
@@ -478,7 +479,7 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 	}
 
 	gitPath := util.GetGitBinPath()
-	dirs, files := walkThrough(dirPath, gitPath)
+	dirs, files := walkThrough(dirPath, gitPath, branch)
 
 	data.RepoDetail.PathEmpty = false
 	data.RepoDetail.WalkPath = r.URL.Path
@@ -486,7 +487,7 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 
 	for _, dir := range dirs {
 		repoDirDetail := RepoDirDetail{}
-		args := []string{"log", "master", "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", dir}
+		args := []string{"log", branch, "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", dir}
 		out := util.ForkExec(gitPath, args, dirPath)
 
 		ss := strings.Split(out, "||srca-sptra||")
@@ -504,7 +505,7 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 
 	for _, file := range files {
 		repoFileDetail := RepoFileDetail{}
-		args := []string{"log", "master", "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", file}
+		args := []string{"log", branch, "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", file}
 		out := util.ForkExec(gitPath, args, dirPath)
 
 		ss := strings.Split(out, "||srca-sptra||")
@@ -746,10 +747,10 @@ func getContributors(repoPath, reponame string, getDetail bool) *Contributors {
 }
 
 // Walk through files and folders
-func walkThrough(dirPath, gitPath string) ([]string, []string) {
+func walkThrough(dirPath, gitPath, branch string) ([]string, []string) {
 	var dirs, files []string
 
-	args := []string{"ls-tree", "--name-only", "master", "HEAD", "."}
+	args := []string{"ls-tree", "--name-only", branch, "HEAD", "."}
 	out := util.ForkExec(gitPath, args, dirPath)
 
 	ss := strings.Split(out, "\n")
