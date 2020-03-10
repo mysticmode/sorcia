@@ -36,7 +36,7 @@ func PullFromAllBranches(gitDirPath string) {
 		}
 
 		// by default fast-forward is allowed. Add + to allow non-fast-forward
-		args := []string{"pull", "origin", fmt.Sprintf("%s:%s", branch, branch)}
+		args := []string{"pull", "origin", fmt.Sprintf("+%s:%s", branch, branch)}
 		_ = ForkExec(gitPath, args, workDir)
 	}
 }
