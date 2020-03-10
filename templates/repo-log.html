@@ -9,13 +9,26 @@
     </div>
     <div class="repo__menu">
         <a href="/r/{{ .Reponame }}" class="repo__menu__item">summary</a>
-        <a href="/r/{{ .Reponame }}/tree" class="repo__menu__item">tree</a>
-        <a href="/r/{{ .Reponame }}/log" class="repo__menu__item repo__menu__item--active">log</a>
+        <a href="/r/{{ .Reponame }}/tree/master" class="repo__menu__item">tree</a>
+        <a href="/r/{{ .Reponame }}/log/master" class="repo__menu__item repo__menu__item--active">log</a>
         <a href="/r/{{ .Reponame }}/refs" class="repo__menu__item">refs</a>
         <a href="/r/{{ .Reponame }}/contributors" class="repo__menu__item">contributors</a>
         {{if .IsLoggedIn}}
         <a href="/r/{{ .Reponame }}/meta" class="repo__menu__item">meta</a>
         {{end}}
+    </div>
+    <div class="repo__sub-menu">
+        <div class="repo__sub-menu__item branch">
+            <form method="get" action="" class="form">
+                <div class="form__group">
+                    <label for="branchSelect">branch:</label>
+                    <select onchange="this.form.submit();">
+                        <option value="" selected>master</option>
+                        <option value="">devel</option>
+                    </select>
+                </div>
+            </form>
+        </div>
     </div>
     <div class="repo__log">
         <ul>
