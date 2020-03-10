@@ -22,9 +22,9 @@
             <form method="get" action="" class="form">
                 <div class="form__group">
                     <label for="branchSelect">branch:</label>
-                    <select onchange="this.form.submit();">
-                        <option value="" selected>master</option>
-                        <option value="">devel</option>
+                    <select id="branchSelect">
+                        <option value="/r/{{.Reponame}}/tree/master" selected>master</option>
+                        <option value="/r/{{.Reponame}}/tree/devel">devel</option>
                     </select>
                 </div>
             </form>
