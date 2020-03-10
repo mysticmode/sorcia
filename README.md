@@ -34,14 +34,15 @@ sudo su - git
 
 **Install from binary**
 ```
-download the tar.gz package
+wget https://sorcia.mysticmode.org/dl/sorcia-0.2.1-linux-amd64.tar.gz
+mkdir sorcia
 tar -C sorcia -xzf sorcia.linux-amd64.tar.gz
 cd sorcia
 chmod +x sorcia
 ```
 
 **(or) Install from source**
-Download Go 1.14 from https://golang.org/dl/ using `wget`.
+Download Go 1.14 from [https://golang.org/dl/](https://golang.org/dl/) using `wget`.
 ```
 mkdir go local
 tar -C local -xzf <go.tar.gz>
