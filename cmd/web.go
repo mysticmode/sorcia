@@ -156,6 +156,10 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 
 		tmpl.ExecuteTemplate(w, "layout", data)
 	} else {
+		if !model.CheckIfFirstUserExists(db) {
+			http.Redirect(w, r, "/login", http.StatusFound)
+			return
+		}
 		layoutPage := path.Join("./templates", "layout.html")
 		headerPage := path.Join("./templates", "header.html")
 		indexPage := path.Join("./templates", "index.html")
