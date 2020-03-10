@@ -351,6 +351,9 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 
 	commit := getCommits(repoPath, reponame, "", -2)
 	data.RepoLogs = *commit
+	if len(data.RepoLogs.History) == 1 {
+		data.RepoLogs.History[0].Message = util.LimitCharLengthInString(data.RepoLogs.History[0].Message)
+	}
 
 	writeRepoResponse(w, r, db, reponame, "repo-tree.html", data)
 	return

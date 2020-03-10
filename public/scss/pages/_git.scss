@@ -420,7 +420,6 @@
 .latest-commit {
     display: flex;
     align-items: center;
-    font-size: 12px;
 
     & img {
         margin-right: 5px;
@@ -428,13 +427,13 @@
 
     &__name {
         font-weight: bold;
-        margin-right: 5px;
+        margin-right: 10px;
     }
 
     & a {
         text-decoration: underline;
         color: darken($color: $brand-primary, $amount: 15%);
-        margin-right: 5px;
+        margin-right: 10px;
     }
 
     &__date {
