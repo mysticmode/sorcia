@@ -163,7 +163,6 @@ func postServiceRPC(gh gitHandler, rpc string) {
 	}
 
 	if rpc == "receive-pack" {
-		go util.PullFromAllBranches(gh.dir)
 		go util.GenerateRefs(gh.refsPath, gh.repoPath, gh.repoGitName)
 	}
 }
@@ -198,7 +197,6 @@ func getInfoRefs(gh gitHandler) {
 	gh.w.Write(refs)
 
 	if rpc == "receive-pack" {
-		go util.PullFromAllBranches(gh.dir)
 		go util.GenerateRefs(gh.refsPath, gh.repoPath, gh.repoGitName)
 	}
 }
