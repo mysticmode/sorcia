@@ -1,15 +1,12 @@
 package handler
 
 import (
-	"bufio"
 	"crypto/md5"
 	"database/sql"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"html/template"
-	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"path"
@@ -161,11 +158,6 @@ func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder 
 	args := []string{"init", "--bare", bareRepoDir}
 	_ = util.ForkExec(gitPath, args, ".")
 
-	// Clone from the bare repository created above
-	repoDir := filepath.Join(repoPath, createRepoRequest.Name)
-	args = []string{"clone", bareRepoDir, repoDir}
-	_ = util.ForkExec(gitPath, args, ".")
-
 	http.Redirect(w, r, "/", http.StatusFound)
 }
 
@@ -237,6 +229,8 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 	vars := mux.Vars(r)
 	reponame := vars["reponame"]
 
+	repoDir := filepath.Join(repoPath, reponame+".git")
+
 	if repoExists := model.CheckRepoExists(db, reponame); !repoExists {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -265,12 +259,11 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 		return
 	}
 
-	data.RepoDetail.Readme = processREADME(repoPath, reponame)
+	data.RepoDetail.Readme = processREADME(repoDir)
 
 	commits := getCommits(repoPath, reponame, "", -4)
 	data.RepoLogs = *commits
 
-	repoDir := filepath.Join(repoPath, reponame+".git")
 	_, totalTags := util.GetGitTags(repoDir)
 	data.TotalRefs = totalTags
 
@@ -281,22 +274,17 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 	return
 }
 
-func processREADME(repoPath, repoName string) template.HTML {
-	readmeFile := filepath.Join(repoPath, repoName, "README.md")
-	_, err := os.Stat(readmeFile)
+func processREADME(repoPath string) template.HTML {
 
-	html := template.HTML("")
+	gitPath := util.GetGitBinPath()
+	args := []string{"show", "master:README.md"}
 
-	if !os.IsNotExist(err) {
-		dat, err := ioutil.ReadFile(readmeFile)
-		if err != nil {
-			fmt.Println(err)
-		}
-		md := []byte(dat)
-		output := blackfriday.Run(md)
+	out := util.ForkExec(gitPath, args, repoPath)
 
-		html = template.HTML(output)
-	}
+	md := []byte(out)
+	output := blackfriday.Run(md)
+
+	html := template.HTML(output)
 
 	return html
 }
@@ -306,6 +294,8 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 	vars := mux.Vars(r)
 	reponame := vars["reponame"]
 	branch := vars["branch"]
+
+	repoDir := filepath.Join(repoPath, reponame+".git")
 
 	if repoExists := model.CheckRepoExists(db, reponame); !repoExists {
 		w.WriteHeader(http.StatusNotFound)
@@ -331,8 +321,7 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 
 	gitPath := util.GetGitBinPath()
 
-	dirPath := filepath.Join(repoPath, reponame)
-	dirs, files := walkThrough(dirPath, gitPath, branch)
+	dirs, files := walkThrough(repoDir, gitPath, branch, ".", 0)
 
 	data.RepoDetail.WalkPath = r.URL.Path
 	data.RepoDetail.PathEmpty = true
@@ -340,7 +329,7 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 	for _, dir := range dirs {
 		repoDirDetail := RepoDirDetail{}
 		args := []string{"log", branch, "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", dir}
-		out := util.ForkExec(gitPath, args, dirPath)
+		out := util.ForkExec(gitPath, args, repoDir)
 
 		ss := strings.Split(out, "||srca-sptra||")
 
@@ -358,7 +347,7 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 	for _, file := range files {
 		repoFileDetail := RepoFileDetail{}
 		args := []string{"log", branch, "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", file}
-		out := util.ForkExec(gitPath, args, dirPath)
+		out := util.ForkExec(gitPath, args, repoDir)
 
 		ss := strings.Split(out, "||srca-sptra||")
 
@@ -389,6 +378,8 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 	reponame := vars["reponame"]
 	branch := vars["branch"]
 
+	repoDir := filepath.Join(repoPath, reponame+".git")
+
 	if repoExists := model.CheckRepoExists(db, reponame); !repoExists {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -413,8 +404,6 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 
 	frdpath := strings.Split(r.URL.Path, "r/"+reponame+"/tree/"+branch+"/")[1]
 
-	dirPath := filepath.Join(repoPath, reponame, frdpath)
-
 	legendHref := "\"/r/" + reponame + "/tree/" + branch + "\""
 	legendPath := "<a href=" + legendHref + ">" + reponame + "</a>"
 
@@ -429,66 +418,43 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 		legendPath = fmt.Sprintf("%s / %s", legendPath, additionalPath)
 	}
 
-	fi, err := os.Stat(dirPath)
-	errorhandler.CheckError(err)
+	data.RepoDetail.PathEmpty = false
+	data.RepoDetail.WalkPath = r.URL.Path
+	data.RepoDetail.LegendPath = template.HTML(legendPath)
 
-	if fi.Mode().IsRegular() {
-		file, err := os.Open(dirPath)
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer file.Close()
+	gitPath := util.GetGitBinPath()
+	frdPathLen := len(strings.Split(frdpath, "/"))
+	dirs, files := walkThrough(repoDir, gitPath, branch, frdpath, frdPathLen)
 
-		var codeLines []string
-		scanner := bufio.NewScanner(file)
-		for scanner.Scan() {
-			codeLines = append(codeLines, scanner.Text())
-		}
+	if len(dirs) == 0 && len(files) == 0 {
+		args := []string{"show", fmt.Sprintf("%s:%s", branch, frdpath)}
+		out := util.ForkExec(gitPath, args, repoDir)
 
-		if err := scanner.Err(); err != nil {
-			log.Fatal(err)
-		}
+		frdSplit := strings.Split(frdpath, "/")
 
-		code := strings.Join(codeLines, "\n")
+		frdFile := frdSplit[len(frdSplit)-1]
 
-		fileDotSplit := strings.Split(dirPath, ".")
-		var fileExt string
-		if len(fileDotSplit) > 1 {
-			fileExt = fileDotSplit[len(fileDotSplit)-1]
-		} else {
-			fileExt = ""
-		}
-
-		code = template.HTMLEscaper(code)
-
+		fileDotSplit := strings.Split(frdFile, ".")
 		var fileContent string
-		if fileExt == "" {
-			fileContent = fmt.Sprintf("<pre><code class=\"plaintext\">%s</code></pre>", code)
+		if len(fileDotSplit) > 1 {
+			fileContent = fmt.Sprintf("<pre><code class=\"%s\">%s</code></pre>", fileDotSplit[1], out)
 		} else {
-			fileContent = fmt.Sprintf("<pre><code class=\"%s\">%s</code></pre>", fileExt, code)
+			fileContent = fmt.Sprintf("<pre><code class=\"plaintext\">%s</code></pre>", out)
 		}
+
 		html := template.HTML(fileContent)
 
-		data.RepoDetail.PathEmpty = false
-		data.RepoDetail.WalkPath = r.URL.Path
-		data.RepoDetail.LegendPath = template.HTML(legendPath)
 		data.RepoDetail.FileContent = html
 
 		writeRepoResponse(w, r, db, reponame, "file-viewer.html", data)
 		return
 	}
 
-	gitPath := util.GetGitBinPath()
-	dirs, files := walkThrough(dirPath, gitPath, branch)
-
-	data.RepoDetail.PathEmpty = false
-	data.RepoDetail.WalkPath = r.URL.Path
-	data.RepoDetail.LegendPath = template.HTML(legendPath)
-
 	for _, dir := range dirs {
+		dirPath := fmt.Sprintf("%s/%s", frdpath, dir)
 		repoDirDetail := RepoDirDetail{}
-		args := []string{"log", branch, "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", dir}
-		out := util.ForkExec(gitPath, args, dirPath)
+		args := []string{"log", branch, "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", dirPath}
+		out := util.ForkExec(gitPath, args, repoDir)
 
 		ss := strings.Split(out, "||srca-sptra||")
 
@@ -504,9 +470,10 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 	}
 
 	for _, file := range files {
+		filePath := fmt.Sprintf("%s/%s", frdpath, file)
 		repoFileDetail := RepoFileDetail{}
-		args := []string{"log", branch, "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", file}
-		out := util.ForkExec(gitPath, args, dirPath)
+		args := []string{"log", branch, "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", filePath}
+		out := util.ForkExec(gitPath, args, repoDir)
 
 		ss := strings.Split(out, "||srca-sptra||")
 
@@ -521,8 +488,57 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 		data.RepoDetail.RepoFilesDetail = append(data.RepoDetail.RepoFilesDetail, repoFileDetail)
 	}
 
+	commit := getCommits(repoPath, reponame, "", -2)
+	data.RepoLogs = *commit
+	if len(data.RepoLogs.History) == 1 {
+		data.RepoLogs.History[0].Message = util.LimitCharLengthInString(data.RepoLogs.History[0].Message)
+	}
+
 	writeRepoResponse(w, r, db, reponame, "repo-tree.html", data)
 	return
+}
+
+// Walk through files and folders
+func walkThrough(repoDir, gitPath, branch, lsTreePath string, lsTreePathLen int) ([]string, []string) {
+	var dirs, files []string
+
+	args := []string{"ls-tree", "-r", "--name-only", branch, "HEAD", lsTreePath + "/"}
+	out := util.ForkExec(gitPath, args, repoDir)
+
+	ss := strings.Split(out, "\n")
+	entries := ss[:len(ss)-1]
+
+	for _, entry := range entries {
+		entrySplit := strings.Split(entry, "/")
+
+		if len(entrySplit) == 1 {
+			files = append(files, entrySplit[0])
+		} else if lsTreePathLen == 0 {
+			if !util.ContainsValueInArr(dirs, entrySplit[0]) {
+				dirs = append(dirs, entrySplit[0])
+			}
+		} else {
+			newPath := strings.Join(entrySplit[:lsTreePathLen+1], "/")
+			args = []string{"ls-tree", "-r", "--name-only", branch, "HEAD", newPath}
+			out = util.ForkExec(gitPath, args, repoDir)
+			ss = strings.Split(out, "\n")
+			newEntries := ss[:len(ss)-1]
+
+			for _, newEntry := range newEntries {
+				newEntrySplit := strings.Split(newEntry, "/")
+
+				if len(newEntrySplit) == (lsTreePathLen + 1) {
+					files = append(files, newEntrySplit[lsTreePathLen])
+				} else {
+					if !util.ContainsValueInArr(dirs, newEntrySplit[lsTreePathLen]) {
+						dirs = append(dirs, newEntrySplit[lsTreePathLen])
+					}
+				}
+			}
+		}
+	}
+
+	return dirs, files
 }
 
 // GetRepoLog ...
@@ -744,30 +760,6 @@ func getContributors(repoPath, reponame string, getDetail bool) *Contributors {
 	}
 
 	return &contributors
-}
-
-// Walk through files and folders
-func walkThrough(dirPath, gitPath, branch string) ([]string, []string) {
-	var dirs, files []string
-
-	args := []string{"ls-tree", "--name-only", branch, "HEAD", "."}
-	out := util.ForkExec(gitPath, args, dirPath)
-
-	ss := strings.Split(out, "\n")
-	entries := ss[:len(ss)-1]
-
-	for _, entry := range entries {
-		fi, err := os.Stat(filepath.Join(dirPath, entry))
-		errorhandler.CheckError(err)
-
-		if fi.Mode().IsRegular() {
-			files = append(files, entry)
-		} else {
-			dirs = append(dirs, entry)
-		}
-	}
-
-	return dirs, files
 }
 
 func noRepoAccess(w http.ResponseWriter) {

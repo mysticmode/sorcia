@@ -68,3 +68,13 @@ func LimitCharLengthInString(limitString string) string {
 
 	return limitString
 }
+
+// Contains tells whether a contains x.
+func ContainsValueInArr(a []string, x string) bool {
+	for _, n := range a {
+		if x == n {
+			return true
+		}
+	}
+	return false
+}
