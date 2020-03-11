@@ -12,33 +12,6 @@ import (
 	errorhandler "sorcia/error"
 )
 
-// PullFromAllBranches ...
-func PullFromAllBranches(gitDirPath string) {
-	var files []string
-
-	gitPath := GetGitBinPath()
-
-	refPath := filepath.Join(gitDirPath, "refs", "heads")
-	err := filepath.Walk(refPath, func(path string, info os.FileInfo, err error) error {
-		files = append(files, path)
-		return nil
-	})
-	errorhandler.CheckError(err)
-
-	for i := 0; i < len(files); i++ {
-		ss := strings.Split(files[i], "/")
-		branch := ss[len(ss)-1]
-
-		if branch == "heads" {
-			continue
-		}
-
-		// by default fast-forward is allowed. Add + to allow non-fast-forward
-		args := []string{"pull", "origin", fmt.Sprintf("+%s:%s", branch, branch)}
-		_ = ForkExec(gitPath, args, gitDirPath)
-	}
-}
-
 func GetGitTags(repoDir string) ([]string, int) {
 	gitPath := GetGitBinPath()
 
