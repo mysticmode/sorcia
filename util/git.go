@@ -18,8 +18,6 @@ func PullFromAllBranches(gitDirPath string) {
 
 	gitPath := GetGitBinPath()
 
-	dirSplit := strings.Split(gitDirPath, ".git")
-	workDir := dirSplit[0]
 	refPath := filepath.Join(gitDirPath, "refs", "heads")
 	err := filepath.Walk(refPath, func(path string, info os.FileInfo, err error) error {
 		files = append(files, path)
@@ -37,7 +35,7 @@ func PullFromAllBranches(gitDirPath string) {
 
 		// by default fast-forward is allowed. Add + to allow non-fast-forward
 		args := []string{"pull", "origin", fmt.Sprintf("+%s:%s", branch, branch)}
-		_ = ForkExec(gitPath, args, workDir)
+		_ = ForkExec(gitPath, args, gitDirPath)
 	}
 }
 
