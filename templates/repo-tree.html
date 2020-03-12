@@ -23,8 +23,9 @@
                 <div class="form__group">
                     <label for="branchSelect">branch:</label>
                     <select id="branchSelect" onchange="branchChange(this.value)">
-                        <option value="master">master</option>
-                        <option value="devel">devel</option>
+                        {{range .RepoBranches}}
+                        <option value="{{.}}">{{.}}</option>
+                        {{end}}
                     </select>
                 </div>
             </form>
@@ -61,35 +62,6 @@
         </div>
         {{end}}
     </div>
-    <script>
-        var path = window.location.pathname;
-        var branches = document.getElementById("branchSelect");
-        var pathStr = []
-
-        for (i = 0; i < branches.length; i++) {
-            var branchValue = branches[i].value;
-
-            pathSplit = path.split(branchValue);
-
-            if (pathSplit.length == 2) {
-                branches.value = branchValue
-                break;
-            }
-        }
-
-        function branchChange(branch) {
-            for (i = 0; i < branches.length; i++) {
-                var branchValue = branches[i].value;
-
-                pathSplit = path.split(branchValue);
-
-                if (pathSplit.length == 2) {
-                    break;
-                }
-            }
-            var pathStr = pathSplit[0] + branch + pathSplit[1];
-            window.location.pathname = pathStr;
-        }
-    </script>
+    <script src="/public/js/branch-selection.js"></script>
 </main>
 {{end}}

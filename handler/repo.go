@@ -175,6 +175,7 @@ type GetRepoResponse struct {
 	TotalCommits     string
 	TotalRefs        int
 	RepoDetail       RepoDetail
+	RepoBranches     []string
 	RepoLogs         RepoLogs
 	RepoRefs         []Refs
 	Contributors     Contributors
@@ -312,6 +313,7 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 		Reponame:         reponame,
 		RepoDescription:  repoDescription,
 		IsRepoPrivate:    model.GetRepoType(db, reponame),
+		RepoBranches:     util.GetGitBranches(repoDir),
 	}
 
 	if !data.IsLoggedIn && data.IsRepoPrivate {
@@ -395,6 +397,7 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 		Reponame:         reponame,
 		RepoDescription:  repoDescription,
 		IsRepoPrivate:    model.GetRepoType(db, reponame),
+		RepoBranches:     util.GetGitBranches(repoDir),
 	}
 
 	if !data.IsLoggedIn && data.IsRepoPrivate {
@@ -547,6 +550,8 @@ func GetRepoLog(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersio
 	reponame := vars["reponame"]
 	branch := vars["branch"]
 
+	repoDir := filepath.Join(repoPath, reponame+".git")
+
 	q := r.URL.Query()
 	qFrom := q["from"]
 
@@ -571,6 +576,7 @@ func GetRepoLog(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersio
 		Reponame:         reponame,
 		RepoDescription:  repoDescription,
 		IsRepoPrivate:    model.GetRepoType(db, reponame),
+		RepoBranches:     util.GetGitBranches(repoDir),
 	}
 
 	if !data.IsLoggedIn && data.IsRepoPrivate {

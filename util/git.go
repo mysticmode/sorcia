@@ -12,6 +12,23 @@ import (
 	errorhandler "sorcia/error"
 )
 
+func GetGitBranches(repoDir string) []string {
+	var branches = []string{"master"}
+
+	refPath := filepath.Join(repoDir, "refs", "heads")
+
+	err := filepath.Walk(refPath, func(path string, info os.FileInfo, err error) error {
+		branchName := info.Name()
+		if branchName != "heads" && branchName != "master" {
+			branches = append(branches, branchName)
+		}
+		return nil
+	})
+	errorhandler.CheckError(err)
+
+	return branches
+}
+
 func GetGitTags(repoDir string) ([]string, int) {
 	gitPath := GetGitBinPath()
 
