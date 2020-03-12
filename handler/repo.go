@@ -364,7 +364,7 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 		data.RepoDetail.RepoFilesDetail = append(data.RepoDetail.RepoFilesDetail, repoFileDetail)
 	}
 
-	commit := getCommits(repoDir, branch, "", 2)
+	commit := getLastCommit(repoDir, branch)
 	data.RepoLogs = *commit
 	if len(data.RepoLogs.History) == 1 {
 		data.RepoLogs.History[0].Message = util.LimitCharLengthInString(data.RepoLogs.History[0].Message)
@@ -865,6 +865,35 @@ func getCommits(repoDir, branch, fromHash string, commits int) *RepoLogs {
 	}
 
 	rla.HashLink = hashLink
+
+	return &rla
+}
+
+func getLastCommit(repoDir, branch string) *RepoLogs {
+	rla := RepoLogs{}
+	rl := RepoLog{}
+
+	gitPath := util.GetGitBinPath()
+
+	var args []string
+	args = []string{"log", branch, "-1", "--pretty=format:%H||srca-sptra||%h||srca-sptra||%d||srca-sptra||%s||srca-sptra||%cr||srca-sptra||%an||srca-sptra||%ae"}
+	out := util.ForkExec(gitPath, args, repoDir)
+
+	ss := strings.Split(out, "\n")
+
+	st := strings.Split(ss[0], "||srca-sptra||")
+	rl.Hash = st[1]
+	rl.Message = st[3]
+	rl.Date = st[4]
+	rl.Author = st[5]
+
+	hash := md5.Sum([]byte(st[6]))
+	stringHash := hex.EncodeToString(hash[:])
+	rl.DP = fmt.Sprintf("https://www.gravatar.com/avatar/%s", stringHash)
+
+	rla = RepoLogs{
+		History: append(rla.History, rl),
+	}
 
 	return &rla
 }
