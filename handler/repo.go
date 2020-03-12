@@ -262,7 +262,7 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 
 	data.RepoDetail.Readme = processREADME(repoDir)
 
-	commits := getCommits(repoDir, "master", "", 4)
+	commits := getCommits(repoDir, "master", -3)
 	data.RepoLogs = *commits
 
 	_, totalTags := util.GetGitTags(repoDir)
@@ -328,43 +328,9 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 	data.RepoDetail.WalkPath = r.URL.Path
 	data.RepoDetail.PathEmpty = true
 
-	for _, dir := range dirs {
-		repoDirDetail := RepoDirDetail{}
-		args := []string{"log", branch, "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", dir}
-		out := util.ForkExec(gitPath, args, repoDir)
+	data.RepoDetail.RepoDirsDetail, data.RepoDetail.RepoFilesDetail = applyDirsAndFiles(dirs, files, repoDir, ".", branch)
 
-		ss := strings.Split(out, "||srca-sptra||")
-
-		repoDirDetail.DirName = dir
-		commit := ss[0]
-		if len(commit) > 50 {
-			commit = util.LimitCharLengthInString(commit)
-		}
-
-		repoDirDetail.DirCommit = commit
-		repoDirDetail.DirCommitDate = ss[1]
-		data.RepoDetail.RepoDirsDetail = append(data.RepoDetail.RepoDirsDetail, repoDirDetail)
-	}
-
-	for _, file := range files {
-		repoFileDetail := RepoFileDetail{}
-		args := []string{"log", branch, "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", file}
-		out := util.ForkExec(gitPath, args, repoDir)
-
-		ss := strings.Split(out, "||srca-sptra||")
-
-		repoFileDetail.FileName = file
-		commit := ss[0]
-		if len(commit) > 50 {
-			commit = util.LimitCharLengthInString(commit)
-		}
-
-		repoFileDetail.FileCommit = commit
-		repoFileDetail.FileCommitDate = ss[1]
-		data.RepoDetail.RepoFilesDetail = append(data.RepoDetail.RepoFilesDetail, repoFileDetail)
-	}
-
-	commit := getLastCommit(repoDir, branch)
+	commit := getCommits(repoDir, branch, -1)
 	data.RepoLogs = *commit
 	if len(data.RepoLogs.History) == 1 {
 		data.RepoLogs.History[0].Message = util.LimitCharLengthInString(data.RepoLogs.History[0].Message)
@@ -440,56 +406,18 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 		fileDotSplit := strings.Split(frdFile, ".")
 		var fileContent string
 		if len(fileDotSplit) > 1 {
-			fileContent = fmt.Sprintf("<pre><code class=\"%s\">%s</code></pre>", fileDotSplit[1], out)
+			fileContent = fmt.Sprintf("<pre><code class=\"%s\">%s</code></pre>", fileDotSplit[1], template.HTMLEscaper(out))
 		} else {
-			fileContent = fmt.Sprintf("<pre><code class=\"plaintext\">%s</code></pre>", out)
+			fileContent = fmt.Sprintf("<pre><code class=\"plaintext\">%s</code></pre>", template.HTMLEscaper(out))
 		}
 
-		html := template.HTML(fileContent)
-
-		data.RepoDetail.FileContent = html
+		data.RepoDetail.FileContent = template.HTML(fileContent)
 
 		writeRepoResponse(w, r, db, reponame, "file-viewer.html", data)
 		return
 	}
 
-	for _, dir := range dirs {
-		dirPath := fmt.Sprintf("%s/%s", frdpath, dir)
-		repoDirDetail := RepoDirDetail{}
-		args := []string{"log", branch, "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", dirPath}
-		out := util.ForkExec(gitPath, args, repoDir)
-
-		ss := strings.Split(out, "||srca-sptra||")
-
-		repoDirDetail.DirName = dir
-		commit := ss[0]
-		if len(commit) > 50 {
-			commit = util.LimitCharLengthInString(commit)
-		}
-
-		repoDirDetail.DirCommit = commit
-		repoDirDetail.DirCommitDate = ss[1]
-		data.RepoDetail.RepoDirsDetail = append(data.RepoDetail.RepoDirsDetail, repoDirDetail)
-	}
-
-	for _, file := range files {
-		filePath := fmt.Sprintf("%s/%s", frdpath, file)
-		repoFileDetail := RepoFileDetail{}
-		args := []string{"log", branch, "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", filePath}
-		out := util.ForkExec(gitPath, args, repoDir)
-
-		ss := strings.Split(out, "||srca-sptra||")
-
-		repoFileDetail.FileName = file
-		commit := ss[0]
-		if len(commit) > 50 {
-			commit = util.LimitCharLengthInString(commit)
-		}
-
-		repoFileDetail.FileCommit = commit
-		repoFileDetail.FileCommitDate = ss[1]
-		data.RepoDetail.RepoFilesDetail = append(data.RepoDetail.RepoFilesDetail, repoFileDetail)
-	}
+	data.RepoDetail.RepoDirsDetail, data.RepoDetail.RepoFilesDetail = applyDirsAndFiles(dirs, files, repoDir, frdpath, branch)
 
 	writeRepoResponse(w, r, db, reponame, "repo-tree.html", data)
 	return
@@ -510,10 +438,8 @@ func walkThrough(repoDir, gitPath, branch, lsTreePath string, lsTreePathLen int)
 
 		if len(entrySplit) == 1 {
 			files = append(files, entrySplit[0])
-		} else if lsTreePathLen == 0 {
-			if !util.ContainsValueInArr(dirs, entrySplit[0]) {
-				dirs = append(dirs, entrySplit[0])
-			}
+		} else if lsTreePathLen == 0 && !util.ContainsValueInArr(dirs, entrySplit[0]) {
+			dirs = append(dirs, entrySplit[0])
 		} else {
 			newPath := strings.Join(entrySplit[:lsTreePathLen+1], "/")
 			args = []string{"ls-tree", "-r", "--name-only", branch, "HEAD", newPath}
@@ -536,6 +462,54 @@ func walkThrough(repoDir, gitPath, branch, lsTreePath string, lsTreePathLen int)
 	}
 
 	return dirs, files
+}
+
+// applyDirsAndFiles ...
+func applyDirsAndFiles(dirs, files []string, repoDir, frdpath, branch string) ([]RepoDirDetail, []RepoFileDetail) {
+	gitPath := util.GetGitBinPath()
+	repoDetail := RepoDetail{}
+
+	for _, dir := range dirs {
+		dirPath := fmt.Sprintf("%s/%s", frdpath, dir)
+		repoDirDetail := RepoDirDetail{}
+
+		args := []string{"log", branch, "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", dirPath}
+		out := util.ForkExec(gitPath, args, repoDir)
+
+		ss := strings.Split(out, "||srca-sptra||")
+
+		repoDirDetail.DirName = dir
+		commit := ss[0]
+		if len(commit) > 50 {
+			commit = util.LimitCharLengthInString(commit)
+		}
+
+		repoDirDetail.DirCommit = commit
+		repoDirDetail.DirCommitDate = ss[1]
+		repoDetail.RepoDirsDetail = append(repoDetail.RepoDirsDetail, repoDirDetail)
+	}
+
+	for _, file := range files {
+		filePath := fmt.Sprintf("%s/%s", frdpath, file)
+		repoFileDetail := RepoFileDetail{}
+
+		args := []string{"log", branch, "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", filePath}
+		out := util.ForkExec(gitPath, args, repoDir)
+
+		ss := strings.Split(out, "||srca-sptra||")
+
+		repoFileDetail.FileName = file
+		commit := ss[0]
+		if len(commit) > 50 {
+			commit = util.LimitCharLengthInString(commit)
+		}
+
+		repoFileDetail.FileCommit = commit
+		repoFileDetail.FileCommitDate = ss[1]
+		repoDetail.RepoFilesDetail = append(repoDetail.RepoFilesDetail, repoFileDetail)
+	}
+
+	return repoDetail.RepoDirsDetail, repoDetail.RepoFilesDetail
 }
 
 // GetRepoLog ...
@@ -578,7 +552,7 @@ func GetRepoLog(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersio
 		return
 	}
 
-	commits := getCommits(repoDir, branch, fromHash, 11)
+	commits := getCommitsFromHash(repoDir, branch, fromHash, 11)
 	data.RepoLogs = *commits
 
 	writeRepoResponse(w, r, db, reponame, "repo-log.html", data)
@@ -826,13 +800,44 @@ type RepoLogs struct {
 	IsNext   bool
 }
 
-func getCommits(repoDir, branch, fromHash string, commits int) *RepoLogs {
+func getCommits(repoDir, branch string, commitCount int) *RepoLogs {
+	rla := RepoLogs{}
+	rl := RepoLog{}
+
+	gitPath := util.GetGitBinPath()
+
+	var args []string
+	args = []string{"log", branch, strconv.Itoa(commitCount), "--pretty=format:%H||srca-sptra||%h||srca-sptra||%d||srca-sptra||%s||srca-sptra||%cr||srca-sptra||%an||srca-sptra||%ae"}
+	out := util.ForkExec(gitPath, args, repoDir)
+
+	ss := strings.Split(out, "\n")
+
+	for i := 0; i < len(ss); i++ {
+		st := strings.Split(ss[i], "||srca-sptra||")
+		rl.Hash = st[1]
+		rl.Message = st[3]
+		rl.Date = st[4]
+		rl.Author = st[5]
+
+		hash := md5.Sum([]byte(st[6]))
+		stringHash := hex.EncodeToString(hash[:])
+		rl.DP = fmt.Sprintf("https://www.gravatar.com/avatar/%s", stringHash)
+
+		rla = RepoLogs{
+			History: append(rla.History, rl),
+		}
+	}
+
+	return &rla
+}
+
+func getCommitsFromHash(repoDir, branch, fromHash string, commitCount int) *RepoLogs {
 	rla := RepoLogs{}
 	rl := RepoLog{}
 
 	var hashLink string
 
-	ss := getGitCommits(commits, branch, fromHash, repoDir)
+	ss := getGitCommits(commitCount, branch, fromHash, repoDir)
 
 	for i := 0; i < len(ss); i++ {
 		if i == (len(ss) - 1) {
@@ -869,43 +874,14 @@ func getCommits(repoDir, branch, fromHash string, commits int) *RepoLogs {
 	return &rla
 }
 
-func getLastCommit(repoDir, branch string) *RepoLogs {
-	rla := RepoLogs{}
-	rl := RepoLog{}
-
-	gitPath := util.GetGitBinPath()
-
-	var args []string
-	args = []string{"log", branch, "-1", "--pretty=format:%H||srca-sptra||%h||srca-sptra||%d||srca-sptra||%s||srca-sptra||%cr||srca-sptra||%an||srca-sptra||%ae"}
-	out := util.ForkExec(gitPath, args, repoDir)
-
-	ss := strings.Split(out, "\n")
-
-	st := strings.Split(ss[0], "||srca-sptra||")
-	rl.Hash = st[1]
-	rl.Message = st[3]
-	rl.Date = st[4]
-	rl.Author = st[5]
-
-	hash := md5.Sum([]byte(st[6]))
-	stringHash := hex.EncodeToString(hash[:])
-	rl.DP = fmt.Sprintf("https://www.gravatar.com/avatar/%s", stringHash)
-
-	rla = RepoLogs{
-		History: append(rla.History, rl),
-	}
-
-	return &rla
-}
-
-func getGitCommits(commits int, branch, fromHash, dirPath string) []string {
+func getGitCommits(commitCount int, branch, fromHash, dirPath string) []string {
 	gitPath := util.GetGitBinPath()
 
 	var args []string
 	if fromHash == "" {
-		args = []string{"log", branch, fmt.Sprintf("--max-count=%s", strconv.Itoa(commits)), "--pretty=format:%H||srca-sptra||%h||srca-sptra||%d||srca-sptra||%s||srca-sptra||%cr||srca-sptra||%an||srca-sptra||%ae"}
+		args = []string{"log", branch, fmt.Sprintf("--max-count=%s", strconv.Itoa(commitCount)), "--pretty=format:%H||srca-sptra||%h||srca-sptra||%d||srca-sptra||%s||srca-sptra||%cr||srca-sptra||%an||srca-sptra||%ae"}
 	} else {
-		args = []string{"log", fmt.Sprintf("--max-count=%s", strconv.Itoa(commits)), fromHash, "--pretty=format:%H||srca-sptra||%h||srca-sptra||%d||srca-sptra||%s||srca-sptra||%cr||srca-sptra||%an||srca-sptra||%ae"}
+		args = []string{"log", fmt.Sprintf("--max-count=%s", strconv.Itoa(commitCount)), fromHash, "--pretty=format:%H||srca-sptra||%h||srca-sptra||%d||srca-sptra||%s||srca-sptra||%cr||srca-sptra||%an||srca-sptra||%ae"}
 	}
 	out := util.ForkExec(gitPath, args, dirPath)
 

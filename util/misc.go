@@ -46,6 +46,14 @@ func SSHFingerPrint(authKey string) string {
 	return fingerPrint
 }
 
+// CreateDir
+func CreateDir(dir string) {
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		err := os.Mkdir(dir, os.ModePerm)
+		errorhandler.CheckError(err)
+	}
+}
+
 // CreateSSHDirAndGenerateKey ...
 func CreateSSHDirAndGenerateKey(sshPath string) {
 	if _, err := os.Stat(sshPath); os.IsNotExist(err) {
