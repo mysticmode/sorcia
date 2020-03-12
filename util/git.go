@@ -113,14 +113,6 @@ func GetGitBinPath() string {
 	return gitPath
 }
 
-// CreateDir
-func CreateDir(dir string) {
-	if _, err := os.Stat(dir); os.IsNotExist(err) {
-		err := os.Mkdir(dir, os.ModePerm)
-		errorhandler.CheckError(err)
-	}
-}
-
 // ForkExec ...
 func ForkExec(legendArg string, restArgs []string, dirPath string) string {
 	cmd := exec.Command(legendArg, restArgs...)
