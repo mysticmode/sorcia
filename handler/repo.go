@@ -261,7 +261,7 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 
 	data.RepoDetail.Readme = processREADME(repoDir)
 
-	commits := getCommits(repoPath, reponame, "", -4)
+	commits := getCommits(repoPath, reponame, "master", "", -4)
 	data.RepoLogs = *commits
 
 	_, totalTags := util.GetGitTags(repoDir)
@@ -362,7 +362,7 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 		data.RepoDetail.RepoFilesDetail = append(data.RepoDetail.RepoFilesDetail, repoFileDetail)
 	}
 
-	commit := getCommits(repoPath, reponame, "", -2)
+	commit := getCommits(repoPath, reponame, branch, "", -2)
 	data.RepoLogs = *commit
 	if len(data.RepoLogs.History) == 1 {
 		data.RepoLogs.History[0].Message = util.LimitCharLengthInString(data.RepoLogs.History[0].Message)
@@ -488,7 +488,7 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 		data.RepoDetail.RepoFilesDetail = append(data.RepoDetail.RepoFilesDetail, repoFileDetail)
 	}
 
-	commit := getCommits(repoPath, reponame, "", -2)
+	commit := getCommits(repoPath, reponame, branch, "", -2)
 	data.RepoLogs = *commit
 	if len(data.RepoLogs.History) == 1 {
 		data.RepoLogs.History[0].Message = util.LimitCharLengthInString(data.RepoLogs.History[0].Message)
@@ -545,6 +545,7 @@ func walkThrough(repoDir, gitPath, branch, lsTreePath string, lsTreePathLen int)
 func GetRepoLog(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion, repoPath string) {
 	vars := mux.Vars(r)
 	reponame := vars["reponame"]
+	branch := vars["branch"]
 
 	q := r.URL.Query()
 	qFrom := q["from"]
@@ -577,7 +578,7 @@ func GetRepoLog(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersio
 		return
 	}
 
-	commits := getCommits(repoPath, reponame, fromHash, -11)
+	commits := getCommits(repoPath, reponame, branch, fromHash, -11)
 	data.RepoLogs = *commits
 
 	writeRepoResponse(w, r, db, reponame, "repo-log.html", data)
@@ -824,10 +825,10 @@ type RepoLogs struct {
 	IsNext   bool
 }
 
-func getCommits(repoPath, reponame, fromHash string, commits int) *RepoLogs {
+func getCommits(repoPath, reponame, branch, fromHash string, commits int) *RepoLogs {
 	dirPath := filepath.Join(repoPath, reponame+".git")
 
-	ss := getGitCommits(commits, fromHash, dirPath)
+	ss := getGitCommits(commits, branch, fromHash, dirPath)
 
 	rla := RepoLogs{}
 	rl := RepoLog{}
@@ -869,14 +870,14 @@ func getCommits(repoPath, reponame, fromHash string, commits int) *RepoLogs {
 	return &rla
 }
 
-func getGitCommits(commits int, fromHash, dirPath string) []string {
+func getGitCommits(commits int, branch, fromHash, dirPath string) []string {
 	gitPath := util.GetGitBinPath()
 
 	var args []string
 	if fromHash == "" {
-		args = []string{"log", strconv.Itoa(commits), "--pretty=format:%H||srca-sptra||%h||srca-sptra||%d||srca-sptra||%s||srca-sptra||%cr||srca-sptra||%an||srca-sptra||%ae"}
+		args = []string{"log", branch, strconv.Itoa(commits), "--pretty=format:%H||srca-sptra||%h||srca-sptra||%d||srca-sptra||%s||srca-sptra||%cr||srca-sptra||%an||srca-sptra||%ae"}
 	} else {
-		args = []string{"log", fromHash, strconv.Itoa(commits), "--pretty=format:%H||srca-sptra||%h||srca-sptra||%d||srca-sptra||%s||srca-sptra||%cr||srca-sptra||%an||srca-sptra||%ae"}
+		args = []string{"log", branch, fromHash, strconv.Itoa(commits), "--pretty=format:%H||srca-sptra||%h||srca-sptra||%d||srca-sptra||%s||srca-sptra||%cr||srca-sptra||%an||srca-sptra||%ae"}
 	}
 	out := util.ForkExec(gitPath, args, dirPath)
 
