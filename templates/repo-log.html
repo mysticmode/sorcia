@@ -22,9 +22,10 @@
             <form method="get" action="" class="form">
                 <div class="form__group">
                     <label for="branchSelect">branch:</label>
-                    <select onchange="this.form.submit();">
-                        <option value="" selected>master</option>
-                        <option value="">devel</option>
+                    <select id="branchSelect" onchange="branchChange(this.value);">
+                        {{range .RepoBranches}}
+                        <option value="{{.}}">{{.}}</option>
+                        {{end}}
                     </select>
                 </div>
             </form>
@@ -48,5 +49,6 @@
         </div>
         {{end}}
     </div>
+    <script src="/public/js/branch-selection.js"></script>
 </main>
 {{end}}
