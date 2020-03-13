@@ -81,6 +81,22 @@ func GetUsernameFromUserID(db *sql.DB, userID int) string {
 	return username
 }
 
+// GetEmailFromUsername ...
+func GetEmailFromUsername(db *sql.DB, username string) string {
+	rows, err := db.Query("SELECT email FROM account WHERE username = ?", username)
+	errorhandler.CheckError(err)
+
+	var email string
+
+	if rows.Next() {
+		err = rows.Scan(&email)
+		errorhandler.CheckError(err)
+	}
+	rows.Close()
+
+	return email
+}
+
 // SelectPasswordHashAndJWTTokenStruct struct
 type SelectPasswordHashAndJWTTokenStruct struct {
 	Username string

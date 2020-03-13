@@ -7,7 +7,6 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"os"
 	"path"
 	"path/filepath"
 	"strings"
@@ -55,7 +54,7 @@ func RunWeb(conf *setting.BaseStruct) {
 		handler.GetLogin(w, r, db, conf.Version)
 	}).Methods("GET")
 	m.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-		handler.PostLogin(w, r, db, conf.Version, decoder, conf.Paths.RepoPath)
+		handler.PostLogin(w, r, db, conf.Version, decoder)
 	}).Methods("POST")
 	m.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetLogout(w, r)
@@ -69,11 +68,14 @@ func RunWeb(conf *setting.BaseStruct) {
 	m.HandleFunc("/meta", func(w http.ResponseWriter, r *http.Request) {
 		GetMeta(w, r, db, conf.Version)
 	}).Methods("GET")
+	m.HandleFunc("/meta/password", func(w http.ResponseWriter, r *http.Request) {
+		PostPassword(w, r, db, decoder)
+	}).Methods("POST")
 	m.HandleFunc("/meta/keys", func(w http.ResponseWriter, r *http.Request) {
 		GetMetaKeys(w, r, db, conf.Version)
 	}).Methods("GET")
 	m.HandleFunc("/meta/keys", func(w http.ResponseWriter, r *http.Request) {
-		PostAuthKey(w, r, db, conf.Version, conf.Paths.SSHPath, conf, decoder)
+		PostAuthKey(w, r, db, conf, decoder)
 	}).Methods("POST")
 	m.HandleFunc("/meta/users", func(w http.ResponseWriter, r *http.Request) {
 		GetMetaUsers(w, r, db, conf.Version)
@@ -183,14 +185,22 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 	}
 }
 
+type MetaResponse struct {
+	IsLoggedIn       bool
+	HeaderActiveMenu string
+	SorciaVersion    string
+	Username         string
+	Email            string
+}
+
 // GetMeta ...
 func GetMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion string) {
 	userPresent := w.Header().Get("user-present")
 
 	if userPresent == "true" {
 		token := w.Header().Get("sorcia-cookie-token")
-		userID := model.GetUserIDFromToken(db, token)
-		repos := model.GetReposFromUserID(db, userID)
+		username := model.GetUsernameFromToken(db, token)
+		email := model.GetEmailFromUsername(db, username)
 
 		layoutPage := path.Join("./templates", "layout.html")
 		headerPage := path.Join("./templates", "header.html")
@@ -203,11 +213,12 @@ func GetMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
 
-		data := IndexPageResponse{
+		data := MetaResponse{
 			IsLoggedIn:       true,
 			HeaderActiveMenu: "meta",
 			SorciaVersion:    sorciaVersion,
-			Repos:            repos,
+			Username:         username,
+			Email:            email,
 		}
 
 		tmpl.ExecuteTemplate(w, "layout", data)
@@ -265,7 +276,7 @@ type CreateAuthKeyRequest struct {
 }
 
 // PostAuthKey ...
-func PostAuthKey(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion string, sshPath string, conf *setting.BaseStruct, decoder *schema.Decoder) {
+func PostAuthKey(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct, decoder *schema.Decoder) {
 	// NOTE: Invoke ParseForm or ParseMultipartForm before reading form values
 	if err := r.ParseForm(); err != nil {
 		fmt.Fprintf(w, "ParseForm() err: %v", err)
@@ -301,15 +312,6 @@ func PostAuthKey(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 
 	model.InsertSSHPubKey(db, ispk)
 
-	keyPath := filepath.Join(sshPath, "authorized_keys")
-	f, err := os.OpenFile(keyPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, os.ModePerm)
-	errorhandler.CheckError(err)
-	defer f.Close()
-
-	if _, err := f.WriteString(authKey + "\n"); err != nil {
-		log.Println(err)
-	}
-
 	http.Redirect(w, r, "/meta/keys", http.StatusFound)
 }
 
@@ -344,4 +346,56 @@ func GetMetaUsers(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVers
 	} else {
 		http.Redirect(w, r, "/login", http.StatusFound)
 	}
+}
+
+// PostPasswordRequest struct
+type PostPasswordRequest struct {
+	Password string `schema:"password"`
+}
+
+func PostPassword(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder *schema.Decoder) {
+	userPresent := w.Header().Get("user-present")
+
+	if userPresent == "true" {
+		token := w.Header().Get("sorcia-cookie-token")
+
+		// NOTE: Invoke ParseForm or ParseMultipartForm before reading form values
+		if err := r.ParseForm(); err != nil {
+			fmt.Fprintf(w, "ParseForm() err: %v", err)
+			errorResponse := &errorhandler.Response{
+				Error: err.Error(),
+			}
+
+			errorJSON, err := json.Marshal(errorResponse)
+			errorhandler.CheckError(err)
+
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+
+			w.Write(errorJSON)
+		}
+
+		postPasswordRequest := &PostPasswordRequest{}
+		err := decoder.Decode(postPasswordRequest, r.PostForm)
+		errorhandler.CheckError(err)
+
+		username := model.GetUsernameFromToken(db, token)
+
+		// Generate password hash using bcrypt
+		passwordHash, err := handler.HashPassword(postPasswordRequest.Password)
+		errorhandler.CheckError(err)
+
+		// Generate JWT token using the hash password above
+		jwt_token, err := handler.GenerateJWTToken(passwordHash)
+		errorhandler.CheckError(err)
+
+		resetPass := model.ResetUserPasswordbyUsernameStruct{
+			PasswordHash: passwordHash,
+			JwtToken:     jwt_token,
+			Username:     username,
+		}
+		model.ResetUserPasswordbyUsername(db, resetPass)
+	}
+
+	http.Redirect(w, r, "/login", http.StatusFound)
 }
