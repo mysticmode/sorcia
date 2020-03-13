@@ -68,7 +68,7 @@ func init() {
 	}
 
 	db, err := sql.Open("sqlite3", path.Join(conf.Paths.DBPath, "sorcia.db?_foreign_keys=on"))
-	errorhandler.CheckError(err)
+	errorhandler.CheckError("Error on opening sqlite3", err)
 
 	conf.DBConn = db
 }

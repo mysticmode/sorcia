@@ -144,7 +144,7 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 		footerPage := path.Join("./templates", "footer.html")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, indexPage, footerPage)
-		errorhandler.CheckError(err)
+		errorhandler.CheckError("Error on template parse", err)
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
@@ -169,7 +169,7 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 		repos := model.GetAllPublicRepos(db)
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, indexPage, footerPage)
-		errorhandler.CheckError(err)
+		errorhandler.CheckError("Error on template parse", err)
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
@@ -208,7 +208,7 @@ func GetMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 		footerPage := path.Join("./templates", "footer.html")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, metaPage, footerPage)
-		errorhandler.CheckError(err)
+		errorhandler.CheckError("Error on template parse", err)
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
@@ -251,7 +251,7 @@ func GetMetaKeys(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 		footerPage := path.Join("./templates", "footer.html")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, metaPage, footerPage)
-		errorhandler.CheckError(err)
+		errorhandler.CheckError("Error on template parse", err)
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
@@ -285,7 +285,7 @@ func PostAuthKey(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 		}
 
 		errorJSON, err := json.Marshal(errorResponse)
-		errorhandler.CheckError(err)
+		errorhandler.CheckError("Error on json marshal", err)
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
@@ -295,7 +295,7 @@ func PostAuthKey(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 
 	var createAuthKeyRequest = &CreateAuthKeyRequest{}
 	err := decoder.Decode(createAuthKeyRequest, r.PostForm)
-	errorhandler.CheckError(err)
+	errorhandler.CheckError("Error on auth key decode", err)
 
 	token := w.Header().Get("sorcia-cookie-token")
 	userID := model.GetUserIDFromToken(db, token)
@@ -330,7 +330,7 @@ func GetMetaUsers(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVers
 		footerPage := path.Join("./templates", "footer.html")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, metaPage, footerPage)
-		errorhandler.CheckError(err)
+		errorhandler.CheckError("Error on template parse", err)
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
@@ -367,7 +367,7 @@ func PostPassword(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder *s
 			}
 
 			errorJSON, err := json.Marshal(errorResponse)
-			errorhandler.CheckError(err)
+			errorhandler.CheckError("Error on json marshal", err)
 
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadRequest)
@@ -377,17 +377,17 @@ func PostPassword(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder *s
 
 		postPasswordRequest := &PostPasswordRequest{}
 		err := decoder.Decode(postPasswordRequest, r.PostForm)
-		errorhandler.CheckError(err)
+		errorhandler.CheckError("Error on post password decoder", err)
 
 		username := model.GetUsernameFromToken(db, token)
 
 		// Generate password hash using bcrypt
 		passwordHash, err := handler.HashPassword(postPasswordRequest.Password)
-		errorhandler.CheckError(err)
+		errorhandler.CheckError("Error on password hash", err)
 
 		// Generate JWT token using the hash password above
 		jwt_token, err := handler.GenerateJWTToken(passwordHash)
-		errorhandler.CheckError(err)
+		errorhandler.CheckError("Error on generating jwt token", err)
 
 		resetPass := model.ResetUserPasswordbyUsernameStruct{
 			PasswordHash: passwordHash,

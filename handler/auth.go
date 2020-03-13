@@ -74,7 +74,7 @@ func GetLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion 
 		footerPage := path.Join("./templates", "footer.html")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, loginPage, footerPage)
-		errorhandler.CheckError(err)
+		errorhandler.CheckError("Error on template parse", err)
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
@@ -109,7 +109,7 @@ func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion
 		}
 
 		errorJSON, err := json.Marshal(errorResponse)
-		errorhandler.CheckError(err)
+		errorhandler.CheckError("Error on post login json marshal", err)
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
@@ -125,7 +125,7 @@ func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion
 
 	var loginRequest = &LoginRequest{}
 	err := decoder.Decode(loginRequest, r.PostForm)
-	errorhandler.CheckError(err)
+	errorhandler.CheckError("Error on post login decoder", err)
 
 	sphjwt := model.SelectPasswordHashAndJWTTokenStruct{
 		Username: loginRequest.Username,
@@ -134,7 +134,7 @@ func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion
 
 	if isPasswordValid := CheckPasswordHash(loginRequest.Password, sphjwtr.PasswordHash); isPasswordValid == true {
 		isTokenValid, err := validateJWTToken(sphjwtr.Token, sphjwtr.PasswordHash)
-		errorhandler.CheckError(err)
+		errorhandler.CheckError("Error on validating jwt token", err)
 
 		if isTokenValid == true {
 			// Set cookie
@@ -160,7 +160,7 @@ func invalidLoginCredentials(w http.ResponseWriter, r *http.Request, sorciaVersi
 	footerPage := path.Join("./templates", "footer.html")
 
 	tmpl, err := template.ParseFiles(layoutPage, headerPage, loginPage, footerPage)
-	errorhandler.CheckError(err)
+	errorhandler.CheckError("Error on template parse", err)
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
@@ -194,7 +194,7 @@ func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVers
 		}
 
 		errorJSON, err := json.Marshal(errorResponse)
-		errorhandler.CheckError(err)
+		errorhandler.CheckError("Error on post register json marshal", err)
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
@@ -204,15 +204,15 @@ func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVers
 
 	var registerRequest = &RegisterRequest{}
 	err := decoder.Decode(registerRequest, r.PostForm)
-	errorhandler.CheckError(err)
+	errorhandler.CheckError("Error on post register decoder", err)
 
 	// Generate password hash using bcrypt
 	passwordHash, err := HashPassword(registerRequest.Password)
-	errorhandler.CheckError(err)
+	errorhandler.CheckError("Error on post register hash password", err)
 
 	// Generate JWT token using the hash password above
 	token, err := GenerateJWTToken(passwordHash)
-	errorhandler.CheckError(err)
+	errorhandler.CheckError("Error on post register generate jwt token", err)
 
 	s := registerRequest.Username
 
@@ -223,7 +223,7 @@ func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVers
 		footerPage := path.Join("./templates", "footer.html")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, loginPage, footerPage)
-		errorhandler.CheckError(err)
+		errorhandler.CheckError("Error on template parse", err)
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
@@ -247,7 +247,7 @@ func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVers
 		footerPage := path.Join("./templates", "footer.html")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, loginPage, footerPage)
-		errorhandler.CheckError(err)
+		errorhandler.CheckError("Error on template parse", err)
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)

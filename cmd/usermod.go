@@ -25,7 +25,7 @@ func UserMod(conf *setting.BaseStruct) {
 		fmt.Println("[1] Reset user password\n[2] Delete user")
 		fmt.Print("Enter your option [1/2]: ")
 		optionInput, err := reader.ReadString('\n')
-		errorhandler.CheckError(err)
+		errorhandler.CheckError("User mod", err)
 
 		option := strings.TrimSpace(optionInput)
 
@@ -51,7 +51,7 @@ func resetUserPassword(db *sql.DB) {
 		fmt.Println("[1] Specify user by username\n[2] Specify user by email address")
 		fmt.Print("Enter your option [1/2]: ")
 		optionInput, err := reader.ReadString('\n')
-		errorhandler.CheckError(err)
+		errorhandler.CheckError("Reset user password", err)
 
 		option := strings.TrimSpace(optionInput)
 
@@ -59,11 +59,11 @@ func resetUserPassword(db *sql.DB) {
 		case "1":
 			fmt.Print("Enter username: ")
 			usernameInput, err := reader.ReadString('\n')
-			errorhandler.CheckError(err)
+			errorhandler.CheckError("Error on Username", err)
 
 			fmt.Print("Enter new password: ")
 			passwordInput, err := reader.ReadString('\n')
-			errorhandler.CheckError(err)
+			errorhandler.CheckError("Error on Password", err)
 
 			username := strings.TrimSpace(usernameInput)
 			password := strings.TrimSpace(passwordInput)
@@ -81,11 +81,11 @@ func resetUserPassword(db *sql.DB) {
 		case "2":
 			fmt.Print("Enter email address: ")
 			emailInput, err := reader.ReadString('\n')
-			errorhandler.CheckError(err)
+			errorhandler.CheckError("Error on email address: ", err)
 
 			fmt.Print("Enter new password: ")
 			passwordInput, err := reader.ReadString('\n')
-			errorhandler.CheckError(err)
+			errorhandler.CheckError("Error on password", err)
 
 			email := strings.TrimSpace(emailInput)
 			password := strings.TrimSpace(passwordInput)
@@ -109,11 +109,11 @@ func resetUserPassword(db *sql.DB) {
 func generateHashandToken(password string) (string, string) {
 	// Generate password hash using bcrypt
 	passwordHash, err := handler.HashPassword(password)
-	errorhandler.CheckError(err)
+	errorhandler.CheckError("Error on generating password hash", err)
 
 	// Generate JWT token using the hash password above
 	token, err := handler.GenerateJWTToken(passwordHash)
-	errorhandler.CheckError(err)
+	errorhandler.CheckError("Error on generating jwt token", err)
 
 	return passwordHash, token
 }
@@ -125,7 +125,7 @@ func deleteUser(db *sql.DB, conf *setting.BaseStruct) {
 		fmt.Println("[1] Specify user by username\n[2] Specify user by email address")
 		fmt.Print("Enter your option [1/2]: ")
 		optionInput, err := reader.ReadString('\n')
-		errorhandler.CheckError(err)
+		errorhandler.CheckError("Delete user", err)
 
 		option := strings.TrimSpace(optionInput)
 
@@ -133,7 +133,7 @@ func deleteUser(db *sql.DB, conf *setting.BaseStruct) {
 		case "1":
 			fmt.Print("Enter username: ")
 			usernameInput, err := reader.ReadString('\n')
-			errorhandler.CheckError(err)
+			errorhandler.CheckError("Error on username", err)
 
 			username := strings.TrimSpace(usernameInput)
 			model.DeleteUserbyUsername(db, username)
@@ -142,7 +142,7 @@ func deleteUser(db *sql.DB, conf *setting.BaseStruct) {
 		case "2":
 			fmt.Print("Enter email address: ")
 			emailInput, err := reader.ReadString('\n')
-			errorhandler.CheckError(err)
+			errorhandler.CheckError("Error on email address", err)
 
 			email := strings.TrimSpace(emailInput)
 			model.DeleteUserbyEmail(db, email)

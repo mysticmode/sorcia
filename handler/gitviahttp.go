@@ -61,7 +61,7 @@ func gitCommand(dir string, args ...string) []byte {
 	cmd := exec.Command("git", args...)
 	cmd.Dir = dir
 	out, err := cmd.Output()
-	errorhandler.CheckError(err)
+	errorhandler.CheckError("Error on git command function", err)
 
 	return out
 }
@@ -247,12 +247,12 @@ var routes = []struct {
 func writeHdr(w http.ResponseWriter, status int, text string) {
 	w.WriteHeader(status)
 	_, err := w.Write([]byte(text))
-	errorhandler.CheckError(err)
+	errorhandler.CheckError("Error on write hdr function", err)
 }
 
 func getProjectRootDir() string {
 	projectRootDir, err := filepath.Abs(filepath.Dir(os.Args[0]))
-	errorhandler.CheckError(err)
+	errorhandler.CheckError("Error on get project root dir function", err)
 	return projectRootDir
 }
 

@@ -1,15 +1,13 @@
 package error
 
 import (
-	"fmt"
-	"os"
+	"log"
 )
 
 // CheckError ...
-func CheckError(err error) {
+func CheckError(errMessage string, err error) {
 	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-		os.Exit(1)
+		log.Printf("%s: %v", errMessage, err)
 	}
 }
 
