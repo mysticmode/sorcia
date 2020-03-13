@@ -7,20 +7,20 @@
         <a href="/meta/users" class="repo__menu__item">users</a>
     </div>
     <div class="meta__detail">
-        <form class="form meta__detail__form" method="POST" action="/meta/profile">
+        <form class="form meta__detail__form" method="POST" action="/meta/password">
             <div class="form__title">your profile</div>
             <div class="meta__error"></div>
             <div class="form__group">
                 <label for="profileUsername">Username (You can't edit this - ask the admin to change username)</label>
-                <input type="text" class="form__input" id="profileUsername" name="username" value="mysticmode" autocomplete="off" spellcheck="false" readonly="" />
+                <input type="text" class="form__input" id="profileUsername" value="{{.Username}}" autocomplete="off" spellcheck="false" readonly="" />
             </div>
             <div class="form__group">
                 <label for="profileEmail">Email address (You can't edit this - ask the admin to change email)</label>
-                <input type="text" class="form__input" id="profileEmail" name="email" value="yo@mysticmode.org" autocomplete="off" spellcheck="false" readonly="" />
+                <input type="text" class="form__input" id="profileEmail" value="{{.Email}}" autocomplete="off" spellcheck="false" readonly="" />
             </div>
             <div class="form__group">
-                <label for="profilePassword">Password<i>*</i></label>
-                <input type="password" class="form__input" id="profilePassword" name="password" value="sorcia" autocomplete="off" spellcheck="false" />
+                <label for="profilePassword">Password (Type in your new password in order to update)<i>*</i></label>
+                <input type="password" class="form__input" id="profilePassword" name="password" value="" autocomplete="off" spellcheck="false" required />
             </div>
             <input type="submit" class="button button--primary" value="Save" />
         </form>
@@ -29,14 +29,14 @@
             <div class="meta__error"></div>
             <div class="form__group">
                 <label for="siteTitle">Title<i>*</i></label>
-                <input type="text" class="form__input" id="siteTitle" name="title" value="asdf" autocomplete="off" spellcheck="false" />
+                <input type="text" class="form__input" id="siteTitle" name="title" value="sorcia" autocomplete="off" spellcheck="false" required />
             </div>
             <div class="form__group">
-                <label for="siteFavicon">Favicon (Supports ico/png/jpg formats)<i>*</i></label>
+                <label for="siteFavicon">Favicon (Supports ico/png/jpg formats)</label>
                 <input type="file" class="form__input" id="siteFavicon" name="title" />
             </div>
             <div class="form__group">
-                <label for="siteLogo">Logo (Supports svg/png/jpg formats. Max-height: 80px, Max-width: 200px)<i>*</i></label>
+                <label for="siteLogo">Logo (Supports svg/png/jpg formats. Max-height: 80px, Max-width: 200px)</label>
                 <input type="file" class="form__input" id="siteLogo" name="title" />
             </div>
             <input type="submit" class="button button--primary" value="Save" />

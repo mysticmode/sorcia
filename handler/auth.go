@@ -100,7 +100,7 @@ type LoginRequest struct {
 }
 
 // PostLogin ...
-func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion string, decoder *schema.Decoder, repoPath string) {
+func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion string, decoder *schema.Decoder) {
 	// NOTE: Invoke ParseForm or ParseMultipartForm before reading form values
 	if err := r.ParseForm(); err != nil {
 		fmt.Fprintf(w, "ParseForm() err: %v", err)
@@ -119,7 +119,7 @@ func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion
 
 	isRegisterForm := r.FormValue("register")
 	if isRegisterForm == "1" {
-		postRegister(w, r, db, sorciaVersion, decoder, repoPath)
+		postRegister(w, r, db, sorciaVersion, decoder)
 		return
 	}
 
@@ -185,7 +185,7 @@ type RegisterRequest struct {
 }
 
 // PostRegister ...
-func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion string, decoder *schema.Decoder, repoPath string) {
+func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion string, decoder *schema.Decoder) {
 	// NOTE: Invoke ParseForm or ParseMultipartForm before reading form values
 	if err := r.ParseForm(); err != nil {
 		fmt.Fprintf(w, "ParseForm() err: %v", err)
