@@ -112,7 +112,7 @@ func RunSSH(conf *setting.BaseStruct, db *sql.DB) {
 		for i := 0; i < len(sshDetail.AuthKeys); i++ {
 			authKeyByte := []byte(sshDetail.AuthKeys[i])
 			allowed, _, _, _, err := gossh.ParseAuthorizedKey(authKeyByte)
-			errorhandler.CheckError(err)
+			errorhandler.CheckError("Error on Parse authorized key", err)
 
 			if ssh.KeysEqual(key, allowed) {
 				userID = sshDetail.UserIDs[i]

@@ -9,10 +9,10 @@ import (
 // CreateRepo ...
 func CreateRepo(db *sql.DB) {
 	stmt, err := db.Prepare("CREATE TABLE IF NOT EXISTS repository (id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, name TEXT UNIQUE NOT NULL, description TEXT, is_private BOOLEAN DEFAULT 0, FOREIGN KEY (user_id) REFERENCES account (id) ON DELETE CASCADE)")
-	errorhandler.CheckError(err)
+	errorhandler.CheckError("Error on model create repo", err)
 
 	_, err = stmt.Exec()
-	errorhandler.CheckError(err)
+	errorhandler.CheckError("Error on model create repo exec", err)
 }
 
 // CreateRepoStruct struct
@@ -26,10 +26,10 @@ type CreateRepoStruct struct {
 // InsertRepo ...
 func InsertRepo(db *sql.DB, crs CreateRepoStruct) {
 	stmt, err := db.Prepare("INSERT INTO repository (user_id, name, description, is_private) VALUES (?, ?, ?, ?)")
-	errorhandler.CheckError(err)
+	errorhandler.CheckError("Error on model insert repo", err)
 
 	_, err = stmt.Exec(crs.UserID, crs.Name, crs.Description, crs.IsPrivate)
-	errorhandler.CheckError(err)
+	errorhandler.CheckError("Error on model insert repo exec", err)
 }
 
 // GetReposFromUserIDResponse struct
@@ -47,14 +47,14 @@ type ReposDetailStruct struct {
 // GetReposFromUserID ...
 func GetReposFromUserID(db *sql.DB, userID int) *GetReposFromUserIDResponse {
 	rows, err := db.Query("SELECT name, description, is_private FROM repository WHERE user_id = ?", userID)
-	errorhandler.CheckError(err)
+	errorhandler.CheckError("Error on model get repos from user id", err)
 
 	var grfur GetReposFromUserIDResponse
 	var rds ReposDetailStruct
 
 	for rows.Next() {
 		err = rows.Scan(&rds.Name, &rds.Description, &rds.IsPrivate)
-		errorhandler.CheckError(err)
+		errorhandler.CheckError("Error on model get repos from user id rows scan", err)
 
 		grfur.Repositories = append(grfur.Repositories, rds)
 	}
@@ -75,14 +75,14 @@ type ReposDetail struct {
 // GetAllPublicRepos ...
 func GetAllPublicRepos(db *sql.DB) *GetAllPublicReposResponse {
 	rows, err := db.Query("SELECT name, description FROM repository WHERE is_private = ?", false)
-	errorhandler.CheckError(err)
+	errorhandler.CheckError("Error on model get all public repos", err)
 
 	var grfur GetAllPublicReposResponse
 	var rds ReposDetail
 
 	for rows.Next() {
 		err = rows.Scan(&rds.Name, &rds.Description)
-		errorhandler.CheckError(err)
+		errorhandler.CheckError("Error on model get all public repos rows scan", err)
 
 		grfur.Repositories = append(grfur.Repositories, rds)
 	}
@@ -94,11 +94,12 @@ func GetAllPublicRepos(db *sql.DB) *GetAllPublicReposResponse {
 // GetRepoDescriptionFromRepoName ...
 func GetRepoDescriptionFromRepoName(db *sql.DB, reponame string) string {
 	rows, err := db.Query("SELECT description FROM repository WHERE name = ?", reponame)
-	errorhandler.CheckError(err)
+	errorhandler.CheckError("Error on model get repo description from reponame", err)
 
 	var repoDescription string
 	if rows.Next() {
 		err = rows.Scan(&repoDescription)
+		errorhandler.CheckError("Error on model get repo description from reponame rows scan", err)
 	}
 	rows.Close()
 
@@ -108,13 +109,13 @@ func GetRepoDescriptionFromRepoName(db *sql.DB, reponame string) string {
 // CheckRepoExists ...
 func CheckRepoExists(db *sql.DB, reponame string) bool {
 	rows, err := db.Query("SELECT id FROM repository WHERE name = ?", reponame)
-	errorhandler.CheckError(err)
+	errorhandler.CheckError("Error on model check repo exists", err)
 
 	var repoID int
 
 	if rows.Next() {
 		err = rows.Scan(&repoID)
-		errorhandler.CheckError(err)
+		errorhandler.CheckError("Error on model check repo exists rows scan", err)
 	}
 	rows.Close()
 
@@ -128,13 +129,13 @@ func CheckRepoExists(db *sql.DB, reponame string) bool {
 // GetRepoType ...
 func GetRepoType(db *sql.DB, reponame string) bool {
 	rows, err := db.Query("SELECT is_private FROM repository WHERE name = ?", reponame)
-	errorhandler.CheckError(err)
+	errorhandler.CheckError("Error on model get repo type", err)
 
 	var isPrivate bool
 
 	if rows.Next() {
 		err = rows.Scan(&isPrivate)
-		errorhandler.CheckError(err)
+		errorhandler.CheckError("Error on model get repo type rows scan", err)
 	}
 	rows.Close()
 
@@ -144,13 +145,13 @@ func GetRepoType(db *sql.DB, reponame string) bool {
 // CheckRepoAccessFromUserID ...
 func CheckRepoAccessFromUserIDAndReponame(db *sql.DB, userID int, reponame string) bool {
 	rows, err := db.Query("SELECT id FROM repository WHERE user_id = ? AND name = ?", userID, reponame)
-	errorhandler.CheckError(err)
+	errorhandler.CheckError("Error on model check repo access from userid and reponame", err)
 
 	var id int
 
 	if rows.Next() {
 		err = rows.Scan(&id)
-		errorhandler.CheckError(err)
+		errorhandler.CheckError("Error on model check repo access from userid and reponame rows scan", err)
 	}
 	rows.Close()
 
@@ -164,13 +165,13 @@ func CheckRepoAccessFromUserIDAndReponame(db *sql.DB, userID int, reponame strin
 // GetUserIDFromReponame ...
 func GetUserIDFromReponame(db *sql.DB, reponame string) int {
 	rows, err := db.Query("SELECT user_id FROM repository WHERE name = ?", reponame)
-	errorhandler.CheckError(err)
+	errorhandler.CheckError("Error on model get userid from reponame", err)
 
 	var userID int
 
 	if rows.Next() {
 		err = rows.Scan(&userID)
-		errorhandler.CheckError(err)
+		errorhandler.CheckError("Error on model get userid from reponame rows scan", err)
 	}
 	rows.Close()
 

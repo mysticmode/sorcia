@@ -50,7 +50,7 @@ func SSHFingerPrint(authKey string) string {
 func CreateDir(dir string) {
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		err := os.Mkdir(dir, os.ModePerm)
-		errorhandler.CheckError(err)
+		errorhandler.CheckError("Error on util create dir", err)
 	}
 }
 
@@ -58,7 +58,7 @@ func CreateDir(dir string) {
 func CreateSSHDirAndGenerateKey(sshPath string) {
 	if _, err := os.Stat(sshPath); os.IsNotExist(err) {
 		err := os.Mkdir(sshPath, os.ModePerm)
-		errorhandler.CheckError(err)
+		errorhandler.CheckError("Error on util create ssh dir and generate ssh key", err)
 	}
 
 	keyPath := filepath.Join(sshPath, "id_rsa")

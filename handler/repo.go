@@ -42,7 +42,7 @@ func GetCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVer
 		footerPage := path.Join("./templates", "footer.html")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, createRepoPage, footerPage)
-		errorhandler.CheckError(err)
+		errorhandler.CheckError("Error on template parse", err)
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
@@ -76,7 +76,7 @@ func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder 
 		}
 
 		errorJSON, err := json.Marshal(errorResponse)
-		errorhandler.CheckError(err)
+		errorhandler.CheckError("Error on post create repo json marshal", err)
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
@@ -86,7 +86,7 @@ func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder 
 
 	var createRepoRequest = &CreateRepoRequest{}
 	err := decoder.Decode(createRepoRequest, r.PostForm)
-	errorhandler.CheckError(err)
+	errorhandler.CheckError("Error on post create repo decoder", err)
 
 	s := createRepoRequest.Name
 	if len(s) > 100 || len(s) < 1 {
@@ -96,7 +96,7 @@ func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder 
 		footerPage := path.Join("./templates", "footer.html")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, createRepoPage, footerPage)
-		errorhandler.CheckError(err)
+		errorhandler.CheckError("Error on template parse", err)
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
@@ -117,7 +117,7 @@ func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder 
 		footerPage := path.Join("./templates", "footer.html")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, createRepoPage, footerPage)
-		errorhandler.CheckError(err)
+		errorhandler.CheckError("Error on template parse", err)
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
@@ -744,7 +744,7 @@ func noRepoAccess(w http.ResponseWriter) {
 	}
 
 	errorJSON, err := json.Marshal(errorResponse)
-	errorhandler.CheckError(err)
+	errorhandler.CheckError("Error on no repo access function json marshal", err)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusBadRequest)
@@ -785,7 +785,7 @@ func parseTemplates(w http.ResponseWriter, mainPage string) *template.Template {
 	footerPage := path.Join("./templates", "footer.html")
 
 	tmpl, err := template.ParseFiles(layoutPage, headerPage, repoLogPage, footerPage)
-	errorhandler.CheckError(err)
+	errorhandler.CheckError("Error on template parse", err)
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusOK)

@@ -24,7 +24,7 @@ func GetGitBranches(repoDir string) []string {
 		}
 		return nil
 	})
-	errorhandler.CheckError(err)
+	errorhandler.CheckError("Error on util get git branches filepath walk", err)
 
 	return branches
 }
