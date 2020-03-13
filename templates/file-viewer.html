@@ -17,6 +17,20 @@
         <a href="/r/{{ .Reponame }}/meta" class="repo__menu__item">meta</a>
         {{end}}
     </div>
+    <div class="repo__sub-menu">
+        <div class="repo__sub-menu__item branch">
+            <form method="get" action="" class="form">
+                <div class="form__group">
+                    <label for="branchSelect">branch:</label>
+                    <select id="branchSelect" onchange="branchChange(this.value)">
+                        {{range .RepoBranches}}
+                        <option value="{{.}}">{{.}}</option>
+                        {{end}}
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
     <div class="path">
         {{if .RepoDetail.PathEmpty}}
         {{else}}
@@ -27,6 +41,7 @@
     <div class="file-viewer">
         {{.RepoDetail.FileContent}}
     </div>
+    <script src="/public/js/branch-selection.js"></script>
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/github.min.css">
     <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.7.0/highlightjs-line-numbers.min.js"></script>
