@@ -27,11 +27,12 @@ type BaseStruct struct {
 
 // PathsStruct struct
 type PathsStruct struct {
-	ProjectRoot string
-	RepoPath    string
-	RefsPath    string
-	DBPath      string
-	SSHPath     string
+	ProjectRoot     string
+	RepoPath        string
+	RefsPath        string
+	DBPath          string
+	SSHPath         string
+	UploadAssetPath string
 }
 
 // ServerStruct struct
@@ -54,11 +55,12 @@ func init() {
 		AppMode: cfg.Section("").Key("app_mode").String(),
 		Version: cfg.Section("").Key("version").String(),
 		Paths: PathsStruct{
-			ProjectRoot: cfg.Section("paths").Key("project_root").String(),
-			RepoPath:    cfg.Section("paths").Key("repo_path").String(),
-			RefsPath:    cfg.Section("paths").Key("refs_path").String(),
-			DBPath:      cfg.Section("paths").Key("db_path").String(),
-			SSHPath:     cfg.Section("paths").Key("ssh_path").String(),
+			ProjectRoot:     cfg.Section("paths").Key("project_root").String(),
+			RepoPath:        cfg.Section("paths").Key("repo_path").String(),
+			RefsPath:        cfg.Section("paths").Key("refs_path").String(),
+			DBPath:          cfg.Section("paths").Key("db_path").String(),
+			SSHPath:         cfg.Section("paths").Key("ssh_path").String(),
+			UploadAssetPath: cfg.Section("paths").Key("upload_asset_path").String(),
 		},
 		Server: ServerStruct{
 			HTTPPort: cfg.Section("server").Key("http_port").String(),

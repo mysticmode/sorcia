@@ -25,6 +25,11 @@ var decoder = schema.NewDecoder()
 
 // RunWeb ...
 func RunWeb(conf *setting.BaseStruct) {
+	// Create necessary directories
+	util.CreateDir(conf.Paths.RepoPath)
+	util.CreateDir(conf.Paths.RefsPath)
+	util.CreateSSHDirAndGenerateKey(conf.Paths.SSHPath)
+
 	// Mux initiate
 	m := mux.NewRouter()
 
@@ -35,10 +40,6 @@ func RunWeb(conf *setting.BaseStruct) {
 	model.CreateAccount(db)
 	model.CreateSSHPubKey(db)
 	model.CreateRepo(db)
-
-	util.CreateDir(conf.Paths.RepoPath)
-	util.CreateDir(conf.Paths.RefsPath)
-	util.CreateSSHDirAndGenerateKey(conf.Paths.SSHPath)
 
 	go handler.RunSSH(conf, db)
 
