@@ -295,6 +295,8 @@
         overflow: hidden;
 
         & a {
+            cursor: pointer;
+            
             &:first-child {
                 float: left;
                 width: 190px;
