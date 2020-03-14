@@ -9,6 +9,4 @@ sorcia.db
 app.ini
 error.log
 
-repositories/
-refs/
-ssh/
+data/

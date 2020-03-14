@@ -4,10 +4,11 @@ version = 0.2.0
 [paths]
 # all the paths should be in absolute path formats.
 project_root = /home/git/sorcia
-repo_path = /home/git/repositories
-refs_path = /home/git/refs
-db_path = /home/git
-ssh_path = /home/git/ssh
+repo_path = /home/git/data/repositories
+refs_path = /home/git/data/refs
+db_path = /home/git/data
+ssh_path = /home/git/data/ssh
+upload_asset_path = /home/git/data/uploads
 
 [server]
 http_port = 1937
