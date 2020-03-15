@@ -5,8 +5,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"image"
+	_ "image/jpeg"
+	_ "image/png"
+	"io"
+	"io/ioutil"
 	"net/http"
+	"os"
 	"path"
+	"path/filepath"
+	"strconv"
 	"strings"
 
 	errorhandler "sorcia/error"
@@ -23,16 +31,40 @@ type MetaResponse struct {
 	SorciaVersion    string
 	Username         string
 	Email            string
+	SiteTitle        string
+	SiteFavicon      string
+	SiteLogo         string
+	SiteLogoWidth    string
+	SiteLogoHeight   string
+	IsSiteLogoSVG    bool
+	SVGDAT           template.HTML
 }
 
 // GetMeta ...
-func GetMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion string) {
+func GetMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
 	userPresent := w.Header().Get("user-present")
 
 	if userPresent == "true" {
 		token := w.Header().Get("sorcia-cookie-token")
 		username := model.GetUsernameFromToken(db, token)
 		email := model.GetEmailFromUsername(db, username)
+
+		gssr := model.GetSiteSettings(db, conf)
+
+		var isSiteLogoSVG bool
+		var svgXML template.HTML
+		var siteLogoExt string
+		siteLogoSplit := strings.Split(gssr.Logo, ".")
+		if len(siteLogoSplit) > 1 {
+			siteLogoExt = siteLogoSplit[1]
+		}
+		if siteLogoExt == "svg" {
+			isSiteLogoSVG = true
+			dat, err := ioutil.ReadFile(filepath.Join(conf.Paths.UploadAssetPath, gssr.Logo))
+			errorhandler.CheckError("Error on Reading svg logo file", err)
+
+			svgXML = template.HTML(dat)
+		}
 
 		layoutPage := path.Join("./templates", "layout.html")
 		headerPage := path.Join("./templates", "header.html")
@@ -48,9 +80,16 @@ func GetMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 		data := MetaResponse{
 			IsLoggedIn:       true,
 			HeaderActiveMenu: "meta",
-			SorciaVersion:    sorciaVersion,
+			SorciaVersion:    conf.Version,
 			Username:         username,
 			Email:            email,
+			SiteTitle:        gssr.Title,
+			SiteFavicon:      gssr.Favicon,
+			SiteLogo:         gssr.Logo,
+			SiteLogoWidth:    gssr.LogoWidth,
+			SiteLogoHeight:   gssr.LogoHeight,
+			IsSiteLogoSVG:    isSiteLogoSVG,
+			SVGDAT:           svgXML,
 		}
 
 		tmpl.ExecuteTemplate(w, "layout", data)
@@ -225,4 +264,133 @@ func MetaPostPassword(w http.ResponseWriter, r *http.Request, db *sql.DB, decode
 	}
 
 	http.Redirect(w, r, "/login", http.StatusFound)
+}
+
+// MetaPostSiteSettings
+func MetaPostSiteSettings(w http.ResponseWriter, r *http.Request, db *sql.DB, uploadAssetPath string) {
+	userPresent := w.Header().Get("user-present")
+
+	if userPresent == "true" {
+
+		siteTitle := r.FormValue("title")
+
+		gotFavicon, faviconPath := faviconUpload(w, r, uploadAssetPath)
+		gotLogo, logoPath, logoWidth, logoHeight := logoUpload(w, r, uploadAssetPath)
+
+		if siteTitle == "" && !gotFavicon && !gotLogo {
+			http.Redirect(w, r, "/meta", http.StatusFound)
+			return
+		}
+
+		if !model.CheckIFSiteSettingsExists(db) {
+			css := model.CreateSiteSettingsStruct{
+				Title:      siteTitle,
+				Favicon:    faviconPath,
+				Logo:       logoPath,
+				LogoWidth:  logoWidth,
+				LogoHeight: logoHeight,
+			}
+			model.InsertSiteSettings(db, css)
+
+			http.Redirect(w, r, "/meta", http.StatusFound)
+			return
+		}
+
+		if siteTitle != "" {
+			model.UpdateSiteTitle(db, siteTitle)
+		}
+
+		if gotFavicon {
+			model.UpdateSiteFavicon(db, faviconPath)
+		}
+
+		if gotLogo {
+			model.UpdateSiteLogo(db, logoPath, logoWidth, logoHeight)
+		}
+
+		http.Redirect(w, r, "/meta", http.StatusFound)
+		return
+	}
+
+	http.Redirect(w, r, "/login", http.StatusFound)
+}
+
+func faviconUpload(w http.ResponseWriter, r *http.Request, uploadAssetPath string) (bool, string) {
+	r.ParseMultipartForm(2)
+
+	file, hdlr, err := r.FormFile("favicon")
+	if err != nil {
+		errorhandler.CheckError("Error on favicon FormFile", err)
+		return false, ""
+	}
+	defer file.Close()
+
+	contentType := hdlr.Header.Get("Content-Type")
+
+	if contentType == "image/ico" || contentType == "image/png" || contentType == "image/jpeg" {
+		ext := strings.Split(contentType, "image/")[1]
+
+		filePath := filepath.Join(uploadAssetPath, "favicon."+ext)
+
+		f, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, os.ModePerm)
+		errorhandler.CheckError("Error on opening favicon path", err)
+		defer f.Close()
+
+		io.Copy(f, file)
+
+		return true, filePath
+	}
+
+	return false, ""
+}
+
+func logoUpload(w http.ResponseWriter, r *http.Request, uploadAssetPath string) (bool, string, string, string) {
+	r.ParseMultipartForm(10)
+
+	file, hdlr, err := r.FormFile("logo")
+	if err != nil {
+		errorhandler.CheckError("Error on logo FormFile", err)
+		return false, "", "", ""
+	}
+	defer file.Close()
+
+	contentType := hdlr.Header.Get("Content-Type")
+
+	if contentType == "image/svg+xml" || contentType == "image/png" || contentType == "image/jpeg" {
+		ext := strings.Split(contentType, "image/")[1]
+
+		if ext == "svg+xml" {
+			ext = "svg"
+		}
+
+		filePath := filepath.Join(uploadAssetPath, "logo."+ext)
+
+		f, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, os.ModePerm)
+		errorhandler.CheckError("Error on opening favicon path", err)
+		defer f.Close()
+
+		io.Copy(f, file)
+
+		getFile, err := os.Open(filePath)
+		errorhandler.CheckError("Error on opening logo upload file", err)
+		defer getFile.Close()
+
+		var logoWidth, logoHeight string
+
+		if ext != "svg" {
+			image, _, err := image.DecodeConfig(getFile)
+			errorhandler.CheckError("Error on DecodeConfig in logoUpload function", err)
+			logoWidth = strconv.Itoa(image.Width)
+			logoHeight = strconv.Itoa(image.Height)
+		}
+
+		return true, filePath, logoWidth, logoHeight
+	}
+
+	return false, "", "", ""
+}
+
+type XMLAttr struct {
+	Width  string `xml:"width"`
+	Height string `xml:"height"`
 }

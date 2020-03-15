@@ -28,6 +28,7 @@ func RunWeb(conf *setting.BaseStruct) {
 	// Create necessary directories
 	util.CreateDir(conf.Paths.RepoPath)
 	util.CreateDir(conf.Paths.RefsPath)
+	util.CreateDir(conf.Paths.UploadAssetPath)
 	util.CreateSSHDirAndGenerateKey(conf.Paths.SSHPath)
 
 	// Mux initiate
@@ -38,6 +39,7 @@ func RunWeb(conf *setting.BaseStruct) {
 	defer db.Close()
 
 	model.CreateAccount(db)
+	model.CreateSiteSettings(db)
 	model.CreateSSHPubKey(db)
 	model.CreateRepo(db)
 
@@ -65,10 +67,13 @@ func RunWeb(conf *setting.BaseStruct) {
 		handler.PostCreateRepo(w, r, db, decoder, conf.Version, conf.Paths.RepoPath)
 	}).Methods("POST")
 	m.HandleFunc("/meta", func(w http.ResponseWriter, r *http.Request) {
-		handler.GetMeta(w, r, db, conf.Version)
+		handler.GetMeta(w, r, db, conf)
 	}).Methods("GET")
 	m.HandleFunc("/meta/password", func(w http.ResponseWriter, r *http.Request) {
 		handler.MetaPostPassword(w, r, db, decoder)
+	}).Methods("POST")
+	m.HandleFunc("/meta/site", func(w http.ResponseWriter, r *http.Request) {
+		handler.MetaPostSiteSettings(w, r, db, conf.Paths.UploadAssetPath)
 	}).Methods("POST")
 	m.HandleFunc("/meta/keys", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetMetaKeys(w, r, db, conf.Version)
@@ -109,6 +114,9 @@ func RunWeb(conf *setting.BaseStruct) {
 	// The "PathPrefix" method acts as a matcher, and matches all routes starting
 	// with "/public/", instead of the absolute route itself
 	m.PathPrefix("/public/").Handler(staticFileHandler).Methods("GET")
+
+	uploadFileHandler := http.StripPrefix("/uploads/", http.FileServer(http.Dir(conf.Paths.UploadAssetPath)))
+	m.PathPrefix("/uploads/").Handler(uploadFileHandler).Methods("GET")
 
 	http.Handle("/", m)
 
