@@ -1,6 +1,27 @@
 .meta {
     &__detail {
         margin-top: 20px;
+
+        &__form {
+            &--site-settings {
+                & .form__title {
+                    margin-bottom: 5px;
+                }
+            }
+
+            &__info {
+                margin-bottom: 15px;
+            }
+
+            &__current {
+                display: flex;
+                margin-bottom: 10px;
+
+                & div {
+                    margin-right: 10px;
+                }
+            }
+        }
     }
 
     #profileUsername, #profileEmail {

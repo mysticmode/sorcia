@@ -24,20 +24,33 @@
             </div>
             <input type="submit" class="button button--primary" value="Save" />
         </form>
-        <form class="form meta__detail__form" method="POST" action="/meta/site">
+        <form class="form meta__detail__form meta__detail__form--site-settings" method="POST" action="/meta/site" enctype="multipart/form-data">
             <div class="form__title">site settings</div>
+            <div class="meta__detail__form__info">None of these form fields are mandatory, you can change any one of these or all of it below if you wish.</div>
             <div class="meta__error"></div>
             <div class="form__group">
-                <label for="siteTitle">Title<i>*</i></label>
-                <input type="text" class="form__input" id="siteTitle" name="title" value="sorcia" autocomplete="off" spellcheck="false" required />
+                <label for="siteTitle">Title</label>
+                <input type="text" class="form__input" id="siteTitle" name="title" value="{{.SiteTitle}}" autocomplete="off" spellcheck="false" />
             </div>
             <div class="form__group">
-                <label for="siteFavicon">Favicon (Supports ico/png/jpg formats)</label>
-                <input type="file" class="form__input" id="siteFavicon" name="title" />
+                <label for="siteFavicon">Favicon (Supports ico/png/jpg formats. Max-size: 2 MB)</label>
+                <div class="meta__detail__form__current">
+                    <div class="form__title">Current favicon:</div>
+                    <img src="/uploads{{.SiteFavicon}}" width="20px" height="20px" />
+                </div>
+                <input type="file" class="form__input" id="siteFavicon" name="favicon" />
             </div>
             <div class="form__group">
-                <label for="siteLogo">Logo (Supports svg/png/jpg formats. Max-height: 30px, Max-width: 200px)</label>
-                <input type="file" class="form__input" id="siteLogo" name="title" />
+                <label for="siteLogo">Logo (Supports svg/png/jpg formats. Max-height: 30px, Max-width: 200px. Max-size: 10 MB)</label>
+                <div class="meta__detail__form__current">
+                    <div class="form__title">Current logo:</div>
+                    {{if .IsSiteLogoSVG}}
+                    {{.SVGDAT}}
+                    {{else}}
+                    <img src="/uploads{{.SiteLogo}}" width="{{.SiteLogoWidth}}px" height="{{.SiteLogoHeight}}px" />
+                    {{end}}
+                </div>
+                <input type="file" class="form__input" id="siteLogo" name="logo" />
             </div>
             <input type="submit" class="button button--primary" value="Save" />
         </form>

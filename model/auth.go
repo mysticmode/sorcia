@@ -2,8 +2,10 @@ package model
 
 import (
 	"database/sql"
+	"strings"
 
 	errorhandler "sorcia/error"
+	"sorcia/setting"
 )
 
 // CreateAccount ...
@@ -280,4 +282,122 @@ func GetSSHAllAuthKeys(db *sql.DB) *SSHAllAuthKeysResponse {
 	}
 
 	return saks
+}
+
+// CreateSiteSettings ...
+func CreateSiteSettings(db *sql.DB) {
+	stmt, err := db.Prepare("CREATE TABLE IF NOT EXISTS site_settings (id INTEGER PRIMARY KEY, title TEXT NOT NULL, favicon TEXT, logo TEXT, logo_width TEXT, logo_height TEXT)")
+	errorhandler.CheckError("Error on model create site", err)
+
+	_, err = stmt.Exec()
+	errorhandler.CheckError("Error on model create site exec", err)
+}
+
+// CreateSiteSettingsStruct struct
+type CreateSiteSettingsStruct struct {
+	Title      string
+	Favicon    string
+	Logo       string
+	LogoWidth  string
+	LogoHeight string
+}
+
+// InsertSiteSettings ...
+func InsertSiteSettings(db *sql.DB, css CreateSiteSettingsStruct) {
+	stmt, err := db.Prepare("INSERT INTO site_settings (title, favicon, logo, logo_width, logo_height) VALUES (?, ?, ?, ?, ?)")
+	errorhandler.CheckError("Error on model insert site", err)
+
+	_, err = stmt.Exec(css.Title, css.Favicon, css.Logo, css.LogoWidth, css.LogoHeight)
+	errorhandler.CheckError("Error on model insert site exec", err)
+}
+
+// CheckIFSiteSettingsExists ...
+func CheckIFSiteSettingsExists(db *sql.DB) bool {
+	rows, err := db.Query("SELECT title FROM site_settings WHERE id = ?", 1)
+	errorhandler.CheckError("Error on model check if site settings exists", err)
+
+	var title string
+	isExists := false
+
+	if rows.Next() {
+		err = rows.Scan(&title)
+		errorhandler.CheckError("Error on model check if site_settings settings exists rows scan", err)
+	}
+	rows.Close()
+
+	if title != "" {
+		isExists = true
+	}
+
+	return isExists
+}
+
+type GetSiteSettingsResponse struct {
+	Title      string
+	Favicon    string
+	Logo       string
+	LogoWidth  string
+	LogoHeight string
+}
+
+// GetSiteSettings ...
+func GetSiteSettings(db *sql.DB, conf *setting.BaseStruct) *GetSiteSettingsResponse {
+	rows, err := db.Query("SELECT title, favicon, logo, logo_width, logo_height FROM site_settings WHERE id = ?", 1)
+	errorhandler.CheckError("Error on model get site settings exists", err)
+
+	var title, favicon, logo, logoWidth, logoHeight string
+	gssr := GetSiteSettingsResponse{}
+
+	if rows.Next() {
+		err = rows.Scan(&title, &favicon, &logo, &logoWidth, &logoHeight)
+		errorhandler.CheckError("Error on model get site_settings settings exists rows scan", err)
+
+		faviconSplit := strings.Split(favicon, conf.Paths.UploadAssetPath)
+		if len(faviconSplit) > 1 {
+			favicon = faviconSplit[1]
+		}
+
+		logoSplit := strings.Split(logo, conf.Paths.UploadAssetPath)
+		if len(logoSplit) > 1 {
+			logo = logoSplit[1]
+		}
+
+		gssr = GetSiteSettingsResponse{
+			Title:      title,
+			Favicon:    favicon,
+			Logo:       logo,
+			LogoWidth:  logoWidth,
+			LogoHeight: logoHeight,
+		}
+	}
+	rows.Close()
+
+	return &gssr
+}
+
+// UpdateSiteTitle ...
+func UpdateSiteTitle(db *sql.DB, title string) {
+	stmt, err := db.Prepare("UPDATE site_settings SET title = ? WHERE id = 1")
+	errorhandler.CheckError("Error on model update site title", err)
+
+	_, err = stmt.Exec(title)
+	errorhandler.CheckError("Error on model update site title exec", err)
+}
+
+// UpdateSiteFavicon ...
+func UpdateSiteFavicon(db *sql.DB, favicon string) {
+	stmt, err := db.Prepare("UPDATE site_settings SET favicon = ? WHERE id = 1")
+	errorhandler.CheckError("Error on model update site favicon", err)
+
+	_, err = stmt.Exec(favicon)
+	errorhandler.CheckError("Error on model update site favicon exec", err)
+}
+
+// UpdateSiteLogo ...
+func UpdateSiteLogo(db *sql.DB, logo, logoWidth, logoHeight string) {
+	stmt, err := db.Prepare("UPDATE site_settings SET logo = ? WHERE id = 1")
+	errorhandler.CheckError("Error on model update site logo", err)
+
+	_, err = stmt.Exec(logo)
+	errorhandler.CheckError("Error on model update site logo exec", err)
 }
