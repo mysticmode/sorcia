@@ -17,6 +17,7 @@ import (
 
 	errorhandler "sorcia/error"
 	"sorcia/model"
+	"sorcia/setting"
 	"sorcia/util"
 )
 
@@ -274,7 +275,7 @@ func processRepoAccess(gh gitHandler) bool {
 }
 
 // GitviaHTTP ...
-func GitviaHTTP(w http.ResponseWriter, r *http.Request, db *sql.DB, dir, repoPath, refsPath string) {
+func GitviaHTTP(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
 	for _, route := range routes {
 		reqPath := strings.ToLower(r.URL.Path)
 		reqPath = "/" + strings.Split(reqPath, "/r/")[1]
@@ -296,10 +297,10 @@ func GitviaHTTP(w http.ResponseWriter, r *http.Request, db *sql.DB, dir, repoPat
 		var repoDir string
 		projectRootDir := getProjectRootDir()
 
-		if dir == "." || dir == "" || dir == "./repositories" {
+		if conf.Paths.RepoPath == "." || conf.Paths.RepoPath == "" || conf.Paths.RepoPath == "./repositories" {
 			repoDir = filepath.Join(projectRootDir, "repositories", routeMatch[1])
 		} else {
-			repoDir = filepath.Join(dir, routeMatch[1])
+			repoDir = filepath.Join(conf.Paths.RepoPath, routeMatch[1])
 		}
 
 		file := strings.TrimPrefix(reqPath, routeMatch[1]+"/")
@@ -313,8 +314,8 @@ func GitviaHTTP(w http.ResponseWriter, r *http.Request, db *sql.DB, dir, repoPat
 			file:        file,
 			reponame:    reponame,
 			repoGitName: repoGitName,
-			repoPath:    repoPath,
-			refsPath:    refsPath,
+			repoPath:    conf.Paths.RepoPath,
+			refsPath:    conf.Paths.RefsPath,
 			db:          db,
 		}
 

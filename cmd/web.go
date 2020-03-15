@@ -4,10 +4,12 @@ import (
 	"database/sql"
 	"fmt"
 	"html/template"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"path"
 	"path/filepath"
+	"strings"
 
 	errorhandler "sorcia/error"
 	"sorcia/handler"
@@ -49,22 +51,22 @@ func RunWeb(conf *setting.BaseStruct) {
 
 	// Web handlers
 	m.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		GetHome(w, r, db, conf.Version)
+		GetHome(w, r, db, conf)
 	}).Methods("GET")
 	m.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-		handler.GetLogin(w, r, db, conf.Version)
+		handler.GetLogin(w, r, db, conf)
 	}).Methods("GET")
 	m.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-		handler.PostLogin(w, r, db, conf.Version, decoder)
+		handler.PostLogin(w, r, db, conf, decoder)
 	}).Methods("POST")
 	m.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetLogout(w, r)
 	}).Methods("GET")
 	m.HandleFunc("/create-repo", func(w http.ResponseWriter, r *http.Request) {
-		handler.GetCreateRepo(w, r, db, conf.Version)
+		handler.GetCreateRepo(w, r, db, conf)
 	}).Methods("GET")
 	m.HandleFunc("/create-repo", func(w http.ResponseWriter, r *http.Request) {
-		handler.PostCreateRepo(w, r, db, decoder, conf.Version, conf.Paths.RepoPath)
+		handler.PostCreateRepo(w, r, db, decoder, conf)
 	}).Methods("POST")
 	m.HandleFunc("/meta", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetMeta(w, r, db, conf)
@@ -73,40 +75,40 @@ func RunWeb(conf *setting.BaseStruct) {
 		handler.MetaPostPassword(w, r, db, decoder)
 	}).Methods("POST")
 	m.HandleFunc("/meta/site", func(w http.ResponseWriter, r *http.Request) {
-		handler.MetaPostSiteSettings(w, r, db, conf.Paths.UploadAssetPath)
+		handler.MetaPostSiteSettings(w, r, db, conf)
 	}).Methods("POST")
 	m.HandleFunc("/meta/keys", func(w http.ResponseWriter, r *http.Request) {
-		handler.GetMetaKeys(w, r, db, conf.Version)
+		handler.GetMetaKeys(w, r, db, conf)
 	}).Methods("GET")
 	m.HandleFunc("/meta/keys", func(w http.ResponseWriter, r *http.Request) {
 		handler.PostAuthKey(w, r, db, conf, decoder)
 	}).Methods("POST")
 	m.HandleFunc("/meta/users", func(w http.ResponseWriter, r *http.Request) {
-		handler.GetMetaUsers(w, r, db, conf.Version)
+		handler.GetMetaUsers(w, r, db, conf)
 	}).Methods("GET")
 	m.HandleFunc("/r/{reponame}", func(w http.ResponseWriter, r *http.Request) {
-		handler.GetRepo(w, r, db, conf.Version, conf.Paths.RepoPath)
+		handler.GetRepo(w, r, db, conf)
 	}).Methods("GET")
 	m.HandleFunc("/r/{reponame}/tree/{branch}", func(w http.ResponseWriter, r *http.Request) {
-		handler.GetRepoTree(w, r, db, conf.Version, conf.Paths.RepoPath)
+		handler.GetRepoTree(w, r, db, conf)
 	}).Methods("GET")
 	m.PathPrefix("/r/{reponame}/tree/{branch}/{path:[[\\d\\w-_\\.]+}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		handler.GetRepoTreePath(w, r, db, conf.Version, conf.Paths.RepoPath)
+		handler.GetRepoTreePath(w, r, db, conf)
 	}).Methods("GET")
 	m.HandleFunc("/r/{reponame}/log/{branch}", func(w http.ResponseWriter, r *http.Request) {
-		handler.GetRepoLog(w, r, db, conf.Version, conf.Paths.RepoPath)
+		handler.GetRepoLog(w, r, db, conf)
 	}).Methods("GET")
 	m.HandleFunc("/r/{reponame}/refs", func(w http.ResponseWriter, r *http.Request) {
-		handler.GetRepoRefs(w, r, db, conf.Version, conf.Paths.RepoPath, conf.Paths.RefsPath)
+		handler.GetRepoRefs(w, r, db, conf)
 	}).Methods("GET")
 	m.HandleFunc("/r/{reponame}/contributors", func(w http.ResponseWriter, r *http.Request) {
-		handler.GetRepoContributors(w, r, db, conf.Version, conf.Paths.RepoPath)
+		handler.GetRepoContributors(w, r, db, conf)
 	}).Methods("GET")
 	m.HandleFunc("/dl/{file}", func(w http.ResponseWriter, r *http.Request) {
-		handler.ServeRefFile(w, r, conf.Paths.RefsPath)
+		handler.ServeRefFile(w, r, conf)
 	}).Methods("GET")
 	m.PathPrefix("/r/{reponame[\\d\\w-_\\.]+\\.git$}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		handler.GitviaHTTP(w, r, db, conf.Paths.RepoPath, conf.Paths.RepoPath, conf.Paths.RefsPath)
+		handler.GitviaHTTP(w, r, db, conf)
 	}).Methods("GET", "POST")
 
 	staticDir := filepath.Join(conf.Paths.ProjectRoot, "public")
@@ -134,11 +136,35 @@ type IndexPageResponse struct {
 	SorciaVersion    string
 	Repos            *model.GetReposFromUserIDResponse
 	AllPublicRepos   *model.GetAllPublicReposResponse
+	SiteTitle        string
+	SiteFavicon      string
+	SiteLogo         string
+	SiteLogoWidth    string
+	SiteLogoHeight   string
+	IsSiteLogoSVG    bool
+	SVGDAT           template.HTML
 }
 
 // GetHome ...
-func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion string) {
+func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
 	userPresent := w.Header().Get("user-present")
+
+	gssr := model.GetSiteSettings(db, conf)
+
+	var isSiteLogoSVG bool
+	var svgXML template.HTML
+	var siteLogoExt string
+	siteLogoSplit := strings.Split(gssr.Logo, ".")
+	if len(siteLogoSplit) > 1 {
+		siteLogoExt = siteLogoSplit[1]
+	}
+	if siteLogoExt == "svg" {
+		isSiteLogoSVG = true
+		dat, err := ioutil.ReadFile(filepath.Join(conf.Paths.UploadAssetPath, gssr.Logo))
+		errorhandler.CheckError("Error on Reading svg logo file", err)
+
+		svgXML = template.HTML(dat)
+	}
 
 	if userPresent == "true" {
 		token := w.Header().Get("sorcia-cookie-token")
@@ -159,8 +185,15 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 		data := IndexPageResponse{
 			IsLoggedIn:       true,
 			HeaderActiveMenu: "",
-			SorciaVersion:    sorciaVersion,
+			SorciaVersion:    conf.Version,
 			Repos:            repos,
+			SiteTitle:        gssr.Title,
+			SiteFavicon:      gssr.Favicon,
+			SiteLogo:         gssr.Logo,
+			SiteLogoWidth:    gssr.LogoWidth,
+			SiteLogoHeight:   gssr.LogoHeight,
+			IsSiteLogoSVG:    isSiteLogoSVG,
+			SVGDAT:           svgXML,
 		}
 
 		tmpl.ExecuteTemplate(w, "layout", data)
@@ -184,8 +217,15 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 		data := IndexPageResponse{
 			IsLoggedIn:     false,
 			ShowLoginMenu:  true,
-			SorciaVersion:  sorciaVersion,
+			SorciaVersion:  conf.Version,
 			AllPublicRepos: repos,
+			SiteTitle:      gssr.Title,
+			SiteFavicon:    gssr.Favicon,
+			SiteLogo:       gssr.Logo,
+			SiteLogoWidth:  gssr.LogoWidth,
+			SiteLogoHeight: gssr.LogoHeight,
+			IsSiteLogoSVG:  isSiteLogoSVG,
+			SVGDAT:         svgXML,
 		}
 
 		tmpl.ExecuteTemplate(w, "layout", data)

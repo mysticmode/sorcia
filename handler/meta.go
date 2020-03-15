@@ -107,7 +107,7 @@ type MetaKeysResponse struct {
 }
 
 // GetMetaKeys ...
-func GetMetaKeys(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion string) {
+func GetMetaKeys(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
 	userPresent := w.Header().Get("user-present")
 
 	if userPresent == "true" {
@@ -130,7 +130,7 @@ func GetMetaKeys(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 		data := MetaKeysResponse{
 			IsLoggedIn:       true,
 			HeaderActiveMenu: "meta",
-			SorciaVersion:    sorciaVersion,
+			SorciaVersion:    conf.Version,
 			SSHKeys:          sshKeys,
 		}
 
@@ -187,7 +187,7 @@ func PostAuthKey(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 }
 
 // GetMetaUsers ...
-func GetMetaUsers(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion string) {
+func GetMetaUsers(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
 	userPresent := w.Header().Get("user-present")
 
 	if userPresent == "true" {
@@ -205,7 +205,7 @@ func GetMetaUsers(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVers
 		data := MetaResponse{
 			IsLoggedIn:       true,
 			HeaderActiveMenu: "meta",
-			SorciaVersion:    sorciaVersion,
+			SorciaVersion:    conf.Version,
 		}
 
 		tmpl.ExecuteTemplate(w, "layout", data)
@@ -267,15 +267,15 @@ func MetaPostPassword(w http.ResponseWriter, r *http.Request, db *sql.DB, decode
 }
 
 // MetaPostSiteSettings
-func MetaPostSiteSettings(w http.ResponseWriter, r *http.Request, db *sql.DB, uploadAssetPath string) {
+func MetaPostSiteSettings(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
 	userPresent := w.Header().Get("user-present")
 
 	if userPresent == "true" {
 
 		siteTitle := r.FormValue("title")
 
-		gotFavicon, faviconPath := faviconUpload(w, r, uploadAssetPath)
-		gotLogo, logoPath, logoWidth, logoHeight := logoUpload(w, r, uploadAssetPath)
+		gotFavicon, faviconPath := faviconUpload(w, r, conf.Paths.UploadAssetPath)
+		gotLogo, logoPath, logoWidth, logoHeight := logoUpload(w, r, conf.Paths.UploadAssetPath)
 
 		if siteTitle == "" && !gotFavicon && !gotLogo {
 			http.Redirect(w, r, "/meta", http.StatusFound)

@@ -16,6 +16,7 @@ import (
 
 	errorhandler "sorcia/error"
 	"sorcia/model"
+	"sorcia/setting"
 	"sorcia/util"
 
 	"github.com/gorilla/mux"
@@ -32,7 +33,7 @@ type GetCreateRepoResponse struct {
 }
 
 // GetCreateRepo ...
-func GetCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion string) {
+func GetCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
 	userPresent := w.Header().Get("user-present")
 
 	if userPresent == "true" {
@@ -50,7 +51,7 @@ func GetCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVer
 		data := GetCreateRepoResponse{
 			IsLoggedIn:       true,
 			HeaderActiveMenu: "",
-			SorciaVersion:    sorciaVersion,
+			SorciaVersion:    conf.Version,
 		}
 
 		tmpl.ExecuteTemplate(w, "layout", data)
@@ -67,7 +68,7 @@ type CreateRepoRequest struct {
 }
 
 // PostCreateRepo ...
-func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder *schema.Decoder, sorciaVersion, repoPath string) {
+func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder *schema.Decoder, conf *setting.BaseStruct) {
 	// NOTE: Invoke ParseForm or ParseMultipartForm before reading form values
 	if err := r.ParseForm(); err != nil {
 		fmt.Fprintf(w, "ParseForm() err: %v", err)
@@ -105,7 +106,7 @@ func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder 
 			IsLoggedIn:         true,
 			HeaderActiveMenu:   "",
 			ReponameErrMessage: "Repository name is too long (maximum is 100 characters).",
-			SorciaVersion:      sorciaVersion,
+			SorciaVersion:      conf.Version,
 		}
 
 		tmpl.ExecuteTemplate(w, "layout", data)
@@ -126,7 +127,7 @@ func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder 
 			IsLoggedIn:         true,
 			HeaderActiveMenu:   "",
 			ReponameErrMessage: "Repository name may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen.",
-			SorciaVersion:      sorciaVersion,
+			SorciaVersion:      conf.Version,
 		}
 
 		tmpl.ExecuteTemplate(w, "layout", data)
@@ -152,7 +153,7 @@ func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder 
 	model.InsertRepo(db, crs)
 
 	// Create Git bare repository
-	bareRepoDir := filepath.Join(repoPath, createRepoRequest.Name+".git")
+	bareRepoDir := filepath.Join(conf.Paths.RepoPath, createRepoRequest.Name+".git")
 	gitPath := util.GetGitBinPath()
 
 	args := []string{"init", "--bare", bareRepoDir}
@@ -226,11 +227,11 @@ func checkUserLoggedIn(w http.ResponseWriter) bool {
 }
 
 // GetRepo ...
-func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion string, repoPath string) {
+func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
 	vars := mux.Vars(r)
 	reponame := vars["reponame"]
 
-	repoDir := filepath.Join(repoPath, reponame+".git")
+	repoDir := filepath.Join(conf.Paths.RepoPath, reponame+".git")
 
 	if repoExists := model.CheckRepoExists(db, reponame); !repoExists {
 		w.WriteHeader(http.StatusNotFound)
@@ -240,13 +241,13 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion s
 	userID := model.GetUserIDFromReponame(db, reponame)
 	username := model.GetUsernameFromUserID(db, userID)
 	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
-	totalCommits := util.GetCommitCounts(repoPath, reponame)
+	totalCommits := util.GetCommitCounts(conf.Paths.RepoPath, reponame)
 
 	data := GetRepoResponse{
 		IsLoggedIn:       checkUserLoggedIn(w),
 		ShowLoginMenu:    true,
 		HeaderActiveMenu: "",
-		SorciaVersion:    sorciaVersion,
+		SorciaVersion:    conf.Version,
 		Username:         username,
 		Reponame:         reponame,
 		RepoDescription:  repoDescription,
@@ -291,12 +292,12 @@ func processREADME(repoPath string) template.HTML {
 }
 
 // GetRepoTree ...
-func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion, repoPath string) {
+func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
 	vars := mux.Vars(r)
 	reponame := vars["reponame"]
 	branch := vars["branch"]
 
-	repoDir := filepath.Join(repoPath, reponame+".git")
+	repoDir := filepath.Join(conf.Paths.RepoPath, reponame+".git")
 
 	if repoExists := model.CheckRepoExists(db, reponame); !repoExists {
 		w.WriteHeader(http.StatusNotFound)
@@ -309,7 +310,7 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 		IsLoggedIn:       checkUserLoggedIn(w),
 		ShowLoginMenu:    true,
 		HeaderActiveMenu: "",
-		SorciaVersion:    sorciaVersion,
+		SorciaVersion:    conf.Version,
 		Reponame:         reponame,
 		RepoDescription:  repoDescription,
 		IsRepoPrivate:    model.GetRepoType(db, reponame),
@@ -341,12 +342,12 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 }
 
 // GetRepoTreePath ...
-func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion, repoPath string) {
+func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
 	vars := mux.Vars(r)
 	reponame := vars["reponame"]
 	branch := vars["branch"]
 
-	repoDir := filepath.Join(repoPath, reponame+".git")
+	repoDir := filepath.Join(conf.Paths.RepoPath, reponame+".git")
 
 	if repoExists := model.CheckRepoExists(db, reponame); !repoExists {
 		w.WriteHeader(http.StatusNotFound)
@@ -359,7 +360,7 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaV
 		IsLoggedIn:       checkUserLoggedIn(w),
 		ShowLoginMenu:    true,
 		HeaderActiveMenu: "",
-		SorciaVersion:    sorciaVersion,
+		SorciaVersion:    conf.Version,
 		Reponame:         reponame,
 		RepoDescription:  repoDescription,
 		IsRepoPrivate:    model.GetRepoType(db, reponame),
@@ -513,12 +514,12 @@ func applyDirsAndFiles(dirs, files []string, repoDir, frdpath, branch string) ([
 }
 
 // GetRepoLog ...
-func GetRepoLog(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion, repoPath string) {
+func GetRepoLog(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
 	vars := mux.Vars(r)
 	reponame := vars["reponame"]
 	branch := vars["branch"]
 
-	repoDir := filepath.Join(repoPath, reponame+".git")
+	repoDir := filepath.Join(conf.Paths.RepoPath, reponame+".git")
 
 	q := r.URL.Query()
 	qFrom := q["from"]
@@ -540,7 +541,7 @@ func GetRepoLog(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersio
 		IsLoggedIn:       checkUserLoggedIn(w),
 		ShowLoginMenu:    true,
 		HeaderActiveMenu: "",
-		SorciaVersion:    sorciaVersion,
+		SorciaVersion:    conf.Version,
 		Reponame:         reponame,
 		RepoDescription:  repoDescription,
 		IsRepoPrivate:    model.GetRepoType(db, reponame),
@@ -569,7 +570,7 @@ type Refs struct {
 }
 
 // GetRepoRefs ...
-func GetRepoRefs(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion, repoPath, refsPath string) {
+func GetRepoRefs(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
 	vars := mux.Vars(r)
 	reponame := vars["reponame"]
 
@@ -584,7 +585,7 @@ func GetRepoRefs(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 		IsLoggedIn:       checkUserLoggedIn(w),
 		ShowLoginMenu:    true,
 		HeaderActiveMenu: "",
-		SorciaVersion:    sorciaVersion,
+		SorciaVersion:    conf.Version,
 		Reponame:         reponame,
 		RepoDescription:  repoDescription,
 		IsRepoPrivate:    model.GetRepoType(db, reponame),
@@ -595,7 +596,7 @@ func GetRepoRefs(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 		return
 	}
 
-	repoDir := filepath.Join(repoPath, reponame+".git")
+	repoDir := filepath.Join(conf.Paths.RepoPath, reponame+".git")
 
 	gitPath := util.GetGitBinPath()
 	args := []string{"for-each-ref", "--sort=-taggerdate", "--format", "%(refname) %(contents:subject)", "refs/tags"}
@@ -624,7 +625,7 @@ func GetRepoRefs(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 
 		// Generate tar.gz file
 		tarFilename := fmt.Sprintf("%s-%s.tar.gz", reponame, tagname)
-		tarRefPath := filepath.Join(refsPath, tarFilename)
+		tarRefPath := filepath.Join(conf.Paths.RefsPath, tarFilename)
 
 		if _, err := os.Stat(tarRefPath); !os.IsNotExist(err) {
 			rf.Targz = tarFilename
@@ -633,7 +634,7 @@ func GetRepoRefs(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 
 		// Generate zip file
 		zipFilename := fmt.Sprintf("%s-%s.zip", reponame, tagname)
-		zipRefPath := filepath.Join(refsPath, zipFilename)
+		zipRefPath := filepath.Join(conf.Paths.RefsPath, zipFilename)
 
 		if _, err := os.Stat(zipRefPath); !os.IsNotExist(err) {
 			rf.Zip = zipFilename
@@ -649,19 +650,19 @@ func GetRepoRefs(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersi
 	return
 }
 
-func ServeRefFile(w http.ResponseWriter, r *http.Request, refsPath string) {
+func ServeRefFile(w http.ResponseWriter, r *http.Request, conf *setting.BaseStruct) {
 	vars := mux.Vars(r)
 	fileName := vars["file"]
-	dlPath := filepath.Join(refsPath, fileName)
+	dlPath := filepath.Join(conf.Paths.RefsPath, fileName)
 	http.ServeFile(w, r, dlPath)
 }
 
 // GetRepoContributors ...
-func GetRepoContributors(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion, repoPath string) {
+func GetRepoContributors(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
 	vars := mux.Vars(r)
 	reponame := vars["reponame"]
 
-	repoDir := filepath.Join(repoPath, reponame+".git")
+	repoDir := filepath.Join(conf.Paths.RepoPath, reponame+".git")
 
 	if repoExists := model.CheckRepoExists(db, reponame); !repoExists {
 		w.WriteHeader(http.StatusNotFound)
@@ -674,7 +675,7 @@ func GetRepoContributors(w http.ResponseWriter, r *http.Request, db *sql.DB, sor
 		IsLoggedIn:       checkUserLoggedIn(w),
 		ShowLoginMenu:    true,
 		HeaderActiveMenu: "",
-		SorciaVersion:    sorciaVersion,
+		SorciaVersion:    conf.Version,
 		Reponame:         reponame,
 		RepoDescription:  repoDescription,
 		IsRepoPrivate:    model.GetRepoType(db, reponame),

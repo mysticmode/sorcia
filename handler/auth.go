@@ -12,6 +12,7 @@ import (
 
 	errorhandler "sorcia/error"
 	"sorcia/model"
+	"sorcia/setting"
 	"sorcia/util"
 
 	"github.com/dgrijalva/jwt-go"
@@ -59,10 +60,17 @@ type LoginPageResponse struct {
 	IsShowSignUp       bool
 	LoginErrMessage    string
 	RegisterErrMessage string
+	SiteTitle          string
+	SiteFavicon        string
+	SiteLogo           string
+	SiteLogoWidth      string
+	SiteLogoHeight     string
+	IsSiteLogoSVG      bool
+	SVGDAT             template.HTML
 }
 
 // GetLogin ...
-func GetLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion string) {
+func GetLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
 	userPresent := w.Header().Get("user-present")
 
 	if userPresent == "true" {
@@ -83,7 +91,7 @@ func GetLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion 
 			IsLoggedIn:         false,
 			ShowLoginMenu:      false,
 			HeaderActiveMenu:   "",
-			SorciaVersion:      sorciaVersion,
+			SorciaVersion:      conf.Version,
 			IsShowSignUp:       !model.CheckIfFirstUserExists(db),
 			LoginErrMessage:    "",
 			RegisterErrMessage: "",
@@ -100,7 +108,7 @@ type LoginRequest struct {
 }
 
 // PostLogin ...
-func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion string, decoder *schema.Decoder) {
+func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct, decoder *schema.Decoder) {
 	// NOTE: Invoke ParseForm or ParseMultipartForm before reading form values
 	if err := r.ParseForm(); err != nil {
 		fmt.Fprintf(w, "ParseForm() err: %v", err)
@@ -119,7 +127,7 @@ func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion
 
 	isRegisterForm := r.FormValue("register")
 	if isRegisterForm == "1" {
-		postRegister(w, r, db, sorciaVersion, decoder)
+		postRegister(w, r, db, conf.Version, decoder)
 		return
 	}
 
@@ -146,10 +154,10 @@ func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion
 
 			http.Redirect(w, r, "/", http.StatusFound)
 		} else {
-			invalidLoginCredentials(w, r, sorciaVersion)
+			invalidLoginCredentials(w, r, conf.Version)
 		}
 	} else {
-		invalidLoginCredentials(w, r, sorciaVersion)
+		invalidLoginCredentials(w, r, conf.Version)
 	}
 }
 
