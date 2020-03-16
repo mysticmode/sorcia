@@ -1,9 +1,9 @@
 {{define "title"}}{{ .Reponame }} - Log{{end}}
 {{define "style"}}
-    {{if eq .SiteSettings.SiteStyle "default"}}
-    <link rel="stylesheet" href="/public/css/style.min.css" />
-    {{else}}
+    {{if eq .SiteSettings.SiteStyle "classic"}}
     <link rel="stylesheet" href="/public/css/style_alternative.min.css" />
+    {{else}}
+    <link rel="stylesheet" href="/public/css/style.min.css" />
     {{end}}
 {{end}}
 {{define "content"}}
