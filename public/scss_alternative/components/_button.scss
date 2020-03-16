@@ -1,19 +1,21 @@
 .button {
-    background: $brand-primary;
+    background: #eeeeee;
     font-family: $font-default;
-    color: white;
-    border: none;
+    color: $text-color;
+    border: 1px solid $brand-border;
     padding: 7px 10px;
     cursor: pointer;
     outline: none;
+    text-decoration: none;
 
     &:hover {
-        background: darken($color: $brand-primary, $amount: 10%);
-        color: white;
+        background: darken($color: #eeeeee, $amount: 10%);
+        color: $text-color;
     }
 
     &--danger {
         background: $brand-danger;
+        color: white;
 
         &:hover {
             background: darken($color: $brand-danger, $amount: 10%);
