@@ -60,13 +60,7 @@ type LoginPageResponse struct {
 	IsShowSignUp       bool
 	LoginErrMessage    string
 	RegisterErrMessage string
-	SiteTitle          string
-	SiteFavicon        string
-	SiteLogo           string
-	SiteLogoWidth      string
-	SiteLogoHeight     string
-	IsSiteLogoSVG      bool
-	SVGDAT             template.HTML
+	SiteSettings       util.SiteSettings
 }
 
 // GetLogin ...
@@ -95,6 +89,7 @@ func GetLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.
 			IsShowSignUp:       !model.CheckIfFirstUserExists(db),
 			LoginErrMessage:    "",
 			RegisterErrMessage: "",
+			SiteSettings:       util.GetSiteSettings(db, conf),
 		}
 
 		tmpl.ExecuteTemplate(w, "layout", data)
@@ -127,7 +122,7 @@ func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting
 
 	isRegisterForm := r.FormValue("register")
 	if isRegisterForm == "1" {
-		postRegister(w, r, db, conf.Version, decoder)
+		postRegister(w, r, db, conf, decoder)
 		return
 	}
 
@@ -154,14 +149,14 @@ func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting
 
 			http.Redirect(w, r, "/", http.StatusFound)
 		} else {
-			invalidLoginCredentials(w, r, conf.Version)
+			invalidLoginCredentials(w, r, db, conf)
 		}
 	} else {
-		invalidLoginCredentials(w, r, conf.Version)
+		invalidLoginCredentials(w, r, db, conf)
 	}
 }
 
-func invalidLoginCredentials(w http.ResponseWriter, r *http.Request, sorciaVersion string) {
+func invalidLoginCredentials(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
 	layoutPage := path.Join("./templates", "layout.html")
 	headerPage := path.Join("./templates", "header.html")
 	loginPage := path.Join("./templates", "login.html")
@@ -177,8 +172,10 @@ func invalidLoginCredentials(w http.ResponseWriter, r *http.Request, sorciaVersi
 		IsLoggedIn:         false,
 		ShowLoginMenu:      false,
 		HeaderActiveMenu:   "",
+		SorciaVersion:      conf.Version,
 		LoginErrMessage:    "Your username or password is incorrect.",
 		RegisterErrMessage: "",
+		SiteSettings:       util.GetSiteSettings(db, conf),
 	}
 
 	tmpl.ExecuteTemplate(w, "layout", data)
@@ -193,7 +190,7 @@ type RegisterRequest struct {
 }
 
 // PostRegister ...
-func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVersion string, decoder *schema.Decoder) {
+func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct, decoder *schema.Decoder) {
 	// NOTE: Invoke ParseForm or ParseMultipartForm before reading form values
 	if err := r.ParseForm(); err != nil {
 		fmt.Fprintf(w, "ParseForm() err: %v", err)
@@ -240,10 +237,11 @@ func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVers
 			IsLoggedIn:         false,
 			ShowLoginMenu:      false,
 			HeaderActiveMenu:   "",
-			SorciaVersion:      sorciaVersion,
+			SorciaVersion:      conf.Version,
 			IsShowSignUp:       !model.CheckIfFirstUserExists(db),
 			LoginErrMessage:    "",
 			RegisterErrMessage: "Username is too long (maximum is 39 characters).",
+			SiteSettings:       util.GetSiteSettings(db, conf),
 		}
 
 		tmpl.ExecuteTemplate(w, "layout", data)
@@ -264,10 +262,11 @@ func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, sorciaVers
 			IsLoggedIn:         false,
 			ShowLoginMenu:      false,
 			HeaderActiveMenu:   "",
-			SorciaVersion:      sorciaVersion,
+			SorciaVersion:      conf.Version,
 			IsShowSignUp:       !model.CheckIfFirstUserExists(db),
 			LoginErrMessage:    "",
 			RegisterErrMessage: "Username may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen.",
+			SiteSettings:       util.GetSiteSettings(db, conf),
 		}
 
 		tmpl.ExecuteTemplate(w, "layout", data)

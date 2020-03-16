@@ -30,6 +30,7 @@ type GetCreateRepoResponse struct {
 	HeaderActiveMenu   string
 	ReponameErrMessage string
 	SorciaVersion      string
+	SiteSettings       util.SiteSettings
 }
 
 // GetCreateRepo ...
@@ -52,6 +53,7 @@ func GetCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *set
 			IsLoggedIn:       true,
 			HeaderActiveMenu: "",
 			SorciaVersion:    conf.Version,
+			SiteSettings:     util.GetSiteSettings(db, conf),
 		}
 
 		tmpl.ExecuteTemplate(w, "layout", data)
@@ -107,6 +109,7 @@ func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder 
 			HeaderActiveMenu:   "",
 			ReponameErrMessage: "Repository name is too long (maximum is 100 characters).",
 			SorciaVersion:      conf.Version,
+			SiteSettings:       util.GetSiteSettings(db, conf),
 		}
 
 		tmpl.ExecuteTemplate(w, "layout", data)
@@ -128,6 +131,7 @@ func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder 
 			HeaderActiveMenu:   "",
 			ReponameErrMessage: "Repository name may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen.",
 			SorciaVersion:      conf.Version,
+			SiteSettings:       util.GetSiteSettings(db, conf),
 		}
 
 		tmpl.ExecuteTemplate(w, "layout", data)
@@ -164,6 +168,7 @@ func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder 
 
 // GetRepoResponse struct
 type GetRepoResponse struct {
+	SiteSettings     util.SiteSettings
 	IsLoggedIn       bool
 	ShowLoginMenu    bool
 	HeaderActiveMenu string
@@ -244,6 +249,7 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.B
 	totalCommits := util.GetCommitCounts(conf.Paths.RepoPath, reponame)
 
 	data := GetRepoResponse{
+		SiteSettings:     util.GetSiteSettings(db, conf),
 		IsLoggedIn:       checkUserLoggedIn(w),
 		ShowLoginMenu:    true,
 		HeaderActiveMenu: "",
@@ -307,6 +313,7 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
 
 	data := GetRepoResponse{
+		SiteSettings:     util.GetSiteSettings(db, conf),
 		IsLoggedIn:       checkUserLoggedIn(w),
 		ShowLoginMenu:    true,
 		HeaderActiveMenu: "",
@@ -357,6 +364,7 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
 
 	data := GetRepoResponse{
+		SiteSettings:     util.GetSiteSettings(db, conf),
 		IsLoggedIn:       checkUserLoggedIn(w),
 		ShowLoginMenu:    true,
 		HeaderActiveMenu: "",
@@ -538,6 +546,7 @@ func GetRepoLog(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *settin
 	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
 
 	data := GetRepoResponse{
+		SiteSettings:     util.GetSiteSettings(db, conf),
 		IsLoggedIn:       checkUserLoggedIn(w),
 		ShowLoginMenu:    true,
 		HeaderActiveMenu: "",
@@ -582,6 +591,7 @@ func GetRepoRefs(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
 
 	data := GetRepoResponse{
+		SiteSettings:     util.GetSiteSettings(db, conf),
 		IsLoggedIn:       checkUserLoggedIn(w),
 		ShowLoginMenu:    true,
 		HeaderActiveMenu: "",
@@ -672,6 +682,7 @@ func GetRepoContributors(w http.ResponseWriter, r *http.Request, db *sql.DB, con
 	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
 
 	data := GetRepoResponse{
+		SiteSettings:     util.GetSiteSettings(db, conf),
 		IsLoggedIn:       checkUserLoggedIn(w),
 		ShowLoginMenu:    true,
 		HeaderActiveMenu: "",

@@ -4,8 +4,8 @@
     <header class="header">
         <div class="header__left">
             <a href="/" class="header__logo">
-                {{if .IsSiteLogoSVG}}
-                {{.SVGDAT}}
+                {{if .SiteSettings.IsSiteLogoSVG}}
+                {{.SiteSettings.SVGDAT}}
                 {{else}}
                 <img src="/uploads{{.SiteLogo}}" width="{{.SiteLogoWidth}}px" height="{{.SiteLogoHeight}}px" />
                 {{end}}
@@ -26,8 +26,8 @@
     <header class="header">
         <div class="header__left">
             <a href="/" class="header__logo">
-                {{if .IsSiteLogoSVG}}
-                {{.SVGDAT}}
+                {{if .SiteSettings.IsSiteLogoSVG}}
+                {{.SiteSettings.SVGDAT}}
                 {{else}}
                 <img src="/uploads{{.SiteLogo}}" width="{{.SiteLogoWidth}}px" height="{{.SiteLogoHeight}}px" />
                 {{end}}

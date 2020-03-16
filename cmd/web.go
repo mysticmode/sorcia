@@ -4,12 +4,10 @@ import (
 	"database/sql"
 	"fmt"
 	"html/template"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"path"
 	"path/filepath"
-	"strings"
 
 	errorhandler "sorcia/error"
 	"sorcia/handler"
@@ -136,35 +134,12 @@ type IndexPageResponse struct {
 	SorciaVersion    string
 	Repos            *model.GetReposFromUserIDResponse
 	AllPublicRepos   *model.GetAllPublicReposResponse
-	SiteTitle        string
-	SiteFavicon      string
-	SiteLogo         string
-	SiteLogoWidth    string
-	SiteLogoHeight   string
-	IsSiteLogoSVG    bool
-	SVGDAT           template.HTML
+	SiteSettings     util.SiteSettings
 }
 
 // GetHome ...
 func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
 	userPresent := w.Header().Get("user-present")
-
-	gssr := model.GetSiteSettings(db, conf)
-
-	var isSiteLogoSVG bool
-	var svgXML template.HTML
-	var siteLogoExt string
-	siteLogoSplit := strings.Split(gssr.Logo, ".")
-	if len(siteLogoSplit) > 1 {
-		siteLogoExt = siteLogoSplit[1]
-	}
-	if siteLogoExt == "svg" {
-		isSiteLogoSVG = true
-		dat, err := ioutil.ReadFile(filepath.Join(conf.Paths.UploadAssetPath, gssr.Logo))
-		errorhandler.CheckError("Error on Reading svg logo file", err)
-
-		svgXML = template.HTML(dat)
-	}
 
 	if userPresent == "true" {
 		token := w.Header().Get("sorcia-cookie-token")
@@ -187,13 +162,7 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.B
 			HeaderActiveMenu: "",
 			SorciaVersion:    conf.Version,
 			Repos:            repos,
-			SiteTitle:        gssr.Title,
-			SiteFavicon:      gssr.Favicon,
-			SiteLogo:         gssr.Logo,
-			SiteLogoWidth:    gssr.LogoWidth,
-			SiteLogoHeight:   gssr.LogoHeight,
-			IsSiteLogoSVG:    isSiteLogoSVG,
-			SVGDAT:           svgXML,
+			SiteSettings:     util.GetSiteSettings(db, conf),
 		}
 
 		tmpl.ExecuteTemplate(w, "layout", data)
@@ -219,13 +188,7 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.B
 			ShowLoginMenu:  true,
 			SorciaVersion:  conf.Version,
 			AllPublicRepos: repos,
-			SiteTitle:      gssr.Title,
-			SiteFavicon:    gssr.Favicon,
-			SiteLogo:       gssr.Logo,
-			SiteLogoWidth:  gssr.LogoWidth,
-			SiteLogoHeight: gssr.LogoHeight,
-			IsSiteLogoSVG:  isSiteLogoSVG,
-			SVGDAT:         svgXML,
+			SiteSettings:   util.GetSiteSettings(db, conf),
 		}
 
 		tmpl.ExecuteTemplate(w, "layout", data)
