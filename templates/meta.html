@@ -33,9 +33,9 @@
                 <input type="text" class="form__input" id="siteTitle" name="title" value="{{.SiteSettings.SiteTitle}}" autocomplete="off" spellcheck="false" />
             </div>
             <div class="form__group">
-                <label for="siteFavicon">Favicon (Supports ico/png/jpg formats. Max-size: 2 MB)</label>
+                <label for="siteFavicon">Favicon (Supports png/jpg formats. Max-size: 2 MB)</label>
                 <div class="meta__detail__form__current">
-                    <div class="form__title">Current favicon:</div>
+                    <div>Current favicon:</div>
                     <img src="/uploads{{.SiteSettings.SiteFavicon}}" width="20px" height="20px" />
                 </div>
                 <input type="file" class="form__input" id="siteFavicon" name="favicon" />
@@ -43,7 +43,7 @@
             <div class="form__group">
                 <label for="siteLogo">Logo (Supports svg/png/jpg formats. Max-height: 30px, Max-width: 200px. Max-size: 10 MB)</label>
                 <div class="meta__detail__form__current">
-                    <div class="form__title">Current logo:</div>
+                    <div>Current logo:</div>
                     {{if .SiteSettings.IsSiteLogoSVG}}
                     <img src="/uploads{{.SiteSettings.SiteLogo}}" />
                     <!-- {{.SiteSettings.SVGDAT}} -->
