@@ -325,7 +325,7 @@ func GetSSHAllAuthKeys(db *sql.DB) *SSHAllAuthKeysResponse {
 
 // CreateSiteSettings ...
 func CreateSiteSettings(db *sql.DB) {
-	stmt, err := db.Prepare("CREATE TABLE IF NOT EXISTS site_settings (id INTEGER PRIMARY KEY, title TEXT NOT NULL, favicon TEXT, logo TEXT, logo_width TEXT, logo_height TEXT)")
+	stmt, err := db.Prepare("CREATE TABLE IF NOT EXISTS site_settings (id INTEGER PRIMARY KEY, title TEXT NOT NULL, favicon TEXT, logo TEXT, logo_width TEXT, logo_height TEXT, style TEXT DEFAULT 'default' NOT NULL)")
 	errorhandler.CheckError("Error on model create site", err)
 
 	_, err = stmt.Exec()
@@ -339,14 +339,15 @@ type CreateSiteSettingsStruct struct {
 	Logo       string
 	LogoWidth  string
 	LogoHeight string
+	Style      string
 }
 
 // InsertSiteSettings ...
 func InsertSiteSettings(db *sql.DB, css CreateSiteSettingsStruct) {
-	stmt, err := db.Prepare("INSERT INTO site_settings (title, favicon, logo, logo_width, logo_height) VALUES (?, ?, ?, ?, ?)")
+	stmt, err := db.Prepare("INSERT INTO site_settings (title, favicon, logo, logo_width, logo_height, style) VALUES (?, ?, ?, ?, ?, ?)")
 	errorhandler.CheckError("Error on model insert site", err)
 
-	_, err = stmt.Exec(css.Title, css.Favicon, css.Logo, css.LogoWidth, css.LogoHeight)
+	_, err = stmt.Exec(css.Title, css.Favicon, css.Logo, css.LogoWidth, css.LogoHeight, css.Style)
 	errorhandler.CheckError("Error on model insert site exec", err)
 }
 
@@ -377,18 +378,19 @@ type GetSiteSettingsResponse struct {
 	Logo       string
 	LogoWidth  string
 	LogoHeight string
+	Style      string
 }
 
 // GetSiteSettings ...
 func GetSiteSettings(db *sql.DB, conf *setting.BaseStruct) *GetSiteSettingsResponse {
-	rows, err := db.Query("SELECT title, favicon, logo, logo_width, logo_height FROM site_settings WHERE id = ?", 1)
+	rows, err := db.Query("SELECT title, favicon, logo, logo_width, logo_height, style FROM site_settings WHERE id = ?", 1)
 	errorhandler.CheckError("Error on model get site settings exists", err)
 
-	var title, favicon, logo, logoWidth, logoHeight string
+	var title, favicon, logo, logoWidth, logoHeight, style string
 	gssr := GetSiteSettingsResponse{}
 
 	if rows.Next() {
-		err = rows.Scan(&title, &favicon, &logo, &logoWidth, &logoHeight)
+		err = rows.Scan(&title, &favicon, &logo, &logoWidth, &logoHeight, &style)
 		errorhandler.CheckError("Error on model get site_settings settings exists rows scan", err)
 
 		faviconSplit := strings.Split(favicon, conf.Paths.UploadAssetPath)
@@ -407,6 +409,7 @@ func GetSiteSettings(db *sql.DB, conf *setting.BaseStruct) *GetSiteSettingsRespo
 			Logo:       logo,
 			LogoWidth:  logoWidth,
 			LogoHeight: logoHeight,
+			Style:      style,
 		}
 	}
 	rows.Close()
@@ -439,4 +442,13 @@ func UpdateSiteLogo(db *sql.DB, logo, logoWidth, logoHeight string) {
 
 	_, err = stmt.Exec(logo)
 	errorhandler.CheckError("Error on model update site logo exec", err)
+}
+
+// UpdateSiteStyle ...
+func UpdateSiteStyle(db *sql.DB, style string) {
+	stmt, err := db.Prepare("UPDATE site_settings SET style = ? WHERE id = 1")
+	errorhandler.CheckError("Error on model update site style", err)
+
+	_, err = stmt.Exec(style)
+	errorhandler.CheckError("Error on model update site style exec", err)
 }

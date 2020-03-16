@@ -96,6 +96,7 @@ type SiteSettings struct {
 	IsSiteFavicon  bool
 	IsSiteLogo     bool
 	SiteTitle      string
+	SiteStyle      string
 	SiteFavicon    string
 	SiteFaviconExt string
 	SiteLogo       string
@@ -150,6 +151,7 @@ func GetSiteSettings(db *sql.DB, conf *setting.BaseStruct) SiteSettings {
 		IsSiteFavicon:  isSiteFavicon,
 		IsSiteLogo:     isSiteLogo,
 		SiteTitle:      gssr.Title,
+		SiteStyle:      gssr.Style,
 		SiteFavicon:    gssr.Favicon,
 		SiteFaviconExt: faviconExt,
 		SiteLogo:       gssr.Logo,

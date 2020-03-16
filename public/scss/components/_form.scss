@@ -32,6 +32,23 @@
         }
     }
 
+    & .radio__group {
+        display: flex;
+        
+        & div {
+            display: flex;
+            align-items: baseline;
+
+            & label {
+                margin-left: 5px;
+            }
+
+            &:first-child {
+                margin-right: 20px;
+            }
+        }
+    }
+
     &__username-tag {
         color: $text-color;
         background: $brand-bg-1;
