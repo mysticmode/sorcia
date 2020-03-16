@@ -21,6 +21,7 @@ import (
 	"sorcia/setting"
 	"sorcia/util"
 
+	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
 )
 
@@ -107,6 +108,24 @@ func GetMetaKeys(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 		}
 
 		tmpl.ExecuteTemplate(w, "layout", data)
+	} else {
+		http.Redirect(w, r, "/login", http.StatusFound)
+	}
+}
+
+// DeleteMetaKey ...
+func DeleteMetaKey(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	vars := mux.Vars(r)
+	keyID := vars["keyID"]
+
+	userPresent := w.Header().Get("user-present")
+
+	if userPresent == "true" {
+		i, err := strconv.Atoi(keyID)
+		errorhandler.CheckError("Error on converting SSH key id(string) to int on delete meta keys", err)
+
+		model.DeleteMetaKeyByID(db, i)
+		http.Redirect(w, r, "/meta/keys", http.StatusFound)
 	} else {
 		http.Redirect(w, r, "/login", http.StatusFound)
 	}

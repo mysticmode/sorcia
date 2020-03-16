@@ -224,6 +224,15 @@ func InsertSSHPubKey(db *sql.DB, ispk InsertSSHPubKeyStruct) {
 	errorhandler.CheckError("Error on model insert ssh pub key exec", err)
 }
 
+// DeleteMetaKeyByID ...
+func DeleteMetaKeyByID(db *sql.DB, id int) {
+	stmt, err := db.Prepare("DELETE FROM ssh WHERE id = ?")
+	errorhandler.CheckError("Error on model delete meta key by id", err)
+
+	_, err = stmt.Exec(id)
+	errorhandler.CheckError("Error on model delete meta key by id exec", err)
+}
+
 // SSHKeysResponse struct
 type SSHKeysResponse struct {
 	SSHKeys []SSHDetail
@@ -231,20 +240,21 @@ type SSHKeysResponse struct {
 
 // SSHDetail struct
 type SSHDetail struct {
+	ID          int
 	Title       string
 	Fingerprint string
 }
 
 // GetSSHKeysFromUserID ...
 func GetSSHKeysFromUserId(db *sql.DB, userID int) *SSHKeysResponse {
-	rows, err := db.Query("SELECT title, fingerprint FROM ssh WHERE user_id = ?", userID)
+	rows, err := db.Query("SELECT id, title, fingerprint FROM ssh WHERE user_id = ?", userID)
 	errorhandler.CheckError("Error on model get ssh key from userid", err)
 
 	var sdr SSHDetail
 	var skr SSHKeysResponse
 
 	for rows.Next() {
-		err = rows.Scan(&sdr.Title, &sdr.Fingerprint)
+		err = rows.Scan(&sdr.ID, &sdr.Title, &sdr.Fingerprint)
 		errorhandler.CheckError("Error on model get ssh key from userid rows scan", err)
 
 		skr.SSHKeys = append(skr.SSHKeys, sdr)
