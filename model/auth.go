@@ -35,6 +35,35 @@ func InsertAccount(db *sql.DB, cas CreateAccountStruct) {
 	errorhandler.CheckError("Error on model insert account exec", err)
 }
 
+type Users struct {
+	Users []User
+}
+
+type User struct {
+	Username string
+	Email    string
+	IsAdmin  bool
+}
+
+// GetAllUsers
+func GetAllUsers(db *sql.DB) Users {
+	rows, err := db.Query("SELECT username, email, is_admin FROM account")
+	errorhandler.CheckError("Error on model get all users", err)
+
+	var user User
+	var users Users
+
+	for rows.Next() {
+		err = rows.Scan(&user.Username, &user.Email, &user.IsAdmin)
+		errorhandler.CheckError("Error on model get all users rows scan", err)
+
+		users.Users = append(users.Users, user)
+	}
+	rows.Close()
+
+	return users
+}
+
 // GetUserIDFromToken ...
 func GetUserIDFromToken(db *sql.DB, token string) int {
 	rows, err := db.Query("SELECT id FROM account WHERE jwt_token = ?", token)
