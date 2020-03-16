@@ -74,6 +74,7 @@ type MetaKeysResponse struct {
 	HeaderActiveMenu string
 	SorciaVersion    string
 	SSHKeys          *model.SSHKeysResponse
+	SiteSettings     util.SiteSettings
 }
 
 // GetMetaKeys ...
@@ -102,6 +103,7 @@ func GetMetaKeys(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 			HeaderActiveMenu: "meta",
 			SorciaVersion:    conf.Version,
 			SSHKeys:          sshKeys,
+			SiteSettings:     util.GetSiteSettings(db, conf),
 		}
 
 		tmpl.ExecuteTemplate(w, "layout", data)
@@ -176,6 +178,7 @@ func GetMetaUsers(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *sett
 			IsLoggedIn:       true,
 			HeaderActiveMenu: "meta",
 			SorciaVersion:    conf.Version,
+			SiteSettings:     util.GetSiteSettings(db, conf),
 		}
 
 		tmpl.ExecuteTemplate(w, "layout", data)
