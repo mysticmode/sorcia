@@ -21,19 +21,15 @@
         </form>
         <div class="meta__keys">
             <div class="meta__keys__title">your ssh keys</div>
-            <table class="meta__keys__table">
-                <tr>
-                    <th>Title</th>
-                    <th>Fingerprint</th>
-                </tr>
-                {{range .SSHKeys.SSHKeys}}
-                <tr>
-                    <td>{{.Title}}</td>
-                    <td>{{.Fingerprint}}</td>
-                    <td><a href="" class="button button--danger">Delete</a></td>
-                </tr>
-                {{end}}
-            </table>
+            {{range .SSHKeys.SSHKeys}}
+            <div class="meta__keys__item">
+                <div>Title</div>
+                <p>{{.Title}}</p>
+                <div>Fingerprint</div>
+                <p>{{.Fingerprint}}</p>
+                <a href="" class="button button--danger">Delete</a>
+            </div>
+            {{end}}
         </div>
     </div>
 </main>

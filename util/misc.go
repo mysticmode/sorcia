@@ -31,13 +31,11 @@ func IsAlnumOrHyphen(s string) bool {
 func SSHFingerPrint(authKey string) string {
 	parts := strings.Fields(string(authKey))
 	if len(parts) < 2 {
-		log.Fatal("bad key")
+		log.Printf("bad key")
 	}
 
 	k, err := base64.StdEncoding.DecodeString(parts[1])
-	if err != nil {
-		log.Fatal(err)
-	}
+	errorhandler.CheckError("Error on util ssh fingerprint decode string", err)
 
 	fp := md5.Sum([]byte(k))
 	var fingerPrint string
