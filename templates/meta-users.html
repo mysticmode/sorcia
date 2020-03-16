@@ -26,24 +26,17 @@
         </form>
         <div class="meta__users">
             <div class="meta__users__title">users</div>
-            <table class="meta__users__table">
-                <tr>
-                    <th>Username</th>
-                    <th>Email address</th>
-                </tr>
-                <tr>
-                    <td>mysticmode</td>
-                    <td>yo@mysticmode.org</td>
-                </tr>
-                <tr>
-                    <td>mysticmode</td>
-                    <td>yo@mysticmode.org</td>
-                </tr>
-                <tr>
-                    <td>mysticmode</td>
-                    <td>yo@mysticmode.org</td>
-                </tr>
-            </table>
+            {{range .Users.Users}}
+            <div class="meta__users__item">
+                <div>Username</div>
+                <p>{{.Username}}</p>
+                <div>Email address</div>
+                <p>{{.Email}}</p>
+                {{if .IsAdmin}}
+                <p class="admin">[ADMIN]</p>
+                {{end}}
+            </div>
+            {{end}}
         </div>
     </div>
 </main>

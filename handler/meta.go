@@ -31,6 +31,7 @@ type MetaResponse struct {
 	SorciaVersion    string
 	Username         string
 	Email            string
+	Users            model.Users
 	SiteSettings     util.SiteSettings
 }
 
@@ -182,6 +183,8 @@ func GetMetaUsers(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *sett
 	userPresent := w.Header().Get("user-present")
 
 	if userPresent == "true" {
+		users := model.GetAllUsers(db)
+
 		layoutPage := path.Join("./templates", "layout.html")
 		headerPage := path.Join("./templates", "header.html")
 		metaPage := path.Join("./templates", "meta-users.html")
@@ -197,6 +200,7 @@ func GetMetaUsers(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *sett
 			IsLoggedIn:       true,
 			HeaderActiveMenu: "meta",
 			SorciaVersion:    conf.Version,
+			Users:            users,
 			SiteSettings:     util.GetSiteSettings(db, conf),
 		}
 
