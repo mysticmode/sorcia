@@ -7,18 +7,18 @@ for (i = 0; i < branches.length; i++) {
     pathSplit = path.split(branchValue);
 
     if (pathSplit.length == 2) {
-        branches.value = branchValue
+        branches.value = branchValue;
 
         // Update next button link href
-        var href = document.getElementById("repoPagination").getAttribute("href")
-        var hrefFirst = href.split("?")[0].split("/")
-        var hrefSecond = href.split("?")[1]
+        var href = document.getElementById("repoPagination").getAttribute("href");
+        var hrefFirst = href.split("?")[0].split("/");
+        var hrefSecond = href.split("?")[1];
 
-        var newHref = ""
+        var newHref = "";
         for (j = 0; j < (hrefFirst.length-1); j++) {
             newHref = newHref + hrefFirst[j] + "/";
         }
-        newHref = newHref + branchValue + "?" + hrefSecond
+        newHref = newHref + branchValue + "?" + hrefSecond;
 
         document.getElementById("repoPagination").href = newHref;
 

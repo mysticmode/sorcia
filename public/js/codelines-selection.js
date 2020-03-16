@@ -60,7 +60,7 @@ window.onload = function() {
             if (e.shiftKey) {
                 var hljsLine = document.getElementsByClassName('hljs-ln-line');
                 for (i = 0; i < hljsLine.length; i++) {
-                    if(hljsLine[i].parentElement.hasAttribute('style')) {
+                    if(hljsLine[i].parentElement.className == "hljs-selection") {
                         var previousID = hljsLine[i].getAttribute('id');
                         var currentID = e.target.parentElement.getAttribute('id');
                         if (previousID == currentID) {
@@ -89,7 +89,7 @@ window.onload = function() {
         removeCodeLineBg();
 
         // Apply line background to the current ID element
-        document.getElementById(currentID).parentElement.style.background = '#CDF0FD';
+        document.getElementById(currentID).parentElement.className = 'hljs-selection';
 
         // Update URL parameter to the Line ID
         var url = window.location.href;
@@ -105,11 +105,11 @@ window.onload = function() {
 
         if (previousNumber < currentNumber) {
             for (j = previousNumber; j <= currentNumber; j++) {
-                document.getElementById('L'+j).parentElement.style.background = '#CDF0FD';
+                document.getElementById('L'+j).parentElement.className = 'hljs-selection';
             }
         } else {
             for (j = previousNumber; j >= currentNumber; j--) {
-                document.getElementById('L'+j).parentElement.style.background = '#CDF0FD';
+                document.getElementById('L'+j).parentElement.className = 'hljs-selection';
             }
         }
 
@@ -123,7 +123,7 @@ window.onload = function() {
         // Remove previous line backgrounds
         var hljsLine = document.getElementsByClassName('hljs-ln-line');
         for (i = 0; i < hljsLine.length; ++i) {
-            hljsLine[i].parentElement.removeAttribute('style');
+            hljsLine[i].parentElement.classList.remove('hljs-selection');
         }
     }
 };
