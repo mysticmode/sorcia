@@ -2,14 +2,19 @@ package util
 
 import (
 	"crypto/md5"
+	"database/sql"
 	"encoding/base64"
 	"fmt"
+	"html/template"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
 
 	errorhandler "sorcia/error"
+	"sorcia/model"
+	"sorcia/setting"
 )
 
 // IsAlnumOrHyphen ...
@@ -85,4 +90,47 @@ func ContainsValueInArr(a []string, x string) bool {
 		}
 	}
 	return false
+}
+
+// SiteSettings struct
+type SiteSettings struct {
+	SiteTitle      string
+	SiteFavicon    string
+	SiteLogo       string
+	SiteLogoWidth  string
+	SiteLogoHeight string
+	IsSiteLogoSVG  bool
+	SVGDAT         template.HTML
+}
+
+// GetSiteSettings ...
+func GetSiteSettings(db *sql.DB, conf *setting.BaseStruct) SiteSettings {
+	gssr := model.GetSiteSettings(db, conf)
+
+	var isSiteLogoSVG bool
+	var svgXML template.HTML
+	var siteLogoExt string
+	siteLogoSplit := strings.Split(gssr.Logo, ".")
+	if len(siteLogoSplit) > 1 {
+		siteLogoExt = siteLogoSplit[1]
+	}
+	if siteLogoExt == "svg" {
+		isSiteLogoSVG = true
+		dat, err := ioutil.ReadFile(filepath.Join(conf.Paths.UploadAssetPath, gssr.Logo))
+		errorhandler.CheckError("Error on Reading svg logo file", err)
+
+		svgXML = template.HTML(dat)
+	}
+
+	siteSettings := SiteSettings{
+		SiteTitle:      gssr.Title,
+		SiteFavicon:    gssr.Favicon,
+		SiteLogo:       gssr.Logo,
+		SiteLogoWidth:  gssr.LogoWidth,
+		SiteLogoHeight: gssr.LogoHeight,
+		IsSiteLogoSVG:  isSiteLogoSVG,
+		SVGDAT:         svgXML,
+	}
+
+	return siteSettings
 }

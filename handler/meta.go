@@ -9,7 +9,6 @@ import (
 	_ "image/jpeg"
 	_ "image/png"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path"
@@ -31,13 +30,7 @@ type MetaResponse struct {
 	SorciaVersion    string
 	Username         string
 	Email            string
-	SiteTitle        string
-	SiteFavicon      string
-	SiteLogo         string
-	SiteLogoWidth    string
-	SiteLogoHeight   string
-	IsSiteLogoSVG    bool
-	SVGDAT           template.HTML
+	SiteSettings     util.SiteSettings
 }
 
 // GetMeta ...
@@ -48,23 +41,6 @@ func GetMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.B
 		token := w.Header().Get("sorcia-cookie-token")
 		username := model.GetUsernameFromToken(db, token)
 		email := model.GetEmailFromUsername(db, username)
-
-		gssr := model.GetSiteSettings(db, conf)
-
-		var isSiteLogoSVG bool
-		var svgXML template.HTML
-		var siteLogoExt string
-		siteLogoSplit := strings.Split(gssr.Logo, ".")
-		if len(siteLogoSplit) > 1 {
-			siteLogoExt = siteLogoSplit[1]
-		}
-		if siteLogoExt == "svg" {
-			isSiteLogoSVG = true
-			dat, err := ioutil.ReadFile(filepath.Join(conf.Paths.UploadAssetPath, gssr.Logo))
-			errorhandler.CheckError("Error on Reading svg logo file", err)
-
-			svgXML = template.HTML(dat)
-		}
 
 		layoutPage := path.Join("./templates", "layout.html")
 		headerPage := path.Join("./templates", "header.html")
@@ -83,13 +59,7 @@ func GetMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.B
 			SorciaVersion:    conf.Version,
 			Username:         username,
 			Email:            email,
-			SiteTitle:        gssr.Title,
-			SiteFavicon:      gssr.Favicon,
-			SiteLogo:         gssr.Logo,
-			SiteLogoWidth:    gssr.LogoWidth,
-			SiteLogoHeight:   gssr.LogoHeight,
-			IsSiteLogoSVG:    isSiteLogoSVG,
-			SVGDAT:           svgXML,
+			SiteSettings:     util.GetSiteSettings(db, conf),
 		}
 
 		tmpl.ExecuteTemplate(w, "layout", data)
