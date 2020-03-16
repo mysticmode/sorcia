@@ -1,16 +1,25 @@
-{{define "favicon"}}<link rel="icon" type="image/{{.SiteSettings.SiteFaviconExt}}" href="/uploads{{.SiteSettings.SiteFavicon}}" />{{end}}
+{{define "favicon"}}
+    {{if .SiteSettings.IsSiteFavicon}}
+    <link rel="icon" type="image/{{.SiteSettings.SiteFaviconExt}}" href="/uploads{{.SiteSettings.SiteFavicon}}" />
+    {{else}}
+    <link rel="icon" type="image/{{.SiteSettings.SiteFaviconExt}}" href="/public/img/sorcia_favicon.png" />
+    {{end}}
+{{end}}
 {{define "header"}}
     {{if .IsLoggedIn}}
     <header class="header">
         <div class="header__left">
             <a href="/" class="header__logo">
-                {{if .SiteSettings.IsSiteLogoSVG}}
-                <img src="/uploads{{.SiteSettings.SiteLogo}}" />
-                <!-- {{.SiteSettings.SVGDAT}} -->
+                {{if .SiteSettings.IsSiteLogo}}
+                    {{if .SiteSettings.IsSiteLogoSVG}}
+                    <img src="/uploads{{.SiteSettings.SiteLogo}}" />
+                    <!-- {{.SiteSettings.SVGDAT}} -->
+                    {{else}}
+                    <img src="/uploads{{.SiteSettings.SiteLogo}}" width="{{.SiteSettings.SiteLogoWidth}}px" height="{{.SiteSettings.SiteLogoHeight}}px" />
+                    {{end}}
                 {{else}}
-                <img src="/uploads{{.SiteSettings.SiteLogo}}" width="{{.SiteSettings.SiteLogoWidth}}px" height="{{.SiteSettings.SiteLogoHeight}}px" />
+                    <img src="/public/img/sorcia.svg" width="81px" height="18px" />
                 {{end}}
-                <!-- <img src="/public/img/sorcia.svg" width="81px" height="18px" /> -->
             </a>
         </div>
         <div class="header__right">
@@ -27,13 +36,16 @@
     <header class="header">
         <div class="header__left">
             <a href="/" class="header__logo">
-                {{if .SiteSettings.IsSiteLogoSVG}}
-                <img src="/uploads{{.SiteSettings.SiteLogo}}" />
-                <!-- {{.SiteSettings.SVGDAT}} -->
+                {{if .SiteSettings.IsSiteLogo}}
+                    {{if .SiteSettings.IsSiteLogoSVG}}
+                    <img src="/uploads{{.SiteSettings.SiteLogo}}" />
+                    <!-- {{.SiteSettings.SVGDAT}} -->
+                    {{else}}
+                    <img src="/uploads{{.SiteSettings.SiteLogo}}" width="{{.SiteSettings.SiteLogoWidth}}px" height="{{.SiteSettings.SiteLogoHeight}}px" />
+                    {{end}}
                 {{else}}
-                <img src="/uploads{{.SiteSettings.SiteLogo}}" width="{{.SiteSettings.SiteLogoWidth}}px" height="{{.SiteSettings.SiteLogoHeight}}px" />
+                    <img src="/public/img/sorcia.svg" width="81px" height="18px" />
                 {{end}}
-                <!-- <img src="/public/img/sorcia.svg" width="81px" height="18px" /> -->
             </a>
         </div>
         {{if .ShowLoginMenu}}

@@ -1,4 +1,10 @@
-{{define "title"}}{{.SiteSettings.SiteTitle}}{{end}}
+{{define "title"}}
+    {{if .SiteSettings.IsSiteTitle}}
+        {{.SiteSettings.SiteTitle}}
+    {{else}}
+        sorcia - Self-hosted web frontend for git repositories written in git__repos
+    {{end}}
+{{end}}
 {{define "content"}}
 <main class="container git">
     {{if .IsLoggedIn}}
