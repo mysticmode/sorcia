@@ -1,4 +1,4 @@
-{{define "title"}}meta{{end}}
+{{define "title"}}meta - General{{end}}
 {{define "content"}}
 <main class="container meta">
     <div class="repo__menu">
@@ -30,25 +30,33 @@
             <div class="meta__error"></div>
             <div class="form__group">
                 <label for="siteTitle">Title</label>
+                {{if .SiteSettings.IsSiteTitle}}
                 <input type="text" class="form__input" id="siteTitle" name="title" value="{{.SiteSettings.SiteTitle}}" autocomplete="off" spellcheck="false" />
+                {{else}}
+                <input type="text" class="form__input" id="siteTitle" name="title" value="sorcia - Self-hosted web frontend for git repositories written in Go" autocomplete="off" spellcheck="false" />
+                {{end}}
             </div>
             <div class="form__group">
                 <label for="siteFavicon">Favicon (Supports png/jpg formats. Max-size: 2 MB)</label>
                 <div class="meta__detail__form__current">
-                    <div>Current favicon:</div>
-                    <img src="/uploads{{.SiteSettings.SiteFavicon}}" width="20px" height="20px" />
+                    {{if .SiteSettings.IsSiteFavicon}}
+                        <div>Current favicon:</div>
+                        <img src="/uploads{{.SiteSettings.SiteFavicon}}" width="20px" height="20px" />
+                    {{end}}
                 </div>
                 <input type="file" class="form__input" id="siteFavicon" name="favicon" />
             </div>
             <div class="form__group">
                 <label for="siteLogo">Logo (Supports svg/png/jpg formats. Max-height: 30px, Max-width: 200px. Max-size: 10 MB)</label>
                 <div class="meta__detail__form__current">
-                    <div>Current logo:</div>
-                    {{if .SiteSettings.IsSiteLogoSVG}}
-                    <img src="/uploads{{.SiteSettings.SiteLogo}}" />
-                    <!-- {{.SiteSettings.SVGDAT}} -->
-                    {{else}}
-                    <img src="/uploads{{.SiteSettings.SiteLogo}}" width="{{.SiteSettings.SiteLogoWidth}}px" height="{{.SiteSettings.SiteLogoHeight}}px" />
+                    {{if .SiteSettings.IsSiteFavicon}}
+                        <div>Current logo:</div>
+                        {{if .SiteSettings.IsSiteLogoSVG}}
+                        <img src="/uploads{{.SiteSettings.SiteLogo}}" />
+                        <!-- {{.SiteSettings.SVGDAT}} -->
+                        {{else}}
+                        <img src="/uploads{{.SiteSettings.SiteLogo}}" width="{{.SiteSettings.SiteLogoWidth}}px" height="{{.SiteSettings.SiteLogoHeight}}px" />
+                        {{end}}
                     {{end}}
                 </div>
                 <input type="file" class="form__input" id="siteLogo" name="logo" />
