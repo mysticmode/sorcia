@@ -1,4 +1,4 @@
-{{define "favicon"}}<link rel="icon" type="image/png" href="/uploads{{.SiteSettings.SiteFavicon}}" />{{end}}
+{{define "favicon"}}<link rel="icon" type="image/{{.SiteSettings.SiteFaviconExt}}" href="/uploads{{.SiteSettings.SiteFavicon}}" />{{end}}
 {{define "header"}}
     {{if .IsLoggedIn}}
     <header class="header">
