@@ -5,6 +5,13 @@
     <link rel="icon" type="image/{{.SiteSettings.SiteFaviconExt}}" href="/public/img/sorcia_favicon.png" />
     {{end}}
 {{end}}
+{{define "style"}}
+    {{if eq .SiteSettings.SiteStyle "classic"}}
+    <link rel="stylesheet" href="/public/css/style_alternative.min.css" />
+    {{else}}
+    <link rel="stylesheet" href="/public/css/style.min.css" />
+    {{end}}
+{{end}}
 {{define "header"}}
     {{if .IsLoggedIn}}
     <header class="header">

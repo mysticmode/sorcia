@@ -325,7 +325,7 @@ func GetSSHAllAuthKeys(db *sql.DB) *SSHAllAuthKeysResponse {
 
 // CreateSiteSettings ...
 func CreateSiteSettings(db *sql.DB) {
-	stmt, err := db.Prepare("CREATE TABLE IF NOT EXISTS site_settings (id INTEGER PRIMARY KEY, title TEXT NOT NULL, favicon TEXT, logo TEXT, logo_width TEXT, logo_height TEXT, style TEXT DEFAULT 'default' NOT NULL)")
+	stmt, err := db.Prepare("CREATE TABLE IF NOT EXISTS site_settings (id INTEGER PRIMARY KEY, title TEXT NOT NULL, favicon TEXT, logo TEXT, logo_width TEXT, logo_height TEXT, style TEXT DEFAULT 'default')")
 	errorhandler.CheckError("Error on model create site", err)
 
 	_, err = stmt.Exec()

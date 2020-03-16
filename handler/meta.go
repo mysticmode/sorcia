@@ -274,7 +274,7 @@ func MetaPostSiteSettings(w http.ResponseWriter, r *http.Request, db *sql.DB, co
 		gotFavicon, faviconPath := faviconUpload(w, r, conf.Paths.UploadAssetPath)
 		gotLogo, logoPath, logoWidth, logoHeight := logoUpload(w, r, conf.Paths.UploadAssetPath)
 
-		if siteTitle == "" && !gotFavicon && !gotLogo {
+		if siteTitle == "" && siteStyle == "" && !gotFavicon && !gotLogo {
 			http.Redirect(w, r, "/meta", http.StatusFound)
 			return
 		}
@@ -286,6 +286,7 @@ func MetaPostSiteSettings(w http.ResponseWriter, r *http.Request, db *sql.DB, co
 				Logo:       logoPath,
 				LogoWidth:  logoWidth,
 				LogoHeight: logoHeight,
+				Style:      siteStyle,
 			}
 			model.InsertSiteSettings(db, css)
 
