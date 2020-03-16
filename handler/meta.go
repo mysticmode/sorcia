@@ -362,8 +362,3 @@ func logoUpload(w http.ResponseWriter, r *http.Request, uploadAssetPath string) 
 
 	return false, "", "", ""
 }
-
-type XMLAttr struct {
-	Width  string `xml:"width"`
-	Height string `xml:"height"`
-}
