@@ -73,6 +73,23 @@
                         <input type="radio" id="styleClassic" name="style" value="classic" checked />
                         <label for="styleClassic">Classic</label>
                     </div>
+                    <div>
+                        <input type="radio" id="styleDark" name="style" value="dark" />
+                        <label for="styleDark">Dark</label>
+                    </div>
+                    {{else if eq .SiteSettings.SiteStyle "dark"}}
+                    <div>
+                        <input type="radio" id="styleDefault" name="style" value="default" />
+                        <label for="styleDefault">Default</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="styleClassic" name="style" value="classic" />
+                        <label for="styleClassic">Classic</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="styleDark" name="style" value="dark" checked />
+                        <label for="styleDark">Dark</label>
+                    </div>
                     {{else}}
                     <div>
                         <input type="radio" id="styleDefault" name="style" value="default" checked />
@@ -81,6 +98,10 @@
                     <div>
                         <input type="radio" id="styleClassic" name="style" value="classic" />
                         <label for="styleClassic">Classic</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="styleDark" name="style" value="dark" />
+                        <label for="styleDark">Dark</label>
                     </div>
                     {{end}}                    
                 </div>
