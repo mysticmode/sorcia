@@ -169,6 +169,7 @@ func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder 
 // GetRepoResponse struct
 type GetRepoResponse struct {
 	SiteSettings     util.SiteSettings
+	SiteStyle        string
 	IsLoggedIn       bool
 	ShowLoginMenu    bool
 	HeaderActiveMenu string
@@ -421,6 +422,8 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 		}
 
 		data.RepoDetail.FileContent = template.HTML(fileContent)
+
+		data.SiteStyle = model.GetSiteStyle(db)
 
 		writeRepoResponse(w, r, db, reponame, "file-viewer.html", data)
 		return

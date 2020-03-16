@@ -384,14 +384,14 @@ type GetSiteSettingsResponse struct {
 // GetSiteSettings ...
 func GetSiteSettings(db *sql.DB, conf *setting.BaseStruct) *GetSiteSettingsResponse {
 	rows, err := db.Query("SELECT title, favicon, logo, logo_width, logo_height, style FROM site_settings WHERE id = ?", 1)
-	errorhandler.CheckError("Error on model get site settings exists", err)
+	errorhandler.CheckError("Error on model get site settings", err)
 
 	var title, favicon, logo, logoWidth, logoHeight, style string
 	gssr := GetSiteSettingsResponse{}
 
 	if rows.Next() {
 		err = rows.Scan(&title, &favicon, &logo, &logoWidth, &logoHeight, &style)
-		errorhandler.CheckError("Error on model get site_settings settings exists rows scan", err)
+		errorhandler.CheckError("Error on model get site_settings settings rows scan", err)
 
 		faviconSplit := strings.Split(favicon, conf.Paths.UploadAssetPath)
 		if len(faviconSplit) > 1 {
@@ -415,6 +415,21 @@ func GetSiteSettings(db *sql.DB, conf *setting.BaseStruct) *GetSiteSettingsRespo
 	rows.Close()
 
 	return &gssr
+}
+
+// GetSiteStyle ...
+func GetSiteStyle(db *sql.DB) string {
+	rows, err := db.Query("SELECT style FROM site_settings WHERE id = ?", 1)
+	errorhandler.CheckError("Error on model get site style", err)
+
+	style := "default"
+	if rows.Next() {
+		err = rows.Scan(&style)
+		errorhandler.CheckError("Error on model get site style rows scan", err)
+	}
+	rows.Close()
+
+	return style
 }
 
 // UpdateSiteTitle ...
