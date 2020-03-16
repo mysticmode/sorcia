@@ -5,6 +5,13 @@
         sorcia - Self-hosted web frontend for git repositories written in Go
     {{end}}
 {{end}}
+{{define "style"}}
+    {{if eq .SiteSettings.SiteStyle "default"}}
+    <link rel="stylesheet" href="/public/css/style.min.css" />
+    {{else}}
+    <link rel="stylesheet" href="/public/css/style_alternative.min.css" />
+    {{end}}
+{{end}}
 {{define "content"}}
 <main class="container git">
     {{if .IsLoggedIn}}

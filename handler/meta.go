@@ -269,6 +269,7 @@ func MetaPostSiteSettings(w http.ResponseWriter, r *http.Request, db *sql.DB, co
 	if userPresent == "true" {
 
 		siteTitle := r.FormValue("title")
+		siteStyle := r.FormValue("style")
 
 		gotFavicon, faviconPath := faviconUpload(w, r, conf.Paths.UploadAssetPath)
 		gotLogo, logoPath, logoWidth, logoHeight := logoUpload(w, r, conf.Paths.UploadAssetPath)
@@ -294,6 +295,10 @@ func MetaPostSiteSettings(w http.ResponseWriter, r *http.Request, db *sql.DB, co
 
 		if siteTitle != "" {
 			model.UpdateSiteTitle(db, siteTitle)
+		}
+
+		if siteStyle != "" {
+			model.UpdateSiteStyle(db, siteStyle)
 		}
 
 		if gotFavicon {
