@@ -94,6 +94,9 @@ func ContainsValueInArr(a []string, x string) bool {
 
 // SiteSettings struct
 type SiteSettings struct {
+	IsSiteTitle    bool
+	IsSiteFavicon  bool
+	IsSiteLogo     bool
 	SiteTitle      string
 	SiteFavicon    string
 	SiteFaviconExt string
@@ -107,6 +110,21 @@ type SiteSettings struct {
 // GetSiteSettings ...
 func GetSiteSettings(db *sql.DB, conf *setting.BaseStruct) SiteSettings {
 	gssr := model.GetSiteSettings(db, conf)
+
+	isSiteTitle := true
+	if gssr.Title == "" {
+		isSiteTitle = false
+	}
+
+	isSiteFavicon := true
+	if gssr.Favicon == "" {
+		isSiteFavicon = false
+	}
+
+	isSiteLogo := true
+	if gssr.Logo == "" {
+		isSiteLogo = false
+	}
 
 	var faviconExt string
 	faviconSplit := strings.Split(gssr.Favicon, ".")
@@ -130,6 +148,9 @@ func GetSiteSettings(db *sql.DB, conf *setting.BaseStruct) SiteSettings {
 	}
 
 	siteSettings := SiteSettings{
+		IsSiteTitle:    isSiteTitle,
+		IsSiteFavicon:  isSiteFavicon,
+		IsSiteLogo:     isSiteLogo,
 		SiteTitle:      gssr.Title,
 		SiteFavicon:    gssr.Favicon,
 		SiteFaviconExt: faviconExt,
