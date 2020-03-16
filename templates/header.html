@@ -1,13 +1,14 @@
-{{define "favicon"}}<link rel="icon" type="image/png" href="/public/img/sorcia_favicon.png" />{{end}}
+{{define "favicon"}}<link rel="icon" type="image/png" href="/uploads{{.SiteSettings.SiteFavicon}}" />{{end}}
 {{define "header"}}
     {{if .IsLoggedIn}}
     <header class="header">
         <div class="header__left">
             <a href="/" class="header__logo">
                 {{if .SiteSettings.IsSiteLogoSVG}}
-                {{.SiteSettings.SVGDAT}}
+                <img src="/uploads{{.SiteSettings.SiteLogo}}" />
+                <!-- {{.SiteSettings.SVGDAT}} -->
                 {{else}}
-                <img src="/uploads{{.SiteLogo}}" width="{{.SiteLogoWidth}}px" height="{{.SiteLogoHeight}}px" />
+                <img src="/uploads{{.SiteSettings.SiteLogo}}" width="{{.SiteSettings.SiteLogoWidth}}px" height="{{.SiteSettings.SiteLogoHeight}}px" />
                 {{end}}
                 <!-- <img src="/public/img/sorcia.svg" width="81px" height="18px" /> -->
             </a>
@@ -27,9 +28,10 @@
         <div class="header__left">
             <a href="/" class="header__logo">
                 {{if .SiteSettings.IsSiteLogoSVG}}
-                {{.SiteSettings.SVGDAT}}
+                <img src="/uploads{{.SiteSettings.SiteLogo}}" />
+                <!-- {{.SiteSettings.SVGDAT}} -->
                 {{else}}
-                <img src="/uploads{{.SiteLogo}}" width="{{.SiteLogoWidth}}px" height="{{.SiteLogoHeight}}px" />
+                <img src="/uploads{{.SiteSettings.SiteLogo}}" width="{{.SiteSettings.SiteLogoWidth}}px" height="{{.SiteSettings.SiteLogoHeight}}px" />
                 {{end}}
                 <!-- <img src="/public/img/sorcia.svg" width="81px" height="18px" /> -->
             </a>

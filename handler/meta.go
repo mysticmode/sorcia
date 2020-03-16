@@ -293,7 +293,6 @@ func faviconUpload(w http.ResponseWriter, r *http.Request, uploadAssetPath strin
 
 	file, hdlr, err := r.FormFile("favicon")
 	if err != nil {
-		errorhandler.CheckError("Error on favicon FormFile", err)
 		return false, ""
 	}
 	defer file.Close()
@@ -322,7 +321,6 @@ func logoUpload(w http.ResponseWriter, r *http.Request, uploadAssetPath string) 
 
 	file, hdlr, err := r.FormFile("logo")
 	if err != nil {
-		errorhandler.CheckError("Error on logo FormFile", err)
 		return false, "", "", ""
 	}
 	defer file.Close()

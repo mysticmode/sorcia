@@ -45,7 +45,8 @@
                 <div class="meta__detail__form__current">
                     <div class="form__title">Current logo:</div>
                     {{if .SiteSettings.IsSiteLogoSVG}}
-                    {{.SiteSettings.SVGDAT}}
+                    <img src="/uploads{{.SiteSettings.SiteLogo}}" />
+                    <!-- {{.SiteSettings.SVGDAT}} -->
                     {{else}}
                     <img src="/uploads{{.SiteSettings.SiteLogo}}" width="{{.SiteSettings.SiteLogoWidth}}px" height="{{.SiteSettings.SiteLogoHeight}}px" />
                     {{end}}
