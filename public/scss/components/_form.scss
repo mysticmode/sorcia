@@ -23,6 +23,15 @@
         }
     }
 
+    & .checkbox__group {
+        display: flex;
+        align-items: baseline;
+
+        & input[type="checkbox"] {
+            margin-right: 5px;
+        }
+    }
+
     &__username-tag {
         color: $text-color;
         background: $brand-bg-1;
