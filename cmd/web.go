@@ -78,6 +78,9 @@ func RunWeb(conf *setting.BaseStruct) {
 	m.HandleFunc("/meta/keys", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetMetaKeys(w, r, db, conf)
 	}).Methods("GET")
+	m.HandleFunc("/meta/keys/delete/{keyID}", func(w http.ResponseWriter, r *http.Request) {
+		handler.DeleteMetaKey(w, r, db)
+	}).Methods("GET")
 	m.HandleFunc("/meta/keys", func(w http.ResponseWriter, r *http.Request) {
 		handler.PostAuthKey(w, r, db, conf, decoder)
 	}).Methods("POST")
