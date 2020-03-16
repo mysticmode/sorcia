@@ -1,0 +1,23 @@
+.button {
+    background: #e6e6e6;
+    font-family: $font-default;
+    color: #333333;
+    border: none;
+    padding: 7px 10px;
+    cursor: pointer;
+    outline: none;
+
+    &:hover {
+        background: darken($color: #e6e6e6, $amount: 10%);
+        color: #333333;
+    }
+
+    &--danger {
+        background: $brand-danger;
+
+        &:hover {
+            background: darken($color: $brand-danger, $amount: 10%);
+            color: white;
+        }
+    }
+}

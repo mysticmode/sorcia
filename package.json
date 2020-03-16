@@ -12,7 +12,9 @@
   "scripts": {
     "gulp-watch": "gulp",
     "gulp-style": "gulp style",
-    "gulp-watch-alternative": "gulp watch-alternative",
-    "gulp-style-alternative": "gulp style-alternative"
+    "gulp-watch-classic": "gulp watch-classic",
+    "gulp-style-classic": "gulp style-classic",
+    "gulp-watch-dark": "gulp watch-dark",
+    "gulp-style-dark": "gulp style-dark"
   }
 }

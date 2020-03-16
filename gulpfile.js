@@ -10,9 +10,14 @@ var paths = {
         all: 'public/scss/**/**/*.scss',
         dest: 'public/css/'
     },
-    style_alternative: {
-        src: 'public/scss_alternative/style_alternative.scss',
-        all: 'public/scss_alternative/**/**/*.scss',
+    style_classic: {
+        src: 'public/scss_classic/style_classic.scss',
+        all: 'public/scss_classic/**/**/*.scss',
+        dest: 'public/css/'
+    },
+    style_dark: {
+        src: 'public/scss_dark/style_dark.scss',
+        all: 'public/scss_dark/**/**/*.scss',
         dest: 'public/css/'
     }
 }
@@ -29,28 +34,47 @@ function style() {
     .pipe(gulp.dest(paths.style.dest));
 }
 
-function style_alternative() {
-    return gulp.src(paths.style_alternative.src)
+function style_classic() {
+    return gulp.src(paths.style_classic.src)
     .pipe(sass().on('error', sass.logError))
     .pipe(autoprefixer({
         browsers: ['last 2 versions'],
         cascade: false
     }))
     .pipe(minifyCSS())
-    .pipe(rename('style_alternative.min.css'))
-    .pipe(gulp.dest(paths.style_alternative.dest));
+    .pipe(rename('style_classic.min.css'))
+    .pipe(gulp.dest(paths.style_classic.dest));
+}
+
+function style_dark() {
+    return gulp.src(paths.style_dark.src)
+    .pipe(sass().on('error', sass.logError))
+    .pipe(autoprefixer({
+        browsers: ['last 2 versions'],
+        cascade: false
+    }))
+    .pipe(minifyCSS())
+    .pipe(rename('style_dark.min.css'))
+    .pipe(gulp.dest(paths.style_dark.dest));
 }
 
 function watch() {
     gulp.watch(paths.style.all, style);
 }
 
-function watch_alternative() {
-    gulp.watch(paths.style_alternative.all, style_alternative)
+function watch_classic() {
+    gulp.watch(paths.style_classic.all, style_classic)
+}
+
+function watch_dark() {
+    gulp.watch(paths.style_dark.all, style_dark)
 }
 
 gulp.task('default', gulp.series(watch));
 gulp.task('style', style);
 
-gulp.task('watch-alternative', gulp.series(watch_alternative))
-gulp.task('style-alternative', style_alternative)
+gulp.task('watch-classic', gulp.series(watch_classic))
+gulp.task('style-classic', style_classic)
+
+gulp.task('watch-dark', gulp.series(watch_dark))
+gulp.task('style-dark', style_dark)
