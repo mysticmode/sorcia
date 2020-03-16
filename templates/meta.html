@@ -1,11 +1,4 @@
 {{define "title"}}meta - General{{end}}
-{{define "style"}}
-    {{if eq .SiteSettings.SiteStyle "classic"}}
-    <link rel="stylesheet" href="/public/css/style_alternative.min.css" />
-    {{else}}
-    <link rel="stylesheet" href="/public/css/style.min.css" />
-    {{end}}
-{{end}}
 {{define "content"}}
 <main class="container meta">
     <div class="repo__menu">
@@ -71,22 +64,22 @@
             <div class="form__group">
                 <label>Appearance</label>
                 <div class="radio__group">
-                    {{if eq .SiteSettings.SiteStyle "default"}}
-                    <div>
-                        <input type="radio" id="styleDefault" name="style" value="default" checked />
-                        <label for="styleDefault">Default</label>
-                    </div>
-                    <div>
-                        <input type="radio" id="styleClassic" name="style" value="classic" />
-                        <label for="styleClassic">Classic</label>
-                    </div>
-                    {{else}}
+                    {{if eq .SiteSettings.SiteStyle "classic"}}
                     <div>
                         <input type="radio" id="styleDefault" name="style" value="default" />
                         <label for="styleDefault">Default</label>
                     </div>
                     <div>
                         <input type="radio" id="styleClassic" name="style" value="classic" checked />
+                        <label for="styleClassic">Classic</label>
+                    </div>
+                    {{else}}
+                    <div>
+                        <input type="radio" id="styleDefault" name="style" value="default" checked />
+                        <label for="styleDefault">Default</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="styleClassic" name="style" value="classic" />
                         <label for="styleClassic">Classic</label>
                     </div>
                     {{end}}                    
