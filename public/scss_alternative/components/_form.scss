@@ -1,0 +1,80 @@
+.form {
+        
+    &:first-child {
+        margin-bottom: 50px;
+    }
+
+    &__title {
+        font-weight: bold;
+        margin-bottom: 15px;
+    }
+
+    &__error {
+        margin-bottom: 15px;
+        color: $brand-danger;
+    }
+
+    &__group {
+        margin-bottom: 15px;
+
+        &-sub {
+            display: flex;
+            align-items: center;
+        }
+    }
+
+    & .checkbox__group {
+        display: flex;
+        align-items: baseline;
+
+        & input[type="checkbox"] {
+            margin-right: 5px;
+        }
+    }
+
+    &__username-tag {
+        color: $text-color;
+        background: $brand-bg-1;
+        padding: 7px 10px;
+        height: 33px;
+        min-width: max-content;
+    }
+
+    &__radio-group {
+        display: flex;
+    }
+
+    &__radio {
+        display: flex;
+        align-items: baseline;
+        margin-right: 20px;
+
+        & input {
+            margin-right: 3px;
+        }
+    }
+
+    & label, &__input {
+        display: block;
+    }
+
+    & label {
+        margin-bottom: 5px;
+    }
+
+    &__input {
+        width: 300px;
+    }
+
+    &__submit-group {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    & i {
+        color: $brand-danger;
+        font-style: normal;
+        margin-left: 2px;
+    }
+}

@@ -11,6 +11,8 @@
   },
   "scripts": {
     "gulp-watch": "gulp",
-    "gulp-style": "gulp style"
+    "gulp-style": "gulp style",
+    "gulp-watch-alternative": "gulp watch-alternative",
+    "gulp-style-alternative": "gulp style-alternative"
   }
 }
