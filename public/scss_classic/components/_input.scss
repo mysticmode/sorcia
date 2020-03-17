@@ -2,7 +2,7 @@ input[type="text"], input[type="email"], input[type="password"], textarea {
     font-family: $font-default;
     background: white;
     color: $text-color;
-    border: 1px solid #e0e4e7;
+    border: 1px solid $border-color;
     border-radius: 0;
     padding: 7px 10px;
     outline: none;
