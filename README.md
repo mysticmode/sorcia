@@ -115,7 +115,7 @@ sudo vim /etc/nginx/sites-available/git.example.com
 ```
 and change the `git.example.com` to your domain address.
 
-Now check if there is any problem with our Nginx config by
+Now check if there is any problem with your Nginx config by
 ```
 sudo nginx -t
 ```
