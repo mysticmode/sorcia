@@ -1,15 +1,11 @@
 input[type="text"], input[type="email"], input[type="password"], textarea {
     font-family: $font-default;
     background: white;
-    color: #000000;
-    border: 1px solid #e0e4e7;
+    color: $text-color-3;
+    border: none;
     border-radius: 0;
     padding: 7px 10px;
     outline: none;
-
-    &:focus {
-        border: 1px solid $brand-primary;
-    }
 }
 
 textarea {

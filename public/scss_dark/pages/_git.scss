@@ -338,10 +338,10 @@
 .file-viewer {
     border: 1px solid $brand-border;
     padding: 10px;
-    background: #222222;
+    background: $hljs-bg;
 
     & .hljs {
-        background: #222222;
+        background: $hljs-bg;
         color: $text-color;
         padding: 0;
         overflow: hidden;

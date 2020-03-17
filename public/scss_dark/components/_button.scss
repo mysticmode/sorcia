@@ -1,15 +1,15 @@
 .button {
-    background: #e6e6e6;
+    background: $button-primary;
     font-family: $font-default;
-    color: #333333;
+    color: $text-color-2;
     border: none;
     padding: 7px 10px;
     cursor: pointer;
     outline: none;
 
     &:hover {
-        background: darken($color: #e6e6e6, $amount: 10%);
-        color: #333333;
+        background: darken($color: $button-primary, $amount: 10%);
+        color: $text-color-2;
     }
 
     &--danger {

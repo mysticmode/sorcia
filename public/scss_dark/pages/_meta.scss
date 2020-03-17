@@ -25,10 +25,6 @@
 
     #profileUsername, #profileEmail {
         background: $brand-bg-1;
-
-        &:focus {
-            border: 1px solid #e0e4e7;
-        }
     }
 
     textarea {
