@@ -6,7 +6,11 @@ import (
 	"fmt"
 	"html/template"
 	"image"
+
+	// jpeg import
 	_ "image/jpeg"
+
+	// png import
 	_ "image/png"
 	"io"
 	"net/http"
@@ -25,6 +29,7 @@ import (
 	"github.com/gorilla/schema"
 )
 
+// MetaResponse struct
 type MetaResponse struct {
 	IsLoggedIn       bool
 	HeaderActiveMenu string
@@ -215,6 +220,7 @@ type PostPasswordRequest struct {
 	Password string `schema:"password"`
 }
 
+// MetaPostPassword ...
 func MetaPostPassword(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder *schema.Decoder) {
 	userPresent := w.Header().Get("user-present")
 
@@ -248,12 +254,12 @@ func MetaPostPassword(w http.ResponseWriter, r *http.Request, db *sql.DB, decode
 		errorhandler.CheckError("Error on password hash", err)
 
 		// Generate JWT token using the hash password above
-		jwt_token, err := GenerateJWTToken(passwordHash)
+		jwtToken, err := GenerateJWTToken(passwordHash)
 		errorhandler.CheckError("Error on generating jwt token", err)
 
 		resetPass := model.ResetUserPasswordbyUsernameStruct{
 			PasswordHash: passwordHash,
-			JwtToken:     jwt_token,
+			JwtToken:     jwtToken,
 			Username:     username,
 		}
 		model.ResetUserPasswordbyUsername(db, resetPass)
@@ -262,7 +268,7 @@ func MetaPostPassword(w http.ResponseWriter, r *http.Request, db *sql.DB, decode
 	http.Redirect(w, r, "/login", http.StatusFound)
 }
 
-// MetaPostSiteSettings
+// MetaPostSiteSettings ...
 func MetaPostSiteSettings(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
 	userPresent := w.Header().Get("user-present")
 
