@@ -268,6 +268,11 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.B
 		return
 	}
 
+	if totalCommits == "" {
+		writeRepoResponse(w, r, db, reponame, "repo-summary-empty.html", data)
+		return
+	}
+
 	data.RepoDetail.Readme = processREADME(repoDir)
 
 	commits := getCommits(repoDir, "master", -3)
@@ -572,6 +577,7 @@ func GetRepoLog(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *settin
 	return
 }
 
+// Refs struct
 type Refs struct {
 	Version   string
 	Targz     string
@@ -663,6 +669,7 @@ func GetRepoRefs(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 	return
 }
 
+// ServeRefFile ...
 func ServeRefFile(w http.ResponseWriter, r *http.Request, conf *setting.BaseStruct) {
 	vars := mux.Vars(r)
 	fileName := vars["file"]
@@ -708,11 +715,13 @@ func GetRepoContributors(w http.ResponseWriter, r *http.Request, db *sql.DB, con
 	return
 }
 
+// Contributors struct
 type Contributors struct {
 	Detail []Contributor
 	Total  string
 }
 
+// Contributor struct
 type Contributor struct {
 	Name    string
 	DP      string
@@ -736,17 +745,19 @@ func getContributors(repoDir string, getDetail bool) *Contributors {
 		for _, line := range lines {
 			lineDetail := strings.Fields(line)
 			var contributor Contributor
-			contributor.Commits = lineDetail[0]
-			lineFurther := strings.Join(lineDetail[1:], " ")
-			contributor.Name = strings.Split(lineFurther, " <")[0]
-			emailSplit := strings.Split(lineFurther, " <")[1]
-			email := strings.Split(emailSplit, ">")[0]
+			if len(lineDetail) > 1 {
+				contributor.Commits = lineDetail[0]
+				lineFurther := strings.Join(lineDetail[1:], " ")
+				contributor.Name = strings.Split(lineFurther, " <")[0]
+				emailSplit := strings.Split(lineFurther, " <")[1]
+				email := strings.Split(emailSplit, ">")[0]
 
-			hash := md5.Sum([]byte(email))
-			stringHash := hex.EncodeToString(hash[:])
-			contributor.DP = fmt.Sprintf("https://www.gravatar.com/avatar/%s", stringHash)
+				hash := md5.Sum([]byte(email))
+				stringHash := hex.EncodeToString(hash[:])
+				contributor.DP = fmt.Sprintf("https://www.gravatar.com/avatar/%s", stringHash)
 
-			contributors.Detail = append(contributors.Detail, contributor)
+				contributors.Detail = append(contributors.Detail, contributor)
+			}
 		}
 	}
 
@@ -829,17 +840,19 @@ func getCommits(repoDir, branch string, commitCount int) *RepoLogs {
 
 	for i := 0; i < len(ss); i++ {
 		st := strings.Split(ss[i], "||srca-sptra||")
-		rl.Hash = st[1]
-		rl.Message = st[3]
-		rl.Date = st[4]
-		rl.Author = st[5]
+		if len(st) > 1 {
+			rl.Hash = st[1]
+			rl.Message = st[3]
+			rl.Date = st[4]
+			rl.Author = st[5]
 
-		hash := md5.Sum([]byte(st[6]))
-		stringHash := hex.EncodeToString(hash[:])
-		rl.DP = fmt.Sprintf("https://www.gravatar.com/avatar/%s", stringHash)
+			hash := md5.Sum([]byte(st[6]))
+			stringHash := hex.EncodeToString(hash[:])
+			rl.DP = fmt.Sprintf("https://www.gravatar.com/avatar/%s", stringHash)
 
-		rla = RepoLogs{
-			History: append(rla.History, rl),
+			rla = RepoLogs{
+				History: append(rla.History, rl),
+			}
 		}
 	}
 
@@ -870,17 +883,19 @@ func getCommitsFromHash(repoDir, branch, fromHash string, commitCount int) *Repo
 			}
 		}
 		st := strings.Split(ss[i], "||srca-sptra||")
-		rl.Hash = st[1]
-		rl.Message = st[3]
-		rl.Date = st[4]
-		rl.Author = st[5]
+		if len(st) > 1 {
+			rl.Hash = st[1]
+			rl.Message = st[3]
+			rl.Date = st[4]
+			rl.Author = st[5]
 
-		hash := md5.Sum([]byte(st[6]))
-		stringHash := hex.EncodeToString(hash[:])
-		rl.DP = fmt.Sprintf("https://www.gravatar.com/avatar/%s", stringHash)
+			hash := md5.Sum([]byte(st[6]))
+			stringHash := hex.EncodeToString(hash[:])
+			rl.DP = fmt.Sprintf("https://www.gravatar.com/avatar/%s", stringHash)
 
-		rla = RepoLogs{
-			History: append(rla.History, rl),
+			rla = RepoLogs{
+				History: append(rla.History, rl),
+			}
 		}
 	}
 

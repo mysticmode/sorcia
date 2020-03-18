@@ -90,7 +90,7 @@ func GetCommitCounts(repoPath, reponame string) string {
 	dirPath := filepath.Join(repoPath, reponame+".git")
 	gitPath := GetGitBinPath()
 
-	args := []string{"rev-list", "HEAD", "--count"}
+	args := []string{"rev-list", "--count", "HEAD"}
 	out := ForkExec(gitPath, args, dirPath)
 
 	return strings.TrimSpace(out)
