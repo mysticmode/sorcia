@@ -463,3 +463,58 @@
         }
     }
 }
+
+.repo-commit {
+    margin-top: 25px;
+
+    &__header {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    &__description {
+        background: $brand-bg-1;
+        padding: 10px;
+    }
+
+    &__hash {
+        font-weight: bold;
+    }
+
+    &__profile {
+        display: flex;
+        margin-top: 10px;
+
+        & img {
+            margin-right: 5px;
+        }
+    }
+
+    &__message {
+        margin-top: 10px;
+    }
+
+    &__status {
+        background: $brand-bg-1;
+        margin-top: 20px;
+        padding: 10px;
+    }
+
+    &__files-changed {
+        margin-top: 15px;
+
+        & div {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+
+            & p {
+                margin-right: 10px;
+            }
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
+    }
+}

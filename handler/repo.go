@@ -184,6 +184,7 @@ type GetRepoResponse struct {
 	RepoDetail       RepoDetail
 	RepoBranches     []string
 	RepoLogs         RepoLogs
+	CommitDetail     CommitDetailStruct
 	RepoRefs         []Refs
 	Contributors     Contributors
 }
@@ -712,6 +713,105 @@ func GetRepoContributors(w http.ResponseWriter, r *http.Request, db *sql.DB, con
 	data.Contributors = *contributors
 
 	writeRepoResponse(w, r, db, reponame, "repo-contributors.html", data)
+	return
+}
+
+// CommitDetailStruct struct
+type CommitDetailStruct struct {
+	DP           string
+	Name         string
+	Message      string
+	Hash         string
+	Date         string
+	CommitStatus string
+	Files        []CommitFile
+}
+
+// CommitFile struct
+type CommitFile struct {
+	Filename string
+	State    string
+}
+
+// GetCommitDetail ...
+func GetCommitDetail(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
+	vars := mux.Vars(r)
+	reponame := vars["reponame"]
+	commitHash := vars["hash"]
+
+	repoDir := filepath.Join(conf.Paths.RepoPath, reponame+".git")
+
+	if repoExists := model.CheckRepoExists(db, reponame); !repoExists {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
+
+	data := GetRepoResponse{
+		SiteSettings:     util.GetSiteSettings(db, conf),
+		IsLoggedIn:       checkUserLoggedIn(w),
+		ShowLoginMenu:    true,
+		HeaderActiveMenu: "",
+		SorciaVersion:    conf.Version,
+		Reponame:         reponame,
+		RepoDescription:  repoDescription,
+		IsRepoPrivate:    model.GetRepoType(db, reponame),
+	}
+
+	if !data.IsLoggedIn && data.IsRepoPrivate {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
+
+	gitPath := util.GetGitBinPath()
+
+	args := []string{"show", commitHash, "--name-status", "--pretty=format:%ae||srca-sptra||%an||srca-sptra||%s||srca-sptra||%ar"}
+	out := util.ForkExec(gitPath, args, repoDir)
+
+	lines := strings.Split(out, "\n")
+	// Remove empty last line
+	lines = lines[:len(lines)-1]
+
+	//filesChanged := strings.TrimSpace(lines[len(lines)-1])
+	ss := strings.Split(lines[0], "||srca-sptra||")
+	var cds CommitDetailStruct
+	if len(ss) > 1 {
+		cds.Hash = commitHash
+
+		email := ss[0]
+		gravatarHash := md5.Sum([]byte(email))
+		stringHash := hex.EncodeToString(gravatarHash[:])
+		cds.DP = fmt.Sprintf("https://www.gravatar.com/avatar/%s", stringHash)
+
+		cds.Name = ss[1]
+		cds.Message = ss[2]
+		cds.Date = ss[3]
+	}
+
+	var cf CommitFile
+	for _, file := range lines[1:] {
+		cf.State = strings.Fields(file)[0]
+		cf.Filename = strings.Fields(file)[1]
+
+		cds.Files = append(cds.Files, cf)
+	}
+
+	// Get commit status
+	args = []string{"show", commitHash, "--stat", "--pretty=format:"}
+	out = util.ForkExec(gitPath, args, repoDir)
+
+	lines = strings.Split(out, "\n")
+	// Remove empty last line
+	lines = lines[:len(lines)-1]
+	commitStatus := strings.TrimSpace(lines[len(lines)-1])
+	cds.CommitStatus = commitStatus
+
+	fmt.Println(cds)
+
+	data.CommitDetail = cds
+
+	writeRepoResponse(w, r, db, reponame, "repo-commit.html", data)
 	return
 }
 

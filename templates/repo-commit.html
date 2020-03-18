@@ -1,0 +1,35 @@
+{{define "title"}}{{ .Reponame }} - Commit{{end}}
+{{define "content"}}
+<main class="container repo">
+    <div class="repo__header">
+        <div>
+            <div class="repo__title"><a href="/r/{{ .Reponame }}">{{ .Reponame }}</a> {{if eq .IsRepoPrivate true}} <i>private</i> {{end}} </div>
+            <div class="repo__description">{{ .RepoDescription }}</div>
+        </div>
+    </div>
+    <div class="repo-commit">
+        <div class="repo-commit__description">
+            <div class="repo-commit__header">
+                <div class="repo-commit__hash">{{.CommitDetail.Hash}}</div>
+                <div class="repo-commit__date">{{.CommitDetail.Date}}</div>
+            </div>
+            <div class="repo-commit__profile">
+                <img src="{{.CommitDetail.DP}}" width="23px" />
+                <div>{{.CommitDetail.Name}}</div>
+            </div>
+            <div class="repo-commit__message">{{.CommitDetail.Message}}</div>
+        </div>
+        <div class="repo-commit__status">
+            <div class="repo-commit__commit-status">{{.CommitDetail.CommitStatus}}</div>
+            <div class="repo-commit__files-changed">
+                {{range .CommitDetail.Files}}
+                    <div>
+                        <p>{{.State}}</p>
+                        <a href="/r/{{$.Reponame}}/tree/master/{{.Filename}}">{{.Filename}}</a>
+                    </div>
+                {{end}}
+            </div>
+        </div>
+    </div>
+</main>
+{{end}}
