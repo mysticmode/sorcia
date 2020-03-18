@@ -10,7 +10,7 @@
     <div class="repo__menu">
         <a href="/r/{{ .Reponame }}" class="repo__menu__item">summary</a>
         <a href="/r/{{ .Reponame }}/tree/master" class="repo__menu__item">tree</a>
-        <a href="/r/{{ .Reponame }}/log/master" class="repo__menu__item repo__menu__item--active">log</a>
+        <a href="/r/{{ .Reponame }}/log/{{.CommitDetail.Branch}}" class="repo__menu__item repo__menu__item--active">log</a>
         <a href="/r/{{ .Reponame }}/refs" class="repo__menu__item">refs</a>
         <a href="/r/{{ .Reponame }}/contributors" class="repo__menu__item">contributors</a>
         {{if .IsLoggedIn}}
