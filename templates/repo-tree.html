@@ -36,7 +36,7 @@
     <div class="latest-commit">
         <img src="{{.DP}}" width="23px">
         <div class="latest-commit__name">{{.Author}}</div>
-        <a href="">{{.Message}}</a>
+        <a href="/r/{{ $.Reponame }}/commit/{{.Branch}}/{{.FullHash}}">{{.Message}}</a>
         <div class="latest-commit__date">{{.Date}}</div>
     </div>
     {{end}}        
@@ -50,14 +50,14 @@
         {{range .RepoDetail.RepoDirsDetail}}
         <div class="repo-tree__info">
             <a href="{{ $.RepoDetail.WalkPath }}/{{.DirName}}" class="repo-tree__directory">{{.DirName}}</a>
-            <a href="" class="repo-tree__info__message">{{.DirCommit}}</a>
+            <a href="/r/{{ $.Reponame }}/commit/{{.DirCommitBranch}}/{{.DirCommitFullHash}}" class="repo-tree__info__message">{{.DirCommit}}</a>
             <p class="repo-tree__info__date">{{.DirCommitDate}}</p>
         </div>
         {{end}}
         {{range .RepoDetail.RepoFilesDetail}}
         <div class="repo-tree__info">
             <a href="{{ $.RepoDetail.WalkPath }}/{{.FileName}}" class="repo-tree__file">{{.FileName}}</a>
-            <a class="repo-tree__info__message">{{.FileCommit}}</a>
+            <a href="/r/{{ $.Reponame }}/commit/{{.FileCommitBranch}}/{{.FileCommitFullHash}}" class="repo-tree__info__message">{{.FileCommit}}</a>
             <p class="repo-tree__info__date">{{.FileCommitDate}}</p>
         </div>
         {{end}}

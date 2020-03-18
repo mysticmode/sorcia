@@ -7,6 +7,16 @@
             <div class="repo__description">{{ .RepoDescription }}</div>
         </div>
     </div>
+    <div class="repo__menu">
+        <a href="/r/{{ .Reponame }}" class="repo__menu__item">summary</a>
+        <a href="/r/{{ .Reponame }}/tree/master" class="repo__menu__item">tree</a>
+        <a href="/r/{{ .Reponame }}/log/master" class="repo__menu__item repo__menu__item--active">log</a>
+        <a href="/r/{{ .Reponame }}/refs" class="repo__menu__item">refs</a>
+        <a href="/r/{{ .Reponame }}/contributors" class="repo__menu__item">contributors</a>
+        {{if .IsLoggedIn}}
+        <a href="/r/{{ .Reponame }}/meta" class="repo__menu__item">meta</a>
+        {{end}}
+    </div>
     <div class="repo-commit">
         <div class="repo-commit__description">
             <div class="repo-commit__header">
@@ -25,7 +35,7 @@
                 {{range .CommitDetail.Files}}
                     <div>
                         <p>{{.State}}</p>
-                        <a href="/r/{{$.Reponame}}/tree/master/{{.Filename}}">{{.Filename}}</a>
+                        <a href="/r/{{$.Reponame}}/tree/{{$.CommitDetail.Branch}}/{{.Filename}}">{{.Filename}}</a>
                     </div>
                 {{end}}
             </div>
