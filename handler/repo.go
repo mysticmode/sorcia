@@ -202,25 +202,31 @@ type RepoDetail struct {
 
 // RepoDirDetail struct
 type RepoDirDetail struct {
-	DirName       string
-	DirCommit     string
-	DirCommitDate string
+	DirName           string
+	DirCommit         string
+	DirCommitDate     string
+	DirCommitFullHash string
+	DirCommitBranch   string
 }
 
 // RepoFileDetail struct
 type RepoFileDetail struct {
-	FileName       string
-	FileCommit     string
-	FileCommitDate string
+	FileName           string
+	FileCommit         string
+	FileCommitDate     string
+	FileCommitFullHash string
+	FileCommitBranch   string
 }
 
 // RepoLog struct
 type RepoLog struct {
-	Hash    string
-	Author  string
-	Date    string
-	Message string
-	DP      string
+	FullHash string
+	Hash     string
+	Author   string
+	Date     string
+	Message  string
+	DP       string
+	Branch   string
 }
 
 func checkUserLoggedIn(w http.ResponseWriter) bool {
@@ -491,7 +497,7 @@ func applyDirsAndFiles(dirs, files []string, repoDir, frdpath, branch string) ([
 		dirPath := fmt.Sprintf("%s/%s", frdpath, dir)
 		repoDirDetail := RepoDirDetail{}
 
-		args := []string{"log", branch, "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", dirPath}
+		args := []string{"log", branch, "-n", "1", "--pretty=format:%s||srca-sptra||%cr||srca-sptra||%H", "--", dirPath}
 		out := util.ForkExec(gitPath, args, repoDir)
 
 		ss := strings.Split(out, "||srca-sptra||")
@@ -504,6 +510,8 @@ func applyDirsAndFiles(dirs, files []string, repoDir, frdpath, branch string) ([
 
 		repoDirDetail.DirCommit = commit
 		repoDirDetail.DirCommitDate = ss[1]
+		repoDirDetail.DirCommitFullHash = ss[2]
+		repoDirDetail.DirCommitBranch = branch
 		repoDetail.RepoDirsDetail = append(repoDetail.RepoDirsDetail, repoDirDetail)
 	}
 
@@ -511,7 +519,7 @@ func applyDirsAndFiles(dirs, files []string, repoDir, frdpath, branch string) ([
 		filePath := fmt.Sprintf("%s/%s", frdpath, file)
 		repoFileDetail := RepoFileDetail{}
 
-		args := []string{"log", branch, "-n", "1", "--pretty=format:%s||srca-sptra||%cr", "--", filePath}
+		args := []string{"log", branch, "-n", "1", "--pretty=format:%s||srca-sptra||%cr||srca-sptra||%H", "--", filePath}
 		out := util.ForkExec(gitPath, args, repoDir)
 
 		ss := strings.Split(out, "||srca-sptra||")
@@ -524,6 +532,8 @@ func applyDirsAndFiles(dirs, files []string, repoDir, frdpath, branch string) ([
 
 		repoFileDetail.FileCommit = commit
 		repoFileDetail.FileCommitDate = ss[1]
+		repoFileDetail.FileCommitFullHash = ss[2]
+		repoFileDetail.FileCommitBranch = branch
 		repoDetail.RepoFilesDetail = append(repoDetail.RepoFilesDetail, repoFileDetail)
 	}
 
@@ -722,6 +732,7 @@ type CommitDetailStruct struct {
 	Name         string
 	Message      string
 	Hash         string
+	Branch       string
 	Date         string
 	CommitStatus string
 	Files        []CommitFile
@@ -738,6 +749,7 @@ func GetCommitDetail(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 	vars := mux.Vars(r)
 	reponame := vars["reponame"]
 	commitHash := vars["hash"]
+	branch := vars["branch"]
 
 	repoDir := filepath.Join(conf.Paths.RepoPath, reponame+".git")
 
@@ -776,6 +788,8 @@ func GetCommitDetail(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 	//filesChanged := strings.TrimSpace(lines[len(lines)-1])
 	ss := strings.Split(lines[0], "||srca-sptra||")
 	var cds CommitDetailStruct
+	cds.Branch = branch
+
 	if len(ss) > 1 {
 		cds.Hash = commitHash
 
@@ -941,10 +955,12 @@ func getCommits(repoDir, branch string, commitCount int) *RepoLogs {
 	for i := 0; i < len(ss); i++ {
 		st := strings.Split(ss[i], "||srca-sptra||")
 		if len(st) > 1 {
+			rl.FullHash = st[0]
 			rl.Hash = st[1]
 			rl.Message = st[3]
 			rl.Date = st[4]
 			rl.Author = st[5]
+			rl.Branch = branch
 
 			hash := md5.Sum([]byte(st[6]))
 			stringHash := hex.EncodeToString(hash[:])
@@ -984,10 +1000,12 @@ func getCommitsFromHash(repoDir, branch, fromHash string, commitCount int) *Repo
 		}
 		st := strings.Split(ss[i], "||srca-sptra||")
 		if len(st) > 1 {
+			rl.FullHash = st[0]
 			rl.Hash = st[1]
 			rl.Message = st[3]
 			rl.Date = st[4]
 			rl.Author = st[5]
+			rl.Branch = branch
 
 			hash := md5.Sum([]byte(st[6]))
 			stringHash := hex.EncodeToString(hash[:])

@@ -36,7 +36,7 @@
             {{range .RepoLogs.History}}
             <li>
                 <div>
-                    <p class="repo__log__info"><a href="">{{.Hash}}</a> - <img class="repo__log__dp" src="{{.DP}}" width="23px" /><span>{{.Author}}</span></p>
+                    <p class="repo__log__info"><a href="/r/{{ $.Reponame }}/commit/{{.Branch}}/{{.FullHash}}">{{.Hash}}</a> - <img class="repo__log__dp" src="{{.DP}}" width="23px" /><span>{{.Author}}</span></p>
                     <p>{{.Date}}</p>
                 </div>
                 <p class="repo__commit-message">{{.Message}}</p>

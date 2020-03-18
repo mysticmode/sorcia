@@ -99,14 +99,14 @@ func RunWeb(conf *setting.BaseStruct) {
 	m.HandleFunc("/r/{reponame}/log/{branch}", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetRepoLog(w, r, db, conf)
 	}).Methods("GET")
+	m.HandleFunc("/r/{reponame}/commit/{branch}/{hash}", func(w http.ResponseWriter, r *http.Request) {
+		handler.GetCommitDetail(w, r, db, conf)
+	}).Methods("GET")
 	m.HandleFunc("/r/{reponame}/refs", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetRepoRefs(w, r, db, conf)
 	}).Methods("GET")
 	m.HandleFunc("/r/{reponame}/contributors", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetRepoContributors(w, r, db, conf)
-	}).Methods("GET")
-	m.HandleFunc("/r/{reponame}/commit/{hash}", func(w http.ResponseWriter, r *http.Request) {
-		handler.GetCommitDetail(w, r, db, conf)
 	}).Methods("GET")
 	m.HandleFunc("/dl/{file}", func(w http.ResponseWriter, r *http.Request) {
 		handler.ServeRefFile(w, r, conf)
