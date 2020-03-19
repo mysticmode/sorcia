@@ -44,7 +44,8 @@
             {{range .CommitDetail.Files}}
                 <div class="repo-commit__file">
                     <p>{{.State}}</p>
-                    <a href="/r/{{$.Reponame}}/tree/commit/{{$.CommitDetail.Hash}}/{{.Filename}}">{{.Filename}}</a>
+                    <a href="/r/{{$.Reponame}}/tree/{{.PreviousHash}}/{{.Filename}}">{{.Filename}}</a>
+                    <a href="/r/{{$.Reponame}}/tree/{{$.CommitDetail.Branch}}/{{.Filename}}">{{.Filename}}</a>
                 </div>
                 <div class="repo-commit__code-line">
                     <div>{{.Ampersand}}</div>

@@ -365,15 +365,14 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
 	vars := mux.Vars(r)
 	reponame := vars["reponame"]
-	branch := vars["branch"]
-
-	repoDir := filepath.Join(conf.Paths.RepoPath, reponame+".git")
+	branchOrHash := vars["branchorhash"]
 
 	if repoExists := model.CheckRepoExists(db, reponame); !repoExists {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
+	repoDir := filepath.Join(conf.Paths.RepoPath, reponame+".git")
 	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
 
 	data := GetRepoResponse{
@@ -393,57 +392,91 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 		return
 	}
 
-	frdpath := strings.Split(r.URL.Path, "r/"+reponame+"/tree/"+branch+"/")[1]
-
-	legendHref := "\"/r/" + reponame + "/tree/" + branch + "\""
-	legendPath := "<a href=" + legendHref + ">" + reponame + "</a>"
-
-	legendPathSplit := strings.Split(frdpath, "/")
-
-	for _, s := range legendPathSplit {
-		legendHref = strings.TrimSuffix(legendHref, "\"")
-		legendHref = fmt.Sprintf("%s/%s\"", legendHref, s)
-
-		additionalPath := "<a href=" + legendHref + ">" + s + "</a>"
-
-		legendPath = fmt.Sprintf("%s / %s", legendPath, additionalPath)
-	}
-
-	data.RepoDetail.PathEmpty = false
-	data.RepoDetail.WalkPath = r.URL.Path
-	data.RepoDetail.LegendPath = template.HTML(legendPath)
-
 	gitPath := util.GetGitBinPath()
-	frdPathLen := len(strings.Split(frdpath, "/"))
-	dirs, files := walkThrough(repoDir, gitPath, branch, frdpath, frdPathLen)
+	frdpath := strings.Split(r.URL.Path, "r/"+reponame+"/tree/"+branchOrHash+"/")[1]
 
-	if len(dirs) == 0 && len(files) == 0 {
-		args := []string{"show", fmt.Sprintf("%s:%s", branch, frdpath)}
-		out := util.ForkExec(gitPath, args, repoDir)
+	args := []string{"branch"}
+	out := util.ForkExec(gitPath, args, repoDir)
 
-		frdSplit := strings.Split(frdpath, "/")
+	ss := strings.Split(out, "\n")
+	entries := ss[:len(ss)-1]
 
-		frdFile := frdSplit[len(frdSplit)-1]
+	for _, entry := range entries {
+		entryCheck := strings.TrimSpace(entry)
 
-		fileDotSplit := strings.Split(frdFile, ".")
-		var fileContent string
-		if len(fileDotSplit) > 1 {
-			fileContent = fmt.Sprintf("<pre><code class=\"%s\">%s</code></pre>", fileDotSplit[1], template.HTMLEscaper(out))
-		} else {
-			fileContent = fmt.Sprintf("<pre><code class=\"plaintext\">%s</code></pre>", template.HTMLEscaper(out))
+		if entryCheck == branchOrHash || entryCheck == fmt.Sprintf("* %s", branchOrHash) {
+			legendHref := "\"/r/" + reponame + "/tree/" + branchOrHash + "\""
+			legendPath := "<a href=" + legendHref + ">" + reponame + "</a>"
+
+			legendPathSplit := strings.Split(frdpath, "/")
+
+			for _, s := range legendPathSplit {
+				legendHref = strings.TrimSuffix(legendHref, "\"")
+				legendHref = fmt.Sprintf("%s/%s\"", legendHref, s)
+
+				additionalPath := "<a href=" + legendHref + ">" + s + "</a>"
+
+				legendPath = fmt.Sprintf("%s / %s", legendPath, additionalPath)
+			}
+
+			data.RepoDetail.PathEmpty = false
+			data.RepoDetail.WalkPath = r.URL.Path
+			data.RepoDetail.LegendPath = template.HTML(legendPath)
+
+			frdPathLen := len(strings.Split(frdpath, "/"))
+			dirs, files := walkThrough(repoDir, gitPath, branchOrHash, frdpath, frdPathLen)
+
+			if len(dirs) == 0 && len(files) == 0 {
+				args := []string{"show", fmt.Sprintf("%s:%s", branchOrHash, frdpath)}
+				out := util.ForkExec(gitPath, args, repoDir)
+
+				frdSplit := strings.Split(frdpath, "/")
+
+				frdFile := frdSplit[len(frdSplit)-1]
+
+				fileDotSplit := strings.Split(frdFile, ".")
+				var fileContent string
+				if len(fileDotSplit) > 1 {
+					fileContent = fmt.Sprintf("<pre><code class=\"%s\">%s</code></pre>", fileDotSplit[1], template.HTMLEscaper(out))
+				} else {
+					fileContent = fmt.Sprintf("<pre><code class=\"plaintext\">%s</code></pre>", template.HTMLEscaper(out))
+				}
+
+				data.RepoDetail.FileContent = template.HTML(fileContent)
+
+				data.SiteStyle = model.GetSiteStyle(db)
+
+				writeRepoResponse(w, r, db, reponame, "file-viewer.html", data)
+				return
+			}
+
+			data.RepoDetail.RepoDirsDetail, data.RepoDetail.RepoFilesDetail = applyDirsAndFiles(dirs, files, repoDir, frdpath, branchOrHash)
+
+			writeRepoResponse(w, r, db, reponame, "repo-tree.html", data)
+			return
 		}
-
-		data.RepoDetail.FileContent = template.HTML(fileContent)
-
-		data.SiteStyle = model.GetSiteStyle(db)
-
-		writeRepoResponse(w, r, db, reponame, "file-viewer.html", data)
-		return
 	}
 
-	data.RepoDetail.RepoDirsDetail, data.RepoDetail.RepoFilesDetail = applyDirsAndFiles(dirs, files, repoDir, frdpath, branch)
+	args = []string{"show", branchOrHash, "--", frdpath}
+	out = util.ForkExec(gitPath, args, repoDir)
 
-	writeRepoResponse(w, r, db, reponame, "repo-tree.html", data)
+	frdSplit := strings.Split(frdpath, "/")
+
+	frdFile := frdSplit[len(frdSplit)-1]
+
+	fileDotSplit := strings.Split(frdFile, ".")
+	var fileContent string
+	if len(fileDotSplit) > 1 {
+		fileContent = fmt.Sprintf("<pre><code class=\"%s\">%s</code></pre>", fileDotSplit[1], template.HTMLEscaper(out))
+	} else {
+		fileContent = fmt.Sprintf("<pre><code class=\"plaintext\">%s</code></pre>", template.HTMLEscaper(out))
+	}
+
+	data.RepoDetail.FileContent = template.HTML(fileContent)
+
+	data.SiteStyle = model.GetSiteStyle(db)
+
+	writeRepoResponse(w, r, db, reponame, "file-viewer.html", data)
 	return
 }
 
@@ -743,7 +776,6 @@ type CommitFile struct {
 	Filename     string
 	State        string
 	PreviousHash string
-	CurrentHash  string
 	Ampersand    string
 	CodeLines    template.HTML
 }
@@ -819,14 +851,12 @@ func GetCommitDetail(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 		// Remove empty last line
 		lines = lines[:len(lines)-1]
 
-		// Get PreviousHash and CurrentHash
-		// Get Ampersand
+		// Get PreviousHash and Ampersand
 		for _, line := range lines {
 			ts := strings.TrimSpace(line)
 			if strings.HasPrefix(ts, "index") {
 				indexSplit := strings.Fields(ts)
 				cf.PreviousHash = strings.Split(indexSplit[1], "..")[0]
-				cf.CurrentHash = strings.Split(indexSplit[1], "..")[1]
 			}
 
 			if strings.HasPrefix(ts, "@@") {
@@ -854,19 +884,6 @@ func GetCommitDetail(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 
 	writeRepoResponse(w, r, db, reponame, "repo-commit.html", data)
 	return
-}
-
-func GetHashFile(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
-	vars := mux.Vars(r)
-	reponame := vars["reponame"]
-	commitHash := vars["hash"]
-	branch := vars["branch"]
-	path := vars["path"]
-	fmt.Println(path)
-
-	frdpath := strings.Split(r.URL.Path, "r/"+reponame+"/tree/"+branch+"/"+commitHash+"/")[1]
-	fmt.Println(frdpath)
-	fmt.Println(r.URL.Path)
 }
 
 // Contributors struct
