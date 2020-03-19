@@ -528,10 +528,21 @@
         & p {
             margin-right: 10px;
         }
+
+        & div {
+            display: flex;
+            align-items: center;
+        }
+
+        & i {
+            font-style: normal;
+            margin: 0 10px;
+        }
     }
 
     &__code-line {
         background: $brand-bg-1;
+        margin-bottom: 30px;
         padding: 10px;
 
         & div {
