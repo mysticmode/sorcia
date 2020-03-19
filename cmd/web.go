@@ -102,6 +102,9 @@ func RunWeb(conf *setting.BaseStruct) {
 	m.HandleFunc("/r/{reponame}/commit/{branch}/{hash}", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetCommitDetail(w, r, db, conf)
 	}).Methods("GET")
+	m.HandleFunc("/r/{reponame}/tree/commit/{hash}/{path:[[\\d\\w-_\\.]+}", func(w http.ResponseWriter, r *http.Request) {
+		handler.GetHashFile(w, r, db, conf)
+	}).Methods("GET")
 	m.HandleFunc("/r/{reponame}/refs", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetRepoRefs(w, r, db, conf)
 	}).Methods("GET")
