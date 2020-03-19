@@ -464,3 +464,90 @@
         }
     }
 }
+
+.repo-commit {
+    &__header {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    &__description {
+        background: $brand-bg-1;
+        padding: 10px;
+    }
+
+    &__hash {
+        font-weight: bold;
+    }
+
+    &__profile {
+        display: flex;
+        margin-top: 10px;
+
+        & img {
+            margin-right: 5px;
+        }
+    }
+
+    &__message {
+        margin-top: 10px;
+    }
+
+    &__status {
+        background: $brand-bg-1;
+        margin-top: 20px;
+        padding: 10px;
+    }
+
+    &__files-changed {
+        margin-top: 15px;
+
+        & div {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+
+            & p {
+                margin-right: 10px;
+            }
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
+    }
+
+    &__code-lines {
+        margin-top: 20px;
+    }
+
+    &__file {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+
+        & p {
+            margin-right: 10px;
+        }
+
+        & div {
+            display: flex;
+            align-items: center;
+        }
+
+        & i {
+            font-style: normal;
+            margin: 0 10px;
+        }
+    }
+
+    &__code-line {
+        background: $brand-bg-1;
+        margin-bottom: 30px;
+        padding: 10px;
+
+        & div {
+            margin-bottom: 10px;
+        }
+    }
+}
