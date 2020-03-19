@@ -515,4 +515,27 @@
             }
         }
     }
+
+    &__code-lines {
+        margin-top: 20px;
+    }
+
+    &__file {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+
+        & p {
+            margin-right: 10px;
+        }
+    }
+
+    &__code-line {
+        background: $brand-bg-1;
+        padding: 10px;
+
+        & div {
+            margin-bottom: 10px;
+        }
+    }
 }

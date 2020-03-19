@@ -740,8 +740,12 @@ type CommitDetailStruct struct {
 
 // CommitFile struct
 type CommitFile struct {
-	Filename string
-	State    string
+	Filename     string
+	State        string
+	PreviousHash string
+	CurrentHash  string
+	Ampersand    string
+	CodeLines    template.HTML
 }
 
 // GetCommitDetail ...
@@ -808,6 +812,31 @@ func GetCommitDetail(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 		cf.State = strings.Fields(file)[0]
 		cf.Filename = strings.Fields(file)[1]
 
+		args := []string{"show", commitHash, commitHash, "--pretty=format:", "--full-index", "--", cf.Filename}
+		out := util.ForkExec(gitPath, args, repoDir)
+
+		lines = strings.Split(out, "\n")
+		// Remove empty last line
+		lines = lines[:len(lines)-1]
+
+		// Get PreviousHash and CurrentHash
+		// Get Ampersand
+		for _, line := range lines {
+			ts := strings.TrimSpace(line)
+			if strings.HasPrefix(ts, "index") {
+				indexSplit := strings.Fields(ts)
+				cf.PreviousHash = strings.Split(indexSplit[1], "..")[0]
+				cf.CurrentHash = strings.Split(indexSplit[1], "..")[1]
+			}
+
+			if strings.HasPrefix(ts, "@@") {
+				cf.Ampersand = ts
+			}
+		}
+
+		line := strings.Join(lines[5:], "\n")
+		cf.CodeLines = template.HTML(template.HTMLEscaper(line))
+
 		cds.Files = append(cds.Files, cf)
 	}
 
@@ -821,12 +850,23 @@ func GetCommitDetail(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 	commitStatus := strings.TrimSpace(lines[len(lines)-1])
 	cds.CommitStatus = commitStatus
 
-	fmt.Println(cds)
-
 	data.CommitDetail = cds
 
 	writeRepoResponse(w, r, db, reponame, "repo-commit.html", data)
 	return
+}
+
+func GetHashFile(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
+	vars := mux.Vars(r)
+	reponame := vars["reponame"]
+	commitHash := vars["hash"]
+	branch := vars["branch"]
+	path := vars["path"]
+	fmt.Println(path)
+
+	frdpath := strings.Split(r.URL.Path, "r/"+reponame+"/tree/"+branch+"/"+commitHash+"/")[1]
+	fmt.Println(frdpath)
+	fmt.Println(r.URL.Path)
 }
 
 // Contributors struct

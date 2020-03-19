@@ -40,6 +40,18 @@
                 {{end}}
             </div>
         </div>
+        <div class="repo-commit__code-lines">
+            {{range .CommitDetail.Files}}
+                <div class="repo-commit__file">
+                    <p>{{.State}}</p>
+                    <a href="/r/{{$.Reponame}}/tree/commit/{{$.CommitDetail.Hash}}/{{.Filename}}">{{.Filename}}</a>
+                </div>
+                <div class="repo-commit__code-line">
+                    <div>{{.Ampersand}}</div>
+                    <pre><code>{{.CodeLines}}</code>
+                </div>
+            {{end}}
+        </div>
     </div>
 </main>
 {{end}}
