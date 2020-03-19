@@ -457,8 +457,14 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 		}
 	}
 
-	args = []string{"show", branchOrHash, "--", frdpath}
+	args = []string{"show", branchOrHash, "--pretty=format:", "--", frdpath}
 	out = util.ForkExec(gitPath, args, repoDir)
+
+	line := strings.Split(out, "\n")[0]
+	if line == fmt.Sprintf("diff --git a/%s b/%s", frdpath, frdpath) {
+		args = []string{"show", fmt.Sprintf("%s:%s", branchOrHash, frdpath)}
+		out = util.ForkExec(gitPath, args, repoDir)
+	}
 
 	frdSplit := strings.Split(frdpath, "/")
 
@@ -852,10 +858,10 @@ func GetCommitDetail(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 		lines = lines[:len(lines)-1]
 
 		// Get PreviousHash and Ampersand
-		for _, line := range lines {
+		for i, line := range lines {
 			ts := strings.TrimSpace(line)
-			if strings.HasPrefix(ts, "index") {
-				indexSplit := strings.Fields(ts)
+			if strings.HasPrefix(ts, fmt.Sprintf("diff --git a/%s b/%s", cf.Filename, cf.Filename)) {
+				indexSplit := strings.Fields(strings.TrimSpace(lines[i+1]))
 				cf.PreviousHash = strings.Split(indexSplit[1], "..")[0]
 			}
 
