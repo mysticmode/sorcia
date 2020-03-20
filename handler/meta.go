@@ -330,10 +330,6 @@ func GetMetaUsers(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *sett
 		token := w.Header().Get("sorcia-cookie-token")
 		userID := model.GetUserIDFromToken(db, token)
 
-		if !model.CheckifUserIsAnAdmin(db, userID) {
-			http.Redirect(w, r, "/", http.StatusFound)
-		}
-
 		users := model.GetAllUsers(db)
 
 		layoutPage := path.Join("./templates", "layout.html")
@@ -349,6 +345,7 @@ func GetMetaUsers(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *sett
 
 		data := MetaResponse{
 			IsLoggedIn:         true,
+			IsAdmin:            model.CheckifUserIsAnAdmin(db, userID),
 			RegisterErrMessage: "",
 			HeaderActiveMenu:   "meta",
 			SorciaVersion:      conf.Version,

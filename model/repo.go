@@ -60,6 +60,25 @@ func GetReposFromUserID(db *sql.DB, userID int) *GetReposFromUserIDResponse {
 	}
 	rows.Close()
 
+	rows, err = db.Query("SELECT name, description FROM repository WHERE is_private = ?", false)
+	errorhandler.CheckError("Error on model get repos from userID --public-- repos", err)
+
+	for rows.Next() {
+		err = rows.Scan(&rds.Name, &rds.Description)
+		errorhandler.CheckError("Error on model get repos from userID --public-- repos rows scan", err)
+		rds.IsPrivate = "false"
+		if len(grfur.Repositories) == 0 {
+			grfur.Repositories = append(grfur.Repositories, rds)
+		} else {
+			for _, repo := range grfur.Repositories {
+				if repo.Name != rds.Name {
+					grfur.Repositories = append(grfur.Repositories, rds)
+				}
+			}
+		}
+	}
+	rows.Close()
+
 	return &grfur
 }
 

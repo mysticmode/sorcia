@@ -7,6 +7,7 @@
         <a href="" class="repo__menu__item repo__menu__item--active">users</a>
     </div>
     <div class="meta__detail">
+        {{if .IsAdmin}}
         <form class="form meta__detail__form" method="POST" action="/meta/users">
             <div class="form__title">add new user</div>
             <div class="meta__detail__form__error">{{ .RegisterErrMessage }}</div>
@@ -29,6 +30,7 @@
             </div>
             <input type="submit" class="button button--primary" value="Save" />
         </form>
+        {{end}}
         <div class="meta__users">
             <div class="meta__users__title">users</div>
             {{range .Users.Users}}
