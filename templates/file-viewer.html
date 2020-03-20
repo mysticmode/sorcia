@@ -17,6 +17,7 @@
         <a href="/r/{{ .Reponame }}/meta" class="repo__menu__item">meta</a>
         {{end}}
     </div>
+    {{if .IsRepoBranch}}
     <div class="repo__sub-menu">
         <div class="repo__sub-menu__item branch">
             <form method="get" action="" class="form">
@@ -31,6 +32,7 @@
             </form>
         </div>
     </div>
+    {{end}}
     <div class="path">
         {{if .RepoDetail.PathEmpty}}
         {{else}}
