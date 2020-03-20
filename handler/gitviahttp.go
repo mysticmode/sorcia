@@ -38,7 +38,7 @@ func (gh *gitHandler) basicAuth(username, passwordHash, realm string) bool {
 
 	user, pass, ok := gh.r.BasicAuth()
 
-	isPasswordValid := CheckPasswordHash(pass, passwordHash)
+	isPasswordValid := CheckPasswordHash(username, pass, passwordHash)
 
 	if !ok || user != username || !isPasswordValid {
 		gh.w.Header().Set("WWW-Authenticate", `Basic realm="`+realm+`"`)

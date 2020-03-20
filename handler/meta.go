@@ -230,7 +230,7 @@ func PostUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.
 		errorhandler.CheckError("Error on meta post user", err)
 
 		// Generate password hash using bcrypt
-		passwordHash, err := HashPassword(postUserRequest.Password)
+		passwordHash, err := HashPassword(fmt.Sprintf("%s:%s", postUserRequest.Username, postUserRequest.Password))
 		errorhandler.CheckError("Error on post register hash password", err)
 
 		// Generate JWT token using the hash password above
@@ -361,6 +361,7 @@ func GetMetaUsers(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *sett
 
 // PostPasswordRequest struct
 type PostPasswordRequest struct {
+	Username string `schema:"username"`
 	Password string `schema:"password"`
 }
 
@@ -394,7 +395,7 @@ func MetaPostPassword(w http.ResponseWriter, r *http.Request, db *sql.DB, decode
 		username := model.GetUsernameFromToken(db, token)
 
 		// Generate password hash using bcrypt
-		passwordHash, err := HashPassword(postPasswordRequest.Password)
+		passwordHash, err := HashPassword(fmt.Sprintf("%s:%s", postPasswordRequest.Username, postPasswordRequest.Password))
 		errorhandler.CheckError("Error on password hash", err)
 
 		// Generate JWT token using the hash password above
