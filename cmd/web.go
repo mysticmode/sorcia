@@ -87,6 +87,9 @@ func RunWeb(conf *setting.BaseStruct) {
 	m.HandleFunc("/meta/users", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetMetaUsers(w, r, db, conf)
 	}).Methods("GET")
+	m.HandleFunc("/meta/users", func(w http.ResponseWriter, r *http.Request) {
+		handler.PostUser(w, r, db, conf, decoder)
+	}).Methods("POST")
 	m.HandleFunc("/r/{reponame}", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetRepo(w, r, db, conf)
 	}).Methods("GET")
@@ -138,6 +141,7 @@ type IndexPageResponse struct {
 	ShowLoginMenu    bool
 	HeaderActiveMenu string
 	SorciaVersion    string
+	CanCreateRepo    bool
 	Repos            *model.GetReposFromUserIDResponse
 	AllPublicRepos   *model.GetAllPublicReposResponse
 	SiteSettings     util.SiteSettings
@@ -167,6 +171,7 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.B
 			IsLoggedIn:       true,
 			HeaderActiveMenu: "",
 			SorciaVersion:    conf.Version,
+			CanCreateRepo:    model.CheckifUserCanCreateRepo(db, userID),
 			Repos:            repos,
 			SiteSettings:     util.GetSiteSettings(db, conf),
 		}

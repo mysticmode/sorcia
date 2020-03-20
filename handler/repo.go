@@ -38,6 +38,13 @@ func GetCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *set
 	userPresent := w.Header().Get("user-present")
 
 	if userPresent == "true" {
+		token := w.Header().Get("sorcia-cookie-token")
+		userID := model.GetUserIDFromToken(db, token)
+
+		if !model.CheckifUserCanCreateRepo(db, userID) {
+			http.Redirect(w, r, "/", http.StatusFound)
+		}
+
 		layoutPage := path.Join("./templates", "layout.html")
 		headerPage := path.Join("./templates", "header.html")
 		createRepoPage := path.Join("./templates", "create-repo.html")
@@ -57,9 +64,9 @@ func GetCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *set
 		}
 
 		tmpl.ExecuteTemplate(w, "layout", data)
-	} else {
-		http.Redirect(w, r, "/login", http.StatusFound)
+		return
 	}
+	http.Redirect(w, r, "/login", http.StatusFound)
 }
 
 // CreateRepoRequest struct
@@ -71,99 +78,107 @@ type CreateRepoRequest struct {
 
 // PostCreateRepo ...
 func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder *schema.Decoder, conf *setting.BaseStruct) {
-	// NOTE: Invoke ParseForm or ParseMultipartForm before reading form values
-	if err := r.ParseForm(); err != nil {
-		fmt.Fprintf(w, "ParseForm() err: %v", err)
-		errorResponse := &errorhandler.Response{
-			Error: err.Error(),
+	userPresent := w.Header().Get("user-present")
+
+	if userPresent == "true" {
+		token := w.Header().Get("sorcia-cookie-token")
+		userID := model.GetUserIDFromToken(db, token)
+
+		if !model.CheckifUserCanCreateRepo(db, userID) {
+			http.Redirect(w, r, "/", http.StatusFound)
 		}
 
-		errorJSON, err := json.Marshal(errorResponse)
-		errorhandler.CheckError("Error on post create repo json marshal", err)
+		if err := r.ParseForm(); err != nil {
+			fmt.Fprintf(w, "ParseForm() err: %v", err)
+			errorResponse := &errorhandler.Response{
+				Error: err.Error(),
+			}
 
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
+			errorJSON, err := json.Marshal(errorResponse)
+			errorhandler.CheckError("Error on post create repo json marshal", err)
 
-		w.Write(errorJSON)
-	}
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
 
-	var createRepoRequest = &CreateRepoRequest{}
-	err := decoder.Decode(createRepoRequest, r.PostForm)
-	errorhandler.CheckError("Error on post create repo decoder", err)
-
-	s := createRepoRequest.Name
-	if len(s) > 100 || len(s) < 1 {
-		layoutPage := path.Join("./templates", "layout.html")
-		headerPage := path.Join("./templates", "header.html")
-		createRepoPage := path.Join("./templates", "create-repo.html")
-		footerPage := path.Join("./templates", "footer.html")
-
-		tmpl, err := template.ParseFiles(layoutPage, headerPage, createRepoPage, footerPage)
-		errorhandler.CheckError("Error on template parse", err)
-
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		w.WriteHeader(http.StatusOK)
-
-		data := GetCreateRepoResponse{
-			IsLoggedIn:         true,
-			HeaderActiveMenu:   "",
-			ReponameErrMessage: "Repository name is too long (maximum is 100 characters).",
-			SorciaVersion:      conf.Version,
-			SiteSettings:       util.GetSiteSettings(db, conf),
+			w.Write(errorJSON)
 		}
 
-		tmpl.ExecuteTemplate(w, "layout", data)
+		var createRepoRequest = &CreateRepoRequest{}
+		err := decoder.Decode(createRepoRequest, r.PostForm)
+		errorhandler.CheckError("Error on post create repo decoder", err)
+
+		s := createRepoRequest.Name
+		if len(s) > 100 || len(s) < 1 {
+			layoutPage := path.Join("./templates", "layout.html")
+			headerPage := path.Join("./templates", "header.html")
+			createRepoPage := path.Join("./templates", "create-repo.html")
+			footerPage := path.Join("./templates", "footer.html")
+
+			tmpl, err := template.ParseFiles(layoutPage, headerPage, createRepoPage, footerPage)
+			errorhandler.CheckError("Error on template parse", err)
+
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			w.WriteHeader(http.StatusOK)
+
+			data := GetCreateRepoResponse{
+				IsLoggedIn:         true,
+				HeaderActiveMenu:   "",
+				ReponameErrMessage: "Repository name is too long (maximum is 100 characters).",
+				SorciaVersion:      conf.Version,
+				SiteSettings:       util.GetSiteSettings(db, conf),
+			}
+
+			tmpl.ExecuteTemplate(w, "layout", data)
+			return
+		} else if strings.HasPrefix(s, "-") || strings.Contains(s, "--") || strings.HasSuffix(s, "-") || !util.IsAlnumOrHyphen(s) {
+			layoutPage := path.Join("./templates", "layout.html")
+			headerPage := path.Join("./templates", "header.html")
+			createRepoPage := path.Join("./templates", "create-repo.html")
+			footerPage := path.Join("./templates", "footer.html")
+
+			tmpl, err := template.ParseFiles(layoutPage, headerPage, createRepoPage, footerPage)
+			errorhandler.CheckError("Error on template parse", err)
+
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			w.WriteHeader(http.StatusOK)
+
+			data := GetCreateRepoResponse{
+				IsLoggedIn:         true,
+				HeaderActiveMenu:   "",
+				ReponameErrMessage: "Repository name may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen.",
+				SorciaVersion:      conf.Version,
+				SiteSettings:       util.GetSiteSettings(db, conf),
+			}
+
+			tmpl.ExecuteTemplate(w, "layout", data)
+			return
+		}
+
+		var isPrivate int
+		if isPrivate = 0; createRepoRequest.IsPrivate == "1" {
+			isPrivate = 1
+		}
+
+		crs := model.CreateRepoStruct{
+			Name:        createRepoRequest.Name,
+			Description: createRepoRequest.Description,
+			IsPrivate:   isPrivate,
+			UserID:      userID,
+		}
+
+		model.InsertRepo(db, crs)
+
+		// Create Git bare repository
+		bareRepoDir := filepath.Join(conf.Paths.RepoPath, createRepoRequest.Name+".git")
+		gitPath := util.GetGitBinPath()
+
+		args := []string{"init", "--bare", bareRepoDir}
+		_ = util.ForkExec(gitPath, args, ".")
+
+		http.Redirect(w, r, "/", http.StatusFound)
 		return
-	} else if strings.HasPrefix(s, "-") || strings.Contains(s, "--") || strings.HasSuffix(s, "-") || !util.IsAlnumOrHyphen(s) {
-		layoutPage := path.Join("./templates", "layout.html")
-		headerPage := path.Join("./templates", "header.html")
-		createRepoPage := path.Join("./templates", "create-repo.html")
-		footerPage := path.Join("./templates", "footer.html")
-
-		tmpl, err := template.ParseFiles(layoutPage, headerPage, createRepoPage, footerPage)
-		errorhandler.CheckError("Error on template parse", err)
-
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		w.WriteHeader(http.StatusOK)
-
-		data := GetCreateRepoResponse{
-			IsLoggedIn:         true,
-			HeaderActiveMenu:   "",
-			ReponameErrMessage: "Repository name may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen.",
-			SorciaVersion:      conf.Version,
-			SiteSettings:       util.GetSiteSettings(db, conf),
-		}
-
-		tmpl.ExecuteTemplate(w, "layout", data)
-		return
 	}
 
-	token := w.Header().Get("sorcia-cookie-token")
-
-	userID := model.GetUserIDFromToken(db, token)
-
-	var isPrivate int
-	if isPrivate = 0; createRepoRequest.IsPrivate == "1" {
-		isPrivate = 1
-	}
-
-	crs := model.CreateRepoStruct{
-		Name:        createRepoRequest.Name,
-		Description: createRepoRequest.Description,
-		IsPrivate:   isPrivate,
-		UserID:      userID,
-	}
-
-	model.InsertRepo(db, crs)
-
-	// Create Git bare repository
-	bareRepoDir := filepath.Join(conf.Paths.RepoPath, createRepoRequest.Name+".git")
-	gitPath := util.GetGitBinPath()
-
-	args := []string{"init", "--bare", bareRepoDir}
-	_ = util.ForkExec(gitPath, args, ".")
-
-	http.Redirect(w, r, "/", http.StatusFound)
 }
 
 // GetRepoResponse struct

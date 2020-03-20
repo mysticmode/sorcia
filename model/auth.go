@@ -10,7 +10,7 @@ import (
 
 // CreateAccount ...
 func CreateAccount(db *sql.DB) {
-	stmt, err := db.Prepare("CREATE TABLE IF NOT EXISTS account (id INTEGER PRIMARY KEY, username TEXT UNIQUE NOT NULL, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, jwt_token TEXT NOT NULL, is_admin BOOLEAN DEFAULT 0)")
+	stmt, err := db.Prepare("CREATE TABLE IF NOT EXISTS account (id INTEGER PRIMARY KEY, username TEXT UNIQUE NOT NULL, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, jwt_token TEXT NOT NULL, can_create_repo BOOLEAN DEFAULT 0, is_admin BOOLEAN DEFAULT 0)")
 	errorhandler.CheckError("Error on model create account", err)
 
 	_, err = stmt.Exec()
@@ -19,19 +19,20 @@ func CreateAccount(db *sql.DB) {
 
 // CreateAccountStruct struct
 type CreateAccountStruct struct {
-	Username     string
-	Email        string
-	PasswordHash string
-	Token        string
-	IsAdmin      int
+	Username      string
+	Email         string
+	PasswordHash  string
+	Token         string
+	CanCreateRepo int
+	IsAdmin       int
 }
 
 // InsertAccount ...
 func InsertAccount(db *sql.DB, cas CreateAccountStruct) {
-	stmt, err := db.Prepare("INSERT INTO account (username, email, password_hash, jwt_token, is_admin) VALUES (?, ?, ?, ?, ?)")
+	stmt, err := db.Prepare("INSERT INTO account (username, email, password_hash, jwt_token, can_create_repo, is_admin) VALUES (?, ?, ?, ?, ?, ?)")
 	errorhandler.CheckError("Error on model insert account", err)
 
-	_, err = stmt.Exec(cas.Username, cas.Email, cas.PasswordHash, cas.Token, cas.IsAdmin)
+	_, err = stmt.Exec(cas.Username, cas.Email, cas.PasswordHash, cas.Token, cas.CanCreateRepo, cas.IsAdmin)
 	errorhandler.CheckError("Error on model insert account exec", err)
 }
 
@@ -40,21 +41,22 @@ type Users struct {
 }
 
 type User struct {
-	Username string
-	Email    string
-	IsAdmin  bool
+	Username      string
+	Email         string
+	CanCreateRepo bool
+	IsAdmin       bool
 }
 
 // GetAllUsers
 func GetAllUsers(db *sql.DB) Users {
-	rows, err := db.Query("SELECT username, email, is_admin FROM account")
+	rows, err := db.Query("SELECT username, email, can_create_repo, is_admin FROM account")
 	errorhandler.CheckError("Error on model get all users", err)
 
 	var user User
 	var users Users
 
 	for rows.Next() {
-		err = rows.Scan(&user.Username, &user.Email, &user.IsAdmin)
+		err = rows.Scan(&user.Username, &user.Email, &user.CanCreateRepo, &user.IsAdmin)
 		errorhandler.CheckError("Error on model get all users rows scan", err)
 
 		users.Users = append(users.Users, user)
@@ -62,6 +64,38 @@ func GetAllUsers(db *sql.DB) Users {
 	rows.Close()
 
 	return users
+}
+
+// CheckifUserCanCreateRepo ...
+func CheckifUserCanCreateRepo(db *sql.DB, userID int) bool {
+	rows, err := db.Query("SELECT can_create_repo FROM account WHERE id = ?", userID)
+	errorhandler.CheckError("Error on model check if user can create repo", err)
+
+	var canCreateRepo bool
+
+	if rows.Next() {
+		err = rows.Scan(&canCreateRepo)
+		errorhandler.CheckError("Error on model check if user can create repo rows scan", err)
+	}
+	rows.Close()
+
+	return canCreateRepo
+}
+
+// CheckifUserCanCreateRepo ...
+func CheckifUserIsAnAdmin(db *sql.DB, userID int) bool {
+	rows, err := db.Query("SELECT is_admin FROM account WHERE id = ?", userID)
+	errorhandler.CheckError("Error on model check if user is an admin", err)
+
+	var isAdmin bool
+
+	if rows.Next() {
+		err = rows.Scan(&isAdmin)
+		errorhandler.CheckError("Error on model check if user is an admin rows scan", err)
+	}
+	rows.Close()
+
+	return isAdmin
 }
 
 // GetUserIDFromToken ...
