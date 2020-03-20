@@ -277,8 +277,8 @@ func MetaPostSiteSettings(w http.ResponseWriter, r *http.Request, db *sql.DB, co
 		siteTitle := r.FormValue("title")
 		siteStyle := r.FormValue("style")
 
-		gotFavicon, faviconPath := faviconUpload(w, r, conf.Paths.UploadAssetPath)
-		gotLogo, logoPath, logoWidth, logoHeight := logoUpload(w, r, conf.Paths.UploadAssetPath)
+		gotFavicon, faviconPath := faviconUpload(w, r, db, conf.Paths.UploadAssetPath)
+		gotLogo, logoPath, logoWidth, logoHeight := logoUpload(w, r, db, conf.Paths.UploadAssetPath)
 
 		if siteTitle == "" && siteStyle == "" && !gotFavicon && !gotLogo {
 			http.Redirect(w, r, "/meta", http.StatusFound)
@@ -323,7 +323,7 @@ func MetaPostSiteSettings(w http.ResponseWriter, r *http.Request, db *sql.DB, co
 	http.Redirect(w, r, "/login", http.StatusFound)
 }
 
-func faviconUpload(w http.ResponseWriter, r *http.Request, uploadAssetPath string) (bool, string) {
+func faviconUpload(w http.ResponseWriter, r *http.Request, db *sql.DB, uploadAssetPath string) (bool, string) {
 	r.ParseMultipartForm(2)
 
 	file, hdlr, err := r.FormFile("favicon")
@@ -335,6 +335,13 @@ func faviconUpload(w http.ResponseWriter, r *http.Request, uploadAssetPath strin
 	contentType := hdlr.Header.Get("Content-Type")
 
 	if contentType == "image/ico" || contentType == "image/png" || contentType == "image/jpeg" {
+
+		oldFavicon := model.GetSiteFavicon(db)
+		if oldFavicon != "" {
+			err = os.Remove(oldFavicon)
+			errorhandler.CheckError("Error on removing old favicon", err)
+		}
+
 		ext := strings.Split(contentType, "image/")[1]
 
 		filePath := filepath.Join(uploadAssetPath, "favicon."+ext)
@@ -351,7 +358,7 @@ func faviconUpload(w http.ResponseWriter, r *http.Request, uploadAssetPath strin
 	return false, ""
 }
 
-func logoUpload(w http.ResponseWriter, r *http.Request, uploadAssetPath string) (bool, string, string, string) {
+func logoUpload(w http.ResponseWriter, r *http.Request, db *sql.DB, uploadAssetPath string) (bool, string, string, string) {
 	r.ParseMultipartForm(10)
 
 	file, hdlr, err := r.FormFile("logo")
@@ -363,6 +370,13 @@ func logoUpload(w http.ResponseWriter, r *http.Request, uploadAssetPath string) 
 	contentType := hdlr.Header.Get("Content-Type")
 
 	if contentType == "image/svg+xml" || contentType == "image/png" || contentType == "image/jpeg" {
+
+		oldLogo := model.GetSiteLogo(db)
+		if oldLogo != "" {
+			err = os.Remove(oldLogo)
+			errorhandler.CheckError("Error on removing old logo", err)
+		}
+
 		ext := strings.Split(contentType, "image/")[1]
 
 		if ext == "svg+xml" {
