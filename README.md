@@ -55,9 +55,11 @@ export GOPATH=$HOME/go
 source ~/.bashrc
 ```
 
-Now download the Sorcia repository and build from source.
+Now download the appropriate Sorcia version in tar.gz or zip from [https://git.mysticmode.org/r/sorcia/refs](https://git.mysticmode.org/r/sorcia/refs) and build from source. Example below
 ```
-git clone https://git.mysticmode.org/r/sorcia.git
+wget https://git.mysticmode.org/dl/sorcia-0.2.0.tar.gz
+mkdir sorcia
+tar -C sorcia -xzf sorcia-0.2.0.tar.gz
 cd sorcia
 go build sorcia.go
 chmod +x sorcia
