@@ -38,4 +38,3 @@ function branchChange(branch) {
     var pathStr = pathSplit[0] + branch + pathSplit[1];
     window.location.pathname = pathStr;
 }
-

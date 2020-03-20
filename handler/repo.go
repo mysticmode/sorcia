@@ -183,6 +183,7 @@ type GetRepoResponse struct {
 	TotalRefs        int
 	RepoDetail       RepoDetail
 	RepoBranches     []string
+	IsRepoBranch     bool
 	RepoLogs         RepoLogs
 	CommitDetail     CommitDetailStruct
 	RepoRefs         []Refs
@@ -383,6 +384,7 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 		SorciaVersion:    conf.Version,
 		Reponame:         reponame,
 		RepoDescription:  repoDescription,
+		IsRepoBranch:     true,
 		IsRepoPrivate:    model.GetRepoType(db, reponame),
 		RepoBranches:     util.GetGitBranches(repoDir),
 	}
@@ -401,28 +403,28 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 	ss := strings.Split(out, "\n")
 	entries := ss[:len(ss)-1]
 
+	legendHref := "\"/r/" + reponame + "/tree/" + branchOrHash + "\""
+	legendPath := "<a href=" + legendHref + ">" + reponame + "</a>"
+
+	legendPathSplit := strings.Split(frdpath, "/")
+
+	for _, s := range legendPathSplit {
+		legendHref = strings.TrimSuffix(legendHref, "\"")
+		legendHref = fmt.Sprintf("%s/%s\"", legendHref, s)
+
+		additionalPath := "<a href=" + legendHref + ">" + s + "</a>"
+
+		legendPath = fmt.Sprintf("%s / %s", legendPath, additionalPath)
+	}
+
+	data.RepoDetail.PathEmpty = false
+	data.RepoDetail.WalkPath = r.URL.Path
+	data.RepoDetail.LegendPath = template.HTML(legendPath)
+
 	for _, entry := range entries {
 		entryCheck := strings.TrimSpace(entry)
 
 		if entryCheck == branchOrHash || entryCheck == fmt.Sprintf("* %s", branchOrHash) {
-			legendHref := "\"/r/" + reponame + "/tree/" + branchOrHash + "\""
-			legendPath := "<a href=" + legendHref + ">" + reponame + "</a>"
-
-			legendPathSplit := strings.Split(frdpath, "/")
-
-			for _, s := range legendPathSplit {
-				legendHref = strings.TrimSuffix(legendHref, "\"")
-				legendHref = fmt.Sprintf("%s/%s\"", legendHref, s)
-
-				additionalPath := "<a href=" + legendHref + ">" + s + "</a>"
-
-				legendPath = fmt.Sprintf("%s / %s", legendPath, additionalPath)
-			}
-
-			data.RepoDetail.PathEmpty = false
-			data.RepoDetail.WalkPath = r.URL.Path
-			data.RepoDetail.LegendPath = template.HTML(legendPath)
-
 			frdPathLen := len(strings.Split(frdpath, "/"))
 			dirs, files := walkThrough(repoDir, gitPath, branchOrHash, frdpath, frdPathLen)
 
@@ -457,11 +459,14 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 		}
 	}
 
+	data.IsRepoBranch = false
+
 	args = []string{"show", branchOrHash, "--pretty=format:", "--", frdpath}
 	out = util.ForkExec(gitPath, args, repoDir)
 
-	line := strings.Split(out, "\n")[0]
-	if line == fmt.Sprintf("diff --git a/%s b/%s", frdpath, frdpath) {
+	diffLine := strings.Split(out, "\n")[0]
+
+	if diffLine == fmt.Sprintf("diff --git a/%s b/%s", frdpath, frdpath) {
 		args = []string{"show", fmt.Sprintf("%s:%s", branchOrHash, frdpath)}
 		out = util.ForkExec(gitPath, args, repoDir)
 	}
