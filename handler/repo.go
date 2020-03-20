@@ -195,6 +195,7 @@ type GetRepoResponse struct {
 	IsRepoPrivate    bool
 	RepoAccess       bool
 	Host             string
+	SSHClone         string
 	TotalCommits     string
 	TotalRefs        int
 	RepoDetail       RepoDetail
@@ -298,6 +299,14 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.B
 	if !data.IsLoggedIn && data.IsRepoPrivate {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
+	}
+
+	if strings.Contains(r.Host, ":") || conf.Server.SSHPort != "22" {
+		host := strings.Split(r.Host, ":")[0]
+		port := conf.Server.SSHPort
+		data.SSHClone = fmt.Sprintf("ssh://%s:%s/%s.git", host, port, reponame)
+	} else {
+		data.SSHClone = fmt.Sprintf("git@%s:%s.git", r.Host, reponame)
 	}
 
 	if totalCommits == "" {
