@@ -432,6 +432,36 @@ func GetSiteStyle(db *sql.DB) string {
 	return style
 }
 
+// GetSiteFavicon
+func GetSiteFavicon(db *sql.DB) string {
+	rows, err := db.Query("SELECT favicon FROM site_settings WHERE id = ?", 1)
+	errorhandler.CheckError("Error on model get site favicon", err)
+
+	var favicon string
+	if rows.Next() {
+		err = rows.Scan(&favicon)
+		errorhandler.CheckError("Error on model get site favicon rows scan", err)
+	}
+	rows.Close()
+
+	return favicon
+}
+
+// GetSiteLogo
+func GetSiteLogo(db *sql.DB) string {
+	rows, err := db.Query("SELECT logo FROM site_settings WHERE id = ?", 1)
+	errorhandler.CheckError("Error on model get site logo", err)
+
+	var logo string
+	if rows.Next() {
+		err = rows.Scan(&logo)
+		errorhandler.CheckError("Error on model get site logo rows scan", err)
+	}
+	rows.Close()
+
+	return logo
+}
+
 // UpdateSiteTitle ...
 func UpdateSiteTitle(db *sql.DB, title string) {
 	stmt, err := db.Prepare("UPDATE site_settings SET title = ? WHERE id = 1")
