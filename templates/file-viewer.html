@@ -14,7 +14,9 @@
         <a href="/r/{{ .Reponame }}/refs" class="repo__menu__item">refs</a>
         <a href="/r/{{ .Reponame }}/contributors" class="repo__menu__item">contributors</a>
         {{if .IsLoggedIn}}
-        <a href="/r/{{ .Reponame }}/meta" class="repo__menu__item">meta</a>
+            {{if .RepoAccess}}
+            <a href="/r/{{ .Reponame }}/meta" class="repo__menu__item">meta</a>
+            {{end}}
         {{end}}
     </div>
     {{if .IsRepoBranch}}

@@ -268,6 +268,13 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.B
 		return
 	}
 
+	userPresent := w.Header().Get("user-present")
+	var loggedInUserID int
+	if userPresent == "true" {
+		token := w.Header().Get("sorcia-cookie-token")
+		loggedInUserID = model.GetUserIDFromToken(db, token)
+	}
+
 	userID := model.GetUserIDFromReponame(db, reponame)
 	username := model.GetUsernameFromUserID(db, userID)
 	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
@@ -283,7 +290,7 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.B
 		Reponame:         reponame,
 		RepoDescription:  repoDescription,
 		IsRepoPrivate:    model.GetRepoType(db, reponame),
-		RepoAccess:       model.CheckRepoAccessFromUserIDAndReponame(db, userID, reponame),
+		RepoAccess:       model.CheckRepoAccessFromUserIDAndReponame(db, loggedInUserID, reponame),
 		Host:             r.Host,
 		TotalCommits:     totalCommits,
 	}
@@ -341,6 +348,13 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 		return
 	}
 
+	userPresent := w.Header().Get("user-present")
+	var loggedInUserID int
+	if userPresent == "true" {
+		token := w.Header().Get("sorcia-cookie-token")
+		loggedInUserID = model.GetUserIDFromToken(db, token)
+	}
+
 	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
 
 	data := GetRepoResponse{
@@ -350,6 +364,7 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 		HeaderActiveMenu: "",
 		SorciaVersion:    conf.Version,
 		Reponame:         reponame,
+		RepoAccess:       model.CheckRepoAccessFromUserIDAndReponame(db, loggedInUserID, reponame),
 		RepoDescription:  repoDescription,
 		IsRepoPrivate:    model.GetRepoType(db, reponame),
 		RepoBranches:     util.GetGitBranches(repoDir),
@@ -390,6 +405,13 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 		return
 	}
 
+	userPresent := w.Header().Get("user-present")
+	var loggedInUserID int
+	if userPresent == "true" {
+		token := w.Header().Get("sorcia-cookie-token")
+		loggedInUserID = model.GetUserIDFromToken(db, token)
+	}
+
 	repoDir := filepath.Join(conf.Paths.RepoPath, reponame+".git")
 	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
 
@@ -400,6 +422,7 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 		HeaderActiveMenu: "",
 		SorciaVersion:    conf.Version,
 		Reponame:         reponame,
+		RepoAccess:       model.CheckRepoAccessFromUserIDAndReponame(db, loggedInUserID, reponame),
 		RepoDescription:  repoDescription,
 		IsRepoBranch:     true,
 		IsRepoPrivate:    model.GetRepoType(db, reponame),
@@ -623,6 +646,13 @@ func GetRepoLog(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *settin
 		return
 	}
 
+	userPresent := w.Header().Get("user-present")
+	var loggedInUserID int
+	if userPresent == "true" {
+		token := w.Header().Get("sorcia-cookie-token")
+		loggedInUserID = model.GetUserIDFromToken(db, token)
+	}
+
 	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
 
 	data := GetRepoResponse{
@@ -632,6 +662,7 @@ func GetRepoLog(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *settin
 		HeaderActiveMenu: "",
 		SorciaVersion:    conf.Version,
 		Reponame:         reponame,
+		RepoAccess:       model.CheckRepoAccessFromUserIDAndReponame(db, loggedInUserID, reponame),
 		RepoDescription:  repoDescription,
 		IsRepoPrivate:    model.GetRepoType(db, reponame),
 		RepoBranches:     util.GetGitBranches(repoDir),
@@ -669,6 +700,13 @@ func GetRepoRefs(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 		return
 	}
 
+	userPresent := w.Header().Get("user-present")
+	var loggedInUserID int
+	if userPresent == "true" {
+		token := w.Header().Get("sorcia-cookie-token")
+		loggedInUserID = model.GetUserIDFromToken(db, token)
+	}
+
 	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
 
 	data := GetRepoResponse{
@@ -678,6 +716,7 @@ func GetRepoRefs(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 		HeaderActiveMenu: "",
 		SorciaVersion:    conf.Version,
 		Reponame:         reponame,
+		RepoAccess:       model.CheckRepoAccessFromUserIDAndReponame(db, loggedInUserID, reponame),
 		RepoDescription:  repoDescription,
 		IsRepoPrivate:    model.GetRepoType(db, reponame),
 	}
@@ -761,6 +800,13 @@ func GetRepoContributors(w http.ResponseWriter, r *http.Request, db *sql.DB, con
 		return
 	}
 
+	userPresent := w.Header().Get("user-present")
+	var loggedInUserID int
+	if userPresent == "true" {
+		token := w.Header().Get("sorcia-cookie-token")
+		loggedInUserID = model.GetUserIDFromToken(db, token)
+	}
+
 	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
 
 	data := GetRepoResponse{
@@ -770,6 +816,7 @@ func GetRepoContributors(w http.ResponseWriter, r *http.Request, db *sql.DB, con
 		HeaderActiveMenu: "",
 		SorciaVersion:    conf.Version,
 		Reponame:         reponame,
+		RepoAccess:       model.CheckRepoAccessFromUserIDAndReponame(db, loggedInUserID, reponame),
 		RepoDescription:  repoDescription,
 		IsRepoPrivate:    model.GetRepoType(db, reponame),
 	}
@@ -822,6 +869,13 @@ func GetCommitDetail(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 		return
 	}
 
+	userPresent := w.Header().Get("user-present")
+	var loggedInUserID int
+	if userPresent == "true" {
+		token := w.Header().Get("sorcia-cookie-token")
+		loggedInUserID = model.GetUserIDFromToken(db, token)
+	}
+
 	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
 
 	data := GetRepoResponse{
@@ -831,6 +885,7 @@ func GetCommitDetail(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 		HeaderActiveMenu: "",
 		SorciaVersion:    conf.Version,
 		Reponame:         reponame,
+		RepoAccess:       model.CheckRepoAccessFromUserIDAndReponame(db, loggedInUserID, reponame),
 		RepoDescription:  repoDescription,
 		IsRepoPrivate:    model.GetRepoType(db, reponame),
 	}
