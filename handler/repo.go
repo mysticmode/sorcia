@@ -193,6 +193,7 @@ type GetRepoResponse struct {
 	Reponame         string
 	RepoDescription  string
 	IsRepoPrivate    bool
+	RepoAccess       bool
 	Host             string
 	TotalCommits     string
 	TotalRefs        int
@@ -282,6 +283,7 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.B
 		Reponame:         reponame,
 		RepoDescription:  repoDescription,
 		IsRepoPrivate:    model.GetRepoType(db, reponame),
+		RepoAccess:       model.CheckRepoAccessFromUserIDAndReponame(db, userID, reponame),
 		Host:             r.Host,
 		TotalCommits:     totalCommits,
 	}
