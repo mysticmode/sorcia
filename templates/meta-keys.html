@@ -4,7 +4,9 @@
     <div class="repo__menu">
         <a href="/meta" class="repo__menu__item">general</a>
         <a href="" class="repo__menu__item repo__menu__item--active">keys</a>
+        {{if .IsAdmin}}
         <a href="/meta/users" class="repo__menu__item">users</a>
+        {{end}}
     </div>
     <div class="meta__detail">
         <form class="form meta__detail__form" method="POST" action="/meta/keys">

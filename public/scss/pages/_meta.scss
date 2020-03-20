@@ -13,6 +13,11 @@
                 margin-bottom: 15px;
             }
 
+            &__error {
+                margin-bottom: 15px;
+                color: $brand-danger;
+            }
+
             &__current {
                 margin-bottom: 10px;
 
@@ -63,6 +68,7 @@
 
             & .admin {
                 font-weight: bold;
+                clear: both;
             }
         }
     }

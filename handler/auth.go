@@ -274,11 +274,12 @@ func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *sett
 	}
 
 	rr := model.CreateAccountStruct{
-		Username:     registerRequest.Username,
-		Email:        registerRequest.Email,
-		PasswordHash: passwordHash,
-		Token:        token,
-		IsAdmin:      1,
+		Username:      registerRequest.Username,
+		Email:         registerRequest.Email,
+		PasswordHash:  passwordHash,
+		Token:         token,
+		CanCreateRepo: 1,
+		IsAdmin:       1,
 	}
 
 	model.InsertAccount(db, rr)

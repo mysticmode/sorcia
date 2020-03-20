@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"html/template"
 	"image"
+	"time"
 
 	// jpeg import
 	_ "image/jpeg"
@@ -31,13 +32,15 @@ import (
 
 // MetaResponse struct
 type MetaResponse struct {
-	IsLoggedIn       bool
-	HeaderActiveMenu string
-	SorciaVersion    string
-	Username         string
-	Email            string
-	Users            model.Users
-	SiteSettings     util.SiteSettings
+	IsLoggedIn         bool
+	IsAdmin            bool
+	HeaderActiveMenu   string
+	SorciaVersion      string
+	Username           string
+	Email              string
+	Users              model.Users
+	RegisterErrMessage string
+	SiteSettings       util.SiteSettings
 }
 
 // GetMeta ...
@@ -48,6 +51,8 @@ func GetMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.B
 		token := w.Header().Get("sorcia-cookie-token")
 		username := model.GetUsernameFromToken(db, token)
 		email := model.GetEmailFromUsername(db, username)
+
+		userID := model.GetUserIDFromToken(db, token)
 
 		layoutPage := path.Join("./templates", "layout.html")
 		headerPage := path.Join("./templates", "header.html")
@@ -62,6 +67,7 @@ func GetMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.B
 
 		data := MetaResponse{
 			IsLoggedIn:       true,
+			IsAdmin:          model.CheckifUserIsAnAdmin(db, userID),
 			HeaderActiveMenu: "meta",
 			SorciaVersion:    conf.Version,
 			Username:         username,
@@ -78,6 +84,7 @@ func GetMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.B
 // MetaKeysResponse struct
 type MetaKeysResponse struct {
 	IsLoggedIn       bool
+	IsAdmin          bool
 	HeaderActiveMenu string
 	SorciaVersion    string
 	SSHKeys          *model.SSHKeysResponse
@@ -107,6 +114,7 @@ func GetMetaKeys(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 
 		data := MetaKeysResponse{
 			IsLoggedIn:       true,
+			IsAdmin:          model.CheckifUserIsAnAdmin(db, userID),
 			HeaderActiveMenu: "meta",
 			SorciaVersion:    conf.Version,
 			SSHKeys:          sshKeys,
@@ -145,42 +153,173 @@ type CreateAuthKeyRequest struct {
 
 // PostAuthKey ...
 func PostAuthKey(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct, decoder *schema.Decoder) {
-	// NOTE: Invoke ParseForm or ParseMultipartForm before reading form values
-	if err := r.ParseForm(); err != nil {
-		fmt.Fprintf(w, "ParseForm() err: %v", err)
-		errorResponse := &errorhandler.Response{
-			Error: err.Error(),
+	userPresent := w.Header().Get("user-present")
+
+	if userPresent == "true" {
+		token := w.Header().Get("sorcia-cookie-token")
+
+		// NOTE: Invoke ParseForm or ParseMultipartForm before reading form values
+		if err := r.ParseForm(); err != nil {
+			fmt.Fprintf(w, "ParseForm() err: %v", err)
+			errorResponse := &errorhandler.Response{
+				Error: err.Error(),
+			}
+
+			errorJSON, err := json.Marshal(errorResponse)
+			errorhandler.CheckError("Error on json marshal", err)
+
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+
+			w.Write(errorJSON)
 		}
 
-		errorJSON, err := json.Marshal(errorResponse)
-		errorhandler.CheckError("Error on json marshal", err)
+		var createAuthKeyRequest = &CreateAuthKeyRequest{}
+		err := decoder.Decode(createAuthKeyRequest, r.PostForm)
+		errorhandler.CheckError("Error on auth key decode", err)
 
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
+		userID := model.GetUserIDFromToken(db, token)
 
-		w.Write(errorJSON)
+		authKey := strings.TrimSpace(createAuthKeyRequest.AuthKey)
+		fingerPrint := util.SSHFingerPrint(authKey)
+
+		ispk := model.InsertSSHPubKeyStruct{
+			AuthKey:     authKey,
+			Title:       strings.TrimSpace(createAuthKeyRequest.Title),
+			Fingerprint: fingerPrint,
+			UserID:      userID,
+		}
+
+		model.InsertSSHPubKey(db, ispk)
+
+		http.Redirect(w, r, "/meta/keys", http.StatusFound)
 	}
 
-	var createAuthKeyRequest = &CreateAuthKeyRequest{}
-	err := decoder.Decode(createAuthKeyRequest, r.PostForm)
-	errorhandler.CheckError("Error on auth key decode", err)
+	http.Redirect(w, r, "/login", http.StatusFound)
+}
 
-	token := w.Header().Get("sorcia-cookie-token")
-	userID := model.GetUserIDFromToken(db, token)
+type PostUserRequest struct {
+	Username      string `schema:"username"`
+	Email         string `schema:"email"`
+	Password      string `schema:"password"`
+	CanCreateRepo string `schema:"createrepo"`
+}
 
-	authKey := strings.TrimSpace(createAuthKeyRequest.AuthKey)
-	fingerPrint := util.SSHFingerPrint(authKey)
+// PostUser ...
+func PostUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct, decoder *schema.Decoder) {
+	userPresent := w.Header().Get("user-present")
 
-	ispk := model.InsertSSHPubKeyStruct{
-		AuthKey:     authKey,
-		Title:       strings.TrimSpace(createAuthKeyRequest.Title),
-		Fingerprint: fingerPrint,
-		UserID:      userID,
+	if userPresent == "true" {
+		if err := r.ParseForm(); err != nil {
+			fmt.Fprintf(w, "ParseForm() err: %v", err)
+			errorResponse := &errorhandler.Response{
+				Error: err.Error(),
+			}
+
+			errorJSON, err := json.Marshal(errorResponse)
+			errorhandler.CheckError("Error on json marshal", err)
+
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+
+			w.Write(errorJSON)
+		}
+
+		var postUserRequest = &PostUserRequest{}
+		err := decoder.Decode(postUserRequest, r.PostForm)
+		errorhandler.CheckError("Error on meta post user", err)
+
+		// Generate password hash using bcrypt
+		passwordHash, err := HashPassword(postUserRequest.Password)
+		errorhandler.CheckError("Error on post register hash password", err)
+
+		// Generate JWT token using the hash password above
+		token, err := GenerateJWTToken(passwordHash)
+		errorhandler.CheckError("Error on post register generate jwt token", err)
+
+		s := postUserRequest.Username
+
+		if len(s) > 39 || len(s) < 1 {
+			layoutPage := path.Join("./templates", "layout.html")
+			headerPage := path.Join("./templates", "header.html")
+			metaUsersPage := path.Join("./templates", "meta-users.html")
+			footerPage := path.Join("./templates", "footer.html")
+
+			tmpl, err := template.ParseFiles(layoutPage, headerPage, metaUsersPage, footerPage)
+			errorhandler.CheckError("Error on template parse", err)
+
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			w.WriteHeader(http.StatusOK)
+
+			data := LoginPageResponse{
+				IsLoggedIn:         false,
+				ShowLoginMenu:      false,
+				HeaderActiveMenu:   "",
+				SorciaVersion:      conf.Version,
+				IsShowSignUp:       !model.CheckIfFirstUserExists(db),
+				LoginErrMessage:    "",
+				RegisterErrMessage: "Username is too long (maximum is 39 characters).",
+				SiteSettings:       util.GetSiteSettings(db, conf),
+			}
+
+			tmpl.ExecuteTemplate(w, "layout", data)
+			return
+		} else if strings.HasPrefix(s, "-") || strings.Contains(s, "--") || strings.HasSuffix(s, "-") || !util.IsAlnumOrHyphen(s) {
+			layoutPage := path.Join("./templates", "layout.html")
+			headerPage := path.Join("./templates", "header.html")
+			metaUsersPage := path.Join("./templates", "meta-users.html")
+			footerPage := path.Join("./templates", "footer.html")
+
+			tmpl, err := template.ParseFiles(layoutPage, headerPage, metaUsersPage, footerPage)
+			errorhandler.CheckError("Error on template parse", err)
+
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			w.WriteHeader(http.StatusOK)
+
+			data := LoginPageResponse{
+				IsLoggedIn:         false,
+				ShowLoginMenu:      false,
+				HeaderActiveMenu:   "",
+				SorciaVersion:      conf.Version,
+				IsShowSignUp:       !model.CheckIfFirstUserExists(db),
+				LoginErrMessage:    "",
+				RegisterErrMessage: "Username may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen.",
+				SiteSettings:       util.GetSiteSettings(db, conf),
+			}
+
+			tmpl.ExecuteTemplate(w, "layout", data)
+			return
+		}
+
+		fmt.Println(postUserRequest.CanCreateRepo)
+		canCreateRepo := 0
+		if postUserRequest.CanCreateRepo != "" {
+			canCreateRepo = 1
+		}
+
+		rr := model.CreateAccountStruct{
+			Username:      postUserRequest.Username,
+			Email:         postUserRequest.Email,
+			PasswordHash:  passwordHash,
+			Token:         token,
+			CanCreateRepo: canCreateRepo,
+			IsAdmin:       0,
+		}
+
+		model.InsertAccount(db, rr)
+
+		// Set cookie
+		now := time.Now()
+		duration := now.Add(365 * 24 * time.Hour).Sub(now)
+		maxAge := int(duration.Seconds())
+		c := &http.Cookie{Name: "sorcia-token", Value: token, Path: "/", Domain: strings.Split(r.Host, ":")[0], MaxAge: maxAge}
+		http.SetCookie(w, c)
+
+		http.Redirect(w, r, "/meta/users", http.StatusFound)
+		return
 	}
 
-	model.InsertSSHPubKey(db, ispk)
-
-	http.Redirect(w, r, "/meta/keys", http.StatusFound)
+	http.Redirect(w, r, "/login", http.StatusFound)
 }
 
 // GetMetaUsers ...
@@ -188,6 +327,13 @@ func GetMetaUsers(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *sett
 	userPresent := w.Header().Get("user-present")
 
 	if userPresent == "true" {
+		token := w.Header().Get("sorcia-cookie-token")
+		userID := model.GetUserIDFromToken(db, token)
+
+		if !model.CheckifUserIsAnAdmin(db, userID) {
+			http.Redirect(w, r, "/", http.StatusFound)
+		}
+
 		users := model.GetAllUsers(db)
 
 		layoutPage := path.Join("./templates", "layout.html")
@@ -202,17 +348,18 @@ func GetMetaUsers(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *sett
 		w.WriteHeader(http.StatusOK)
 
 		data := MetaResponse{
-			IsLoggedIn:       true,
-			HeaderActiveMenu: "meta",
-			SorciaVersion:    conf.Version,
-			Users:            users,
-			SiteSettings:     util.GetSiteSettings(db, conf),
+			IsLoggedIn:         true,
+			RegisterErrMessage: "",
+			HeaderActiveMenu:   "meta",
+			SorciaVersion:      conf.Version,
+			Users:              users,
+			SiteSettings:       util.GetSiteSettings(db, conf),
 		}
 
 		tmpl.ExecuteTemplate(w, "layout", data)
-	} else {
-		http.Redirect(w, r, "/login", http.StatusFound)
+		return
 	}
+	http.Redirect(w, r, "/login", http.StatusFound)
 }
 
 // PostPasswordRequest struct

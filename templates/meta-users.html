@@ -7,23 +7,24 @@
         <a href="" class="repo__menu__item repo__menu__item--active">users</a>
     </div>
     <div class="meta__detail">
-        <form class="form meta__detail__form" method="POST" action="/meta/profile">
+        <form class="form meta__detail__form" method="POST" action="/meta/users">
             <div class="form__title">add new user</div>
+            <div class="meta__detail__form__error">{{ .RegisterErrMessage }}</div>
             <div class="meta__error"></div>
             <div class="form__group">
                 <label for="newUsername">Username<i>*</i></label>
-                <input type="text" class="form__input" id="newUsername" name="username" value="mysticmode" autocomplete="off" spellcheck="false"/>
+                <input type="text" class="form__input" id="newUsername" name="username" value="" autocomplete="off" spellcheck="false"/>
             </div>
             <div class="form__group">
                 <label for="newEmail">Email address<i>*</i></label>
-                <input type="text" class="form__input" id="newEmail" name="email" value="yo@mysticmode.org" autocomplete="off" spellcheck="false"/>
+                <input type="text" class="form__input" id="newEmail" name="email" value="" autocomplete="off" spellcheck="false"/>
             </div>
             <div class="form__group">
                 <label for="newPassword">Password<i>*</i></label>
-                <input type="password" class="form__input" id="newPassword" name="password" value="sorcia" autocomplete="off" spellcheck="false" />
+                <input type="password" class="form__input" id="newPassword" name="password" value="" autocomplete="off" spellcheck="false" />
             </div>
             <div class="form__group checkbox__group">
-                <input type="checkbox" id="canCreateRepo" name="createrepo" />
+                <input type="checkbox" id="canCreateRepo" name="createrepo" value="yes" />
                 <label for="canCreateRepo">Access to create repository</label>
             </div>
             <input type="submit" class="button button--primary" value="Save" />
@@ -32,12 +33,12 @@
             <div class="meta__users__title">users</div>
             {{range .Users.Users}}
             <div class="meta__users__item">
-                <div>Username</div>
+                <div>Username {{if .IsAdmin}} [Admin] {{end}}</div>
                 <p>{{.Username}}</p>
                 <div>Email address</div>
                 <p>{{.Email}}</p>
-                {{if .IsAdmin}}
-                <p class="admin">[ADMIN]</p>
+                {{if .CanCreateRepo}}
+                <p>This user can create repo. In order to revoke this - you have to ask the admin.</p>
                 {{end}}
             </div>
             {{end}}
