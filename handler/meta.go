@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"html/template"
 	"image"
-	"time"
 
 	// jpeg import
 	_ "image/jpeg"
@@ -193,6 +192,7 @@ func PostAuthKey(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 		model.InsertSSHPubKey(db, ispk)
 
 		http.Redirect(w, r, "/meta/keys", http.StatusFound)
+		return
 	}
 
 	http.Redirect(w, r, "/login", http.StatusFound)
@@ -291,7 +291,6 @@ func PostUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.
 			return
 		}
 
-		fmt.Println(postUserRequest.CanCreateRepo)
 		canCreateRepo := 0
 		if postUserRequest.CanCreateRepo != "" {
 			canCreateRepo = 1
@@ -307,13 +306,6 @@ func PostUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.
 		}
 
 		model.InsertAccount(db, rr)
-
-		// Set cookie
-		now := time.Now()
-		duration := now.Add(365 * 24 * time.Hour).Sub(now)
-		maxAge := int(duration.Seconds())
-		c := &http.Cookie{Name: "sorcia-token", Value: token, Path: "/", Domain: strings.Split(r.Host, ":")[0], MaxAge: maxAge}
-		http.SetCookie(w, c)
 
 		http.Redirect(w, r, "/meta/users", http.StatusFound)
 		return
@@ -408,6 +400,7 @@ func MetaPostPassword(w http.ResponseWriter, r *http.Request, db *sql.DB, decode
 			Username:     username,
 		}
 		model.ResetUserPasswordbyUsername(db, resetPass)
+		return
 	}
 
 	http.Redirect(w, r, "/login", http.StatusFound)

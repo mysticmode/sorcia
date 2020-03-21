@@ -344,6 +344,49 @@ func processREADME(repoPath string) template.HTML {
 	return html
 }
 
+// GetRepoMeta ...
+func GetRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
+	vars := mux.Vars(r)
+	reponame := vars["reponame"]
+
+	if repoExists := model.CheckRepoExists(db, reponame); !repoExists {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	userPresent := w.Header().Get("user-present")
+	var loggedInUserID int
+	if userPresent == "true" {
+		token := w.Header().Get("sorcia-cookie-token")
+		loggedInUserID = model.GetUserIDFromToken(db, token)
+	}
+
+	userID := model.GetUserIDFromReponame(db, reponame)
+	username := model.GetUsernameFromUserID(db, userID)
+	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
+
+	data := GetRepoResponse{
+		SiteSettings:     util.GetSiteSettings(db, conf),
+		IsLoggedIn:       checkUserLoggedIn(w),
+		ShowLoginMenu:    true,
+		HeaderActiveMenu: "",
+		SorciaVersion:    conf.Version,
+		Username:         username,
+		Reponame:         reponame,
+		RepoDescription:  repoDescription,
+		IsRepoPrivate:    model.GetRepoType(db, reponame),
+		RepoAccess:       model.CheckRepoAccessFromUserIDAndReponame(db, loggedInUserID, reponame),
+	}
+
+	if !data.IsLoggedIn && data.IsRepoPrivate {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
+
+	writeRepoResponse(w, r, db, reponame, "repo-meta.html", data)
+	return
+}
+
 // GetRepoTree ...
 func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
 	vars := mux.Vars(r)
