@@ -32,6 +32,23 @@ func InsertRepo(db *sql.DB, crs CreateRepoStruct) {
 	errorhandler.CheckError("Error on model insert repo exec", err)
 }
 
+// UpdateRepoStruct struct
+type UpdateRepoStruct struct {
+	RepoID      int
+	NewName     string
+	Description string
+	IsPrivate   int
+}
+
+// UpdateRepo ...
+func UpdateRepo(db *sql.DB, urs UpdateRepoStruct) {
+	stmt, err := db.Prepare("UPDATE repository SET name = ?, description = ?, is_private = ? WHERE id = ?")
+	errorhandler.CheckError("Error on model update repo", err)
+
+	_, err = stmt.Exec(urs.NewName, urs.Description, urs.IsPrivate, urs.RepoID)
+	errorhandler.CheckError("Error on model update repo exec", err)
+}
+
 // GetReposFromUserIDResponse struct
 type GetReposFromUserIDResponse struct {
 	Repositories []ReposDetailStruct
@@ -123,6 +140,21 @@ func GetRepoDescriptionFromRepoName(db *sql.DB, reponame string) string {
 	rows.Close()
 
 	return repoDescription
+}
+
+// GetRepoIDFromReponame ...
+func GetRepoIDFromReponame(db *sql.DB, reponame string) int {
+	rows, err := db.Query("SELECT id FROM repository WHERE name = ?", reponame)
+	errorhandler.CheckError("Error on model get repo id from reponame", err)
+
+	var repoID int
+	if rows.Next() {
+		err = rows.Scan(&repoID)
+		errorhandler.CheckError("Error on model get repo id from reponame rows scan", err)
+	}
+	rows.Close()
+
+	return repoID
 }
 
 // CheckRepoExists ...

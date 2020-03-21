@@ -14,33 +14,84 @@
         <a href="/r/{{ .Reponame }}/refs" class="repo__menu__item">refs</a>
         <a href="/r/{{ .Reponame }}/contributors" class="repo__menu__item">contributors</a>
         {{if .IsLoggedIn}}
-            {{if .RepoAccess}}
             <a href="/r/{{ .Reponame }}/meta" class="repo__menu__item repo__menu__item--active">meta</a>
-            {{end}}
         {{end}}
     </div>
+    {{if .IsLoggedIn}}
     <div class="repo__meta">
-        <form class="form repo__meta__form" method="POST" action="/meta/password">
+        {{if .RepoAccess}}
+        <form class="form repo__meta__form" method="POST" action="/r/{{.Reponame}}/meta">
             <div class="form__title meta__form__title">general</div>
-            <p class="repo__meta__form__info">In order to delete this repository, you have to ask the server/sys admin as they only have this access.</p>
-            <p class="repo__meta__form__info">In order to change this repository to private, you have to ask the server/sys admin as they only this access.</p>
+            <div class="repo__meta__form__error">{{ .ReponameErrMessage }}</div>
             <div class="form__group">
-                <label for="repoName">Repository name (You can't edit this - ask the server/sys admin to change repository name)</label>
-                <input type="text" class="form__input" id="repoName" name="name" value="{{.Reponame}}" autocomplete="off" spellcheck="false" readonly="" />
+                <label for="repoName">Repository name</label>
+                <input type="text" class="form__input" id="repoName" name="name" value="{{.Reponame}}" autocomplete="off" spellcheck="false" />
             </div>
             <div class="form__group">
                 <label for="repoDescription">Description<i>*</i></label>
                 <input type="text" class="form__input" id="repoDescription" name="description" value="{{.RepoDescription}}" autocomplete="off" spellcheck="false" />
             </div>
+            <div class="form__group form__radio-group">
+                {{if eq .IsRepoPrivate true}}
+                <div class="form__radio">
+                    <input type="radio" name="is_private" value="0" id="repoPublic" />
+                    <label for="repoPublic">Public</label>
+                </div>
+                <div class="form__radio">
+                    <input type="radio" name="is_private" value="1" id="repoPrivate" checked />
+                    <label for="repoPrivate">Private</label>
+                </div>
+                {{else}}
+                <div class="form__radio">
+                    <input type="radio" name="is_private" value="0" id="repoPublic" checked />
+                    <label for="repoPublic">Public</label>
+                </div>
+                <div class="form__radio">
+                    <input type="radio" name="is_private" value="1" id="repoPrivate" />
+                    <label for="repoPrivate">Private</label>
+                </div>
+                {{end}}
+            </div>
             <input type="submit" class="button button--primary" value="Save" />
         </form>
-        <div class="repo__meta__access">
-            <div class="repo__meta__access__title">add user and set access</div>
-            <p>This is a <strong>public</strong> repository.</p>
-            <p>The added user access can only have <strong>"Read/Write"</strong> permission. So, you have to ask the server/sys admin to add a user you want and apply <strong>"Read/Write"</strong> permission. In other words these are all can be done only by the server/sys admin for security purspose.</p>
-            <p>This is a <strong>private</strong> repository</p>
-            <p>The added user access can have <strong>"Read"</strong> or <strong>"Read/Write"</strong> permisions. So, you have to ask the server/sys admin to add a user you want and apply the permission you want that user to have. In other words these are all can be done only by the server/sys admin for security purspose.</p>
+        <form class="form repo__meta__add-user__form" method="POST" action="/r/{{.Reponame}}/meta/user">
+            <div class="form__title meta__add-user__form-title">add user and set access</div>
+            <div class="form__group">
+                <label for="userName">Username</label>
+                <input type="text" class="form__input" id="userName" name="username" value="" autocomplete="off" spellcheck="false" />
+            </div>
+            <div class="form__group form__radio-group">
+                <div class="form__radio">
+                    <input type="radio" name="is_readorwrite" value="0" id="read" checked />
+                    <label for="read">Read</label>
+                </div>
+                <div class="form__radio">
+                    <input type="radio" name="is_readorwrite" value="1" id="repoPrivate" />
+                    <label for="repoPrivate">Read/Write</label>
+                </div>
+            </div>
+            <input type="submit" class="button button--primary" value="Add user" />
+        </form>
+        {{end}}
+        <div class="repo__meta__users">
+            <div class="repo__meta__users__title">Users</div>
+            <div class="repo__meta__users__item">
+                <p>mysticmode</p>
+                <p class="owner">[Owner]</p>
+                <p>(Read/Write)</p>
+            </div>
+            <div class="repo__meta__users__item">
+                <p>mysticmode</p>
+                <p>(Read/Write)</p>
+            </div>
         </div>
+        {{if .RepoAccess}}
+        <form class="form repo__meta__delete__form" method="POST" action="/r/{{.Reponame}}/meta/user">
+            <div class="form__title meta__delete__form-title">delete this repository</div>
+            <input type="submit" class="button button--danger" value="Delete" />
+        </form>
+        {{end}}
     </div>
+    {{end}}
 </main>
 {{end}}
