@@ -144,6 +144,22 @@ func GetUsernameFromUserID(db *sql.DB, userID int) string {
 	return username
 }
 
+// GetUserIDFromUsername ...
+func GetUserIDFromUsername(db *sql.DB, username string) int {
+	rows, err := db.Query("SELECT id FROM account WHERE username = ?", username)
+	errorhandler.CheckError("Error on model get userid from username", err)
+
+	var userID int
+
+	if rows.Next() {
+		err = rows.Scan(&userID)
+		errorhandler.CheckError("Error on model get userid from username rows scan", err)
+	}
+	rows.Close()
+
+	return userID
+}
+
 // SelectPasswordHashAndJWTTokenStruct struct
 type SelectPasswordHashAndJWTTokenStruct struct {
 	Username string

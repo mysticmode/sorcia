@@ -52,7 +52,7 @@ func RunSSH(conf *setting.BaseStruct, db *sql.DB) {
 					return
 				}
 
-				if !model.CheckRepoAccessFromUserIDAndReponame(db, userIDInt, reponame) {
+				if !model.CheckRepoOwnerFromUserIDAndReponame(db, userIDInt, reponame) {
 					log.Printf("ssh: no repo access")
 					return
 				}

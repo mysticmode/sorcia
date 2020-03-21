@@ -191,6 +191,7 @@ type GetRepoResponse struct {
 	HeaderActiveMenu   string
 	SorciaVersion      string
 	Username           string
+	RepoUserAddError   string
 	Reponame           string
 	ReponameErrMessage string
 	RepoDescription    string
@@ -293,7 +294,7 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.B
 		Reponame:         reponame,
 		RepoDescription:  repoDescription,
 		IsRepoPrivate:    model.GetRepoType(db, reponame),
-		RepoAccess:       model.CheckRepoAccessFromUserIDAndReponame(db, loggedInUserID, reponame),
+		RepoAccess:       model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame),
 		Host:             r.Host,
 		TotalCommits:     totalCommits,
 	}
@@ -377,7 +378,7 @@ func GetRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 		Reponame:         reponame,
 		RepoDescription:  repoDescription,
 		IsRepoPrivate:    model.GetRepoType(db, reponame),
-		RepoAccess:       model.CheckRepoAccessFromUserIDAndReponame(db, loggedInUserID, reponame),
+		RepoAccess:       model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame),
 	}
 
 	if !data.IsLoggedIn && data.IsRepoPrivate {
@@ -424,7 +425,7 @@ func PostRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *sett
 
 		var postRepoMetaStruct = &PostRepoMetaStruct{}
 		err := decoder.Decode(postRepoMetaStruct, r.PostForm)
-		errorhandler.CheckError("Error on post create repo decoder", err)
+		errorhandler.CheckError("Error on post repo meta decoder", err)
 
 		s := postRepoMetaStruct.Name
 		if len(s) > 100 || len(s) < 1 {
@@ -450,7 +451,7 @@ func PostRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *sett
 				ReponameErrMessage: "Repository name is too long (maximum is 100 characters).",
 				RepoDescription:    model.GetRepoDescriptionFromRepoName(db, reponame),
 				IsRepoPrivate:      model.GetRepoType(db, reponame),
-				RepoAccess:         model.CheckRepoAccessFromUserIDAndReponame(db, userID, reponame),
+				RepoAccess:         model.CheckRepoOwnerFromUserIDAndReponame(db, userID, reponame),
 			}
 
 			tmpl.ExecuteTemplate(w, "layout", data)
@@ -478,7 +479,7 @@ func PostRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *sett
 				ReponameErrMessage: "Repository name may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen.",
 				RepoDescription:    model.GetRepoDescriptionFromRepoName(db, reponame),
 				IsRepoPrivate:      model.GetRepoType(db, reponame),
-				RepoAccess:         model.CheckRepoAccessFromUserIDAndReponame(db, userID, reponame),
+				RepoAccess:         model.CheckRepoOwnerFromUserIDAndReponame(db, userID, reponame),
 			}
 
 			tmpl.ExecuteTemplate(w, "layout", data)
@@ -490,7 +491,7 @@ func PostRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *sett
 			isPrivate = 1
 		}
 
-		if model.CheckRepoAccessFromUserIDAndReponame(db, userID, reponame) == true {
+		if model.CheckRepoOwnerFromUserIDAndReponame(db, userID, reponame) == true {
 			urs := model.UpdateRepoStruct{
 				RepoID:      model.GetRepoIDFromReponame(db, reponame),
 				NewName:     postRepoMetaStruct.Name,
@@ -514,6 +515,95 @@ func PostRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *sett
 			http.Redirect(w, r, "/", http.StatusFound)
 			return
 		}
+	}
+
+	http.Redirect(w, r, "/login", http.StatusFound)
+}
+
+// PostRepoMetaMember struct
+type PostRepoMetaMember struct {
+	Username   string `schema:"username"`
+	Permission string `schema:"is_readorwrite"`
+}
+
+// PostRepoMetaUser ...
+func PostRepoMetaUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct, decoder *schema.Decoder) {
+	userPresent := w.Header().Get("user-present")
+	vars := mux.Vars(r)
+	reponame := vars["reponame"]
+
+	if userPresent == "true" {
+		token := w.Header().Get("sorcia-cookie-token")
+		username := model.GetUsernameFromToken(db, token)
+
+		if err := r.ParseForm(); err != nil {
+			fmt.Fprintf(w, "ParseForm() err: %v", err)
+			errorResponse := &errorhandler.Response{
+				Error: err.Error(),
+			}
+
+			errorJSON, err := json.Marshal(errorResponse)
+			errorhandler.CheckError("Error on post create repo json marshal", err)
+
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+
+			w.Write(errorJSON)
+		}
+
+		layoutPage := path.Join("./templates", "layout.html")
+		headerPage := path.Join("./templates", "header.html")
+		repoMetaPage := path.Join("./templates", "repo-meta.html")
+		footerPage := path.Join("./templates", "footer.html")
+
+		tmpl, err := template.ParseFiles(layoutPage, headerPage, repoMetaPage, footerPage)
+		errorhandler.CheckError("Error on template parse", err)
+
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
+
+		data := GetRepoResponse{
+			SiteSettings:     util.GetSiteSettings(db, conf),
+			IsLoggedIn:       checkUserLoggedIn(w),
+			ShowLoginMenu:    true,
+			HeaderActiveMenu: "",
+			SorciaVersion:    conf.Version,
+			Username:         username,
+			Reponame:         reponame,
+			RepoDescription:  model.GetRepoDescriptionFromRepoName(db, reponame),
+			IsRepoPrivate:    model.GetRepoType(db, reponame),
+			RepoAccess:       model.CheckRepoOwnerFromUserIDAndReponame(db, model.GetUserIDFromUsername(db, username), reponame),
+		}
+
+		var postRepoMetaMember = &PostRepoMetaMember{}
+		err = decoder.Decode(postRepoMetaMember, r.PostForm)
+		errorhandler.CheckError("Error on post repo meta member decoder", err)
+
+		userID := model.GetUserIDFromUsername(db, postRepoMetaMember.Username)
+		repoID := model.GetRepoIDFromReponame(db, reponame)
+		if userID > 0 {
+			if !model.CheckRepoOwnerFromUserIDAndReponame(db, userID, reponame) {
+				if !model.CheckRepoMemberExistFromUserIDAndRepoID(db, userID, repoID) {
+					crm := model.CreateRepoMember{
+						UserID: userID,
+						RepoID: repoID,
+					}
+
+					model.InsertRepoMember(db, crm)
+					http.Redirect(w, r, "/r/"+reponame+"/meta", http.StatusFound)
+					return
+				}
+				data.RepoUserAddError = "User is already a member of this repository."
+				tmpl.ExecuteTemplate(w, "layout", data)
+				return
+			}
+			data.RepoUserAddError = "User is the owner of this repository."
+			tmpl.ExecuteTemplate(w, "layout", data)
+			return
+		}
+		data.RepoUserAddError = "User does not exist. Check if the username is correct or ask the server/sys admin to add this user."
+		tmpl.ExecuteTemplate(w, "layout", data)
+		return
 	}
 
 	http.Redirect(w, r, "/login", http.StatusFound)
@@ -548,7 +638,7 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 		HeaderActiveMenu: "",
 		SorciaVersion:    conf.Version,
 		Reponame:         reponame,
-		RepoAccess:       model.CheckRepoAccessFromUserIDAndReponame(db, loggedInUserID, reponame),
+		RepoAccess:       model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame),
 		RepoDescription:  repoDescription,
 		IsRepoPrivate:    model.GetRepoType(db, reponame),
 		RepoBranches:     util.GetGitBranches(repoDir),
@@ -606,7 +696,7 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 		HeaderActiveMenu: "",
 		SorciaVersion:    conf.Version,
 		Reponame:         reponame,
-		RepoAccess:       model.CheckRepoAccessFromUserIDAndReponame(db, loggedInUserID, reponame),
+		RepoAccess:       model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame),
 		RepoDescription:  repoDescription,
 		IsRepoBranch:     true,
 		IsRepoPrivate:    model.GetRepoType(db, reponame),
@@ -846,7 +936,7 @@ func GetRepoLog(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *settin
 		HeaderActiveMenu: "",
 		SorciaVersion:    conf.Version,
 		Reponame:         reponame,
-		RepoAccess:       model.CheckRepoAccessFromUserIDAndReponame(db, loggedInUserID, reponame),
+		RepoAccess:       model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame),
 		RepoDescription:  repoDescription,
 		IsRepoPrivate:    model.GetRepoType(db, reponame),
 		RepoBranches:     util.GetGitBranches(repoDir),
@@ -900,7 +990,7 @@ func GetRepoRefs(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 		HeaderActiveMenu: "",
 		SorciaVersion:    conf.Version,
 		Reponame:         reponame,
-		RepoAccess:       model.CheckRepoAccessFromUserIDAndReponame(db, loggedInUserID, reponame),
+		RepoAccess:       model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame),
 		RepoDescription:  repoDescription,
 		IsRepoPrivate:    model.GetRepoType(db, reponame),
 	}
@@ -1000,7 +1090,7 @@ func GetRepoContributors(w http.ResponseWriter, r *http.Request, db *sql.DB, con
 		HeaderActiveMenu: "",
 		SorciaVersion:    conf.Version,
 		Reponame:         reponame,
-		RepoAccess:       model.CheckRepoAccessFromUserIDAndReponame(db, loggedInUserID, reponame),
+		RepoAccess:       model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame),
 		RepoDescription:  repoDescription,
 		IsRepoPrivate:    model.GetRepoType(db, reponame),
 	}
@@ -1069,7 +1159,7 @@ func GetCommitDetail(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 		HeaderActiveMenu: "",
 		SorciaVersion:    conf.Version,
 		Reponame:         reponame,
-		RepoAccess:       model.CheckRepoAccessFromUserIDAndReponame(db, loggedInUserID, reponame),
+		RepoAccess:       model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame),
 		RepoDescription:  repoDescription,
 		IsRepoPrivate:    model.GetRepoType(db, reponame),
 	}
@@ -1229,7 +1319,7 @@ func writeRepoResponse(w http.ResponseWriter, r *http.Request, db *sql.DB, repon
 			userIDFromToken := model.GetUserIDFromToken(db, token)
 
 			// Check if the logged in user has access to view the repository.
-			if hasRepoAccess := model.CheckRepoAccessFromUserIDAndReponame(db, userIDFromToken, reponame); hasRepoAccess {
+			if hasRepoAccess := model.CheckRepoOwnerFromUserIDAndReponame(db, userIDFromToken, reponame); hasRepoAccess {
 				data.IsRepoPrivate = true
 				tmpl := parseTemplates(w, mainPage)
 				tmpl.ExecuteTemplate(w, "layout", data)

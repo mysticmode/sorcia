@@ -42,6 +42,7 @@ func RunWeb(conf *setting.BaseStruct) {
 	model.CreateSiteSettings(db)
 	model.CreateSSHPubKey(db)
 	model.CreateRepo(db)
+	model.CreateRepoMembers(db)
 
 	go handler.RunSSH(conf, db)
 
@@ -98,6 +99,9 @@ func RunWeb(conf *setting.BaseStruct) {
 	}).Methods("GET")
 	m.HandleFunc("/r/{reponame}/meta", func(w http.ResponseWriter, r *http.Request) {
 		handler.PostRepoMeta(w, r, db, conf, decoder)
+	}).Methods("POST")
+	m.HandleFunc("/r/{reponame}/meta/user", func(w http.ResponseWriter, r *http.Request) {
+		handler.PostRepoMetaUser(w, r, db, conf, decoder)
 	}).Methods("POST")
 	m.HandleFunc("/r/{reponame}/tree/{branch}", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetRepoTree(w, r, db, conf)

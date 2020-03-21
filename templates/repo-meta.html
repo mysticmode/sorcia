@@ -22,7 +22,7 @@
         {{if .RepoAccess}}
         <form class="form repo__meta__form" method="POST" action="/r/{{.Reponame}}/meta">
             <div class="form__title meta__form__title">general</div>
-            <div class="repo__meta__form__error">{{ .ReponameErrMessage }}</div>
+            <div class="form__error">{{ .ReponameErrMessage }}</div>
             <div class="form__group">
                 <label for="repoName">Repository name</label>
                 <input type="text" class="form__input" id="repoName" name="name" value="{{.Reponame}}" autocomplete="off" spellcheck="false" />
@@ -56,6 +56,7 @@
         </form>
         <form class="form repo__meta__add-user__form" method="POST" action="/r/{{.Reponame}}/meta/user">
             <div class="form__title meta__add-user__form-title">add user and set access</div>
+            <div class="form__error">{{ .RepoUserAddError }}</div>
             <div class="form__group">
                 <label for="userName">Username</label>
                 <input type="text" class="form__input" id="userName" name="username" value="" autocomplete="off" spellcheck="false" />
@@ -66,8 +67,8 @@
                     <label for="read">Read</label>
                 </div>
                 <div class="form__radio">
-                    <input type="radio" name="is_readorwrite" value="1" id="repoPrivate" />
-                    <label for="repoPrivate">Read/Write</label>
+                    <input type="radio" name="is_readorwrite" value="1" id="readOrWrite" />
+                    <label for="readOrWrite">Read/Write</label>
                 </div>
             </div>
             <input type="submit" class="button button--primary" value="Add user" />
