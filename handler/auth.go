@@ -27,8 +27,8 @@ func HashPassword(password string) (string, error) {
 }
 
 // CheckPasswordHash ...
-func CheckPasswordHash(username, password, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(fmt.Sprintf("%s:%s", username, password)))
+func CheckPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
 }
 
@@ -135,7 +135,7 @@ func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting
 	}
 	sphjwtr := model.SelectPasswordHashAndJWTToken(db, sphjwt)
 
-	if isPasswordValid := CheckPasswordHash(loginRequest.Username, loginRequest.Password, sphjwtr.PasswordHash); isPasswordValid == true {
+	if isPasswordValid := CheckPasswordHash(loginRequest.Password, sphjwtr.PasswordHash); isPasswordValid == true {
 		isTokenValid, err := validateJWTToken(sphjwtr.Token, sphjwtr.PasswordHash)
 		errorhandler.CheckError("Error on validating jwt token", err)
 
@@ -211,7 +211,7 @@ func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *sett
 	errorhandler.CheckError("Error on post register decoder", err)
 
 	// Generate password hash using bcrypt
-	passwordHash, err := HashPassword(fmt.Sprintf("%s:%s", registerRequest.Username, registerRequest.Password))
+	passwordHash, err := HashPassword(registerRequest.Password)
 	errorhandler.CheckError("Error on post register hash password", err)
 
 	// Generate JWT token using the hash password above

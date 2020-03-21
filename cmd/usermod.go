@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	errorhandler "sorcia/error"
@@ -22,8 +23,8 @@ func UserMod(conf *setting.BaseStruct) {
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
-		fmt.Println("[1] Add new user\n[2] Delete user\n[3] Modify user\n[4] Delete repository\n[5] Modify repository")
-		fmt.Print("Enter your option [1/2/3/4/5]: ")
+		fmt.Println("[1] Reset username of a user\n[2] Reset password of a user\n[3] Delete user\n[4] Delete repository")
+		fmt.Print("Enter your option [1/2/3/4]: ")
 		optionInput, err := reader.ReadString('\n')
 		errorhandler.CheckError("User mod", err)
 
@@ -31,125 +32,167 @@ func UserMod(conf *setting.BaseStruct) {
 
 		switch option {
 		case "1":
-			addNewUser(db, conf)
+			resetUserName(db)
 			return
 		case "2":
-			deleteUser(db, conf)
+			resetUserPassword(db)
 			return
 		case "3":
-			fmt.Println("modify user")
+			deleteUser(db, conf)
+			return
 		case "4":
-			fmt.Println("delete repository")
-		case "5":
-			fmt.Println("modify repository")
+			deleteRepository(db, conf)
+			return
 		default:
-			fmt.Println("Unknown option - expected 1/2/3/4/5")
+			fmt.Println("Unknown option - expected 1/2/3/4")
 		}
 	}
 }
 
-func addNewUser(db *sql.DB, conf *setting.BaseStruct) {
+func resetUserName(db *sql.DB) {
 	reader := bufio.NewReader(os.Stdin)
 
-	fmt.Print("Enter username: ")
-	usernameInput, err := reader.ReadString('\n')
-	errorhandler.CheckError("Error on username", err)
+	for {
+		fmt.Println("Enter the current username of a user")
+		usernameInput, err := reader.ReadString('\n')
+		errorhandler.CheckError("Usermod: Reset username of a user", err)
 
-	username := strings.TrimSpace(usernameInput)
+		username := strings.TrimSpace(usernameInput)
 
-	fmt.Print("Enter password: ")
-	passwordInput, err := reader.ReadString('\n')
-	errorhandler.CheckError("Error on username", err)
+		userID := model.GetUserIDFromUsername(db, username)
 
-	password := strings.TrimSpace(passwordInput)
+		if userID > 0 {
+			fmt.Println("Enter the new username")
+			newUsernameInput, err := reader.ReadString('\n')
+			errorhandler.CheckError("Usermod: new username error", err)
 
-	fmt.Println(username)
-	fmt.Println(password)
+			newUsername := strings.TrimSpace(newUsernameInput)
+
+			model.ResetUsernameByUserID(db, newUsername, userID)
+			fmt.Println("Username has been successfully changed.")
+			return
+		}
+		fmt.Println("Username does not exist. Please check the username or Ctrl-c to exit")
+	}
 }
 
 func resetUserPassword(db *sql.DB) {
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
-		fmt.Println("[1] Specify user by username\n[2] Specify user by email address")
-		fmt.Print("Enter your option [1/2]: ")
-		optionInput, err := reader.ReadString('\n')
-		errorhandler.CheckError("Reset user password", err)
+		fmt.Println("Enter the username")
+		usernameInput, err := reader.ReadString('\n')
+		errorhandler.CheckError("Usermod: Reset password of a user - enter username", err)
 
-		option := strings.TrimSpace(optionInput)
+		username := strings.TrimSpace(usernameInput)
 
-		switch option {
-		case "1":
-			fmt.Print("Enter username: ")
-			usernameInput, err := reader.ReadString('\n')
-			errorhandler.CheckError("Error on Username", err)
+		userID := model.GetUserIDFromUsername(db, username)
 
-			fmt.Print("Enter new password: ")
-			passwordInput, err := reader.ReadString('\n')
-			errorhandler.CheckError("Error on Password", err)
+		if userID > 0 {
+			fmt.Println("Enter the password")
+			newPasswordInput, err := reader.ReadString('\n')
+			errorhandler.CheckError("Usermod: reset password error", err)
 
-			username := strings.TrimSpace(usernameInput)
-			password := strings.TrimSpace(passwordInput)
+			newPassword := strings.TrimSpace(newPasswordInput)
 
-			passwordHash, token := generateHashandToken(password)
+			// Generate password hash using bcrypt
+			passwordHash, err := handler.HashPassword(newPassword)
+			errorhandler.CheckError("Error on usermod hash password", err)
 
-			resetPass := model.ResetUserPasswordbyUsernameStruct{
+			// Generate JWT token using the hash password above
+			token, err := handler.GenerateJWTToken(passwordHash)
+			errorhandler.CheckError("Error on usermod generate jwt token", err)
+
+			rsp := model.ResetUserPasswordbyUsernameStruct{
+				Username:     username,
 				PasswordHash: passwordHash,
 				JwtToken:     token,
-				Username:     username,
 			}
-			model.ResetUserPasswordbyUsername(db, resetPass)
 
-			return
-		case "2":
-			fmt.Print("Enter email address: ")
+			model.ResetUserPasswordbyUsername(db, rsp)
 
+			fmt.Println("Password has been successfully changed.")
 			return
-		default:
-			fmt.Println("Unknown option - expected 1 or 2")
 		}
+		fmt.Println("Username does not exist. Please check the username or Ctrl-c to exit")
 	}
-}
-
-func generateHashandToken(password string) (string, string) {
-	// Generate password hash using bcrypt
-	passwordHash, err := handler.HashPassword(password)
-	errorhandler.CheckError("Error on generating password hash", err)
-
-	// Generate JWT token using the hash password above
-	token, err := handler.GenerateJWTToken(passwordHash)
-	errorhandler.CheckError("Error on generating jwt token", err)
-
-	return passwordHash, token
 }
 
 func deleteUser(db *sql.DB, conf *setting.BaseStruct) {
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
-		fmt.Println("[1] Specify user by username\n[2] Specify user by email address")
-		fmt.Print("Enter your option [1/2]: ")
-		optionInput, err := reader.ReadString('\n')
-		errorhandler.CheckError("Delete user", err)
+		fmt.Println("Enter the username (this will delete all the repositories that this user has ownership of)")
+		usernameInput, err := reader.ReadString('\n')
+		errorhandler.CheckError("Usermod: Reset username of a user", err)
 
-		option := strings.TrimSpace(optionInput)
+		username := strings.TrimSpace(usernameInput)
 
-		switch option {
-		case "1":
-			fmt.Print("Enter username: ")
-			usernameInput, err := reader.ReadString('\n')
-			errorhandler.CheckError("Error on username", err)
+		userID := model.GetUserIDFromUsername(db, username)
 
-			username := strings.TrimSpace(usernameInput)
+		if userID > 0 {
+
+			rds := model.GetReponamesFromUserID(db, userID)
+
+			for _, repo := range rds.Repositories {
+				refsPattern := filepath.Join(conf.Paths.RefsPath, repo.Name+"*")
+				files, err := filepath.Glob(refsPattern)
+				errorhandler.CheckError("Error on post repo meta delete filepath.Glob", err)
+
+				for _, f := range files {
+					err := os.Remove(f)
+					errorhandler.CheckError("Error on removing ref files", err)
+				}
+
+				repoDir := filepath.Join(conf.Paths.RepoPath, repo.Name+".git")
+				err = os.RemoveAll(repoDir)
+				errorhandler.CheckError("Error on removing repository directory", err)
+			}
+
+			rmi := model.GetRepoMemberIDFromUserID(db, userID)
+
+			for _, m := range rmi {
+				model.DeleteRepoMemberByID(db, m)
+			}
+
 			model.DeleteUserbyUsername(db, username)
 
+			fmt.Println("Username has been successfully deleted.")
 			return
-		case "2":
-			fmt.Print("Enter email address: ")
-
-			return
-		default:
-			fmt.Println("Unknown option - expected 1 or 2")
 		}
+		fmt.Println("Username does not exist. Please check the username or Ctrl-c to exit")
+	}
+}
+
+func deleteRepository(db *sql.DB, conf *setting.BaseStruct) {
+	reader := bufio.NewReader(os.Stdin)
+
+	for {
+		fmt.Println("Enter the repository name")
+		reponameInput, err := reader.ReadString('\n')
+		errorhandler.CheckError("Usermod: Delete repository", err)
+
+		reponame := strings.TrimSpace(reponameInput)
+
+		if model.CheckRepoExists(db, reponame) {
+			model.DeleteRepobyReponame(db, reponame)
+			refsPattern := filepath.Join(conf.Paths.RefsPath, reponame+"*")
+
+			files, err := filepath.Glob(refsPattern)
+			errorhandler.CheckError("Error on post repo meta delete filepath.Glob", err)
+
+			for _, f := range files {
+				err := os.Remove(f)
+				errorhandler.CheckError("Error on removing ref files", err)
+			}
+
+			repoDir := filepath.Join(conf.Paths.RepoPath, reponame+".git")
+			err = os.RemoveAll(repoDir)
+			errorhandler.CheckError("Error on removing repository directory", err)
+
+			fmt.Println("Repository has been successfully deleted.")
+			return
+		}
+		fmt.Println("Repository name does not exist. Please check the name or Ctrl-c to exit")
 	}
 }

@@ -209,6 +209,15 @@ func CheckIfFirstUserExists(db *sql.DB) bool {
 	return userExists
 }
 
+// ResetUsernameByUserID ...
+func ResetUsernameByUserID(db *sql.DB, newUsername string, userID int) {
+	stmt, err := db.Prepare("UPDATE account SET username = ? WHERE id = ?")
+	errorhandler.CheckError("Error on model reset username by userID", err)
+
+	_, err = stmt.Exec(newUsername, userID)
+	errorhandler.CheckError("Error on model reset username by userID exec", err)
+}
+
 // ResetUserPasswordbyUsernameStruct struct
 type ResetUserPasswordbyUsernameStruct struct {
 	PasswordHash string
