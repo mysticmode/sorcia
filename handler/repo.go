@@ -197,6 +197,7 @@ type GetRepoResponse struct {
 	RepoDescription    string
 	IsRepoPrivate      bool
 	RepoAccess         bool
+	RepoMembers        model.GetRepoMembersStruct
 	Host               string
 	SSHClone           string
 	TotalCommits       string
@@ -367,6 +368,9 @@ func GetRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 
 	username := model.GetUsernameFromToken(db, token)
 	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
+	repoID := model.GetRepoIDFromReponame(db, reponame)
+
+	grms := model.GetRepoMembers(db, repoID)
 
 	data := GetRepoResponse{
 		SiteSettings:     util.GetSiteSettings(db, conf),
@@ -379,6 +383,7 @@ func GetRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 		RepoDescription:  repoDescription,
 		IsRepoPrivate:    model.GetRepoType(db, reponame),
 		RepoAccess:       model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame),
+		RepoMembers:      grms,
 	}
 
 	if !data.IsLoggedIn && data.IsRepoPrivate {
@@ -512,7 +517,7 @@ func PostRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *sett
 
 			util.UpdateRefsWithNewName(conf.Paths.RefsPath, conf.Paths.RepoPath, reponame, urs.NewName)
 
-			http.Redirect(w, r, "/", http.StatusFound)
+			http.Redirect(w, r, "/r/"+urs.NewName+"/meta", http.StatusFound)
 			return
 		}
 	}
@@ -559,9 +564,6 @@ func PostRepoMetaUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, repoMetaPage, footerPage)
 		errorhandler.CheckError("Error on template parse", err)
 
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		w.WriteHeader(http.StatusOK)
-
 		data := GetRepoResponse{
 			SiteSettings:     util.GetSiteSettings(db, conf),
 			IsLoggedIn:       checkUserLoggedIn(w),
@@ -585,28 +587,34 @@ func PostRepoMetaUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *
 			if !model.CheckRepoOwnerFromUserIDAndReponame(db, userID, reponame) {
 				if !model.CheckRepoMemberExistFromUserIDAndRepoID(db, userID, repoID) {
 					crm := model.CreateRepoMember{
-						UserID: userID,
-						RepoID: repoID,
+						UserID:     userID,
+						RepoID:     repoID,
+						Permission: postRepoMetaMember.Permission,
 					}
 
 					model.InsertRepoMember(db, crm)
+
 					http.Redirect(w, r, "/r/"+reponame+"/meta", http.StatusFound)
 					return
 				}
+				w.Header().Set("Content-Type", "text/html; charset=utf-8")
+				w.WriteHeader(http.StatusOK)
 				data.RepoUserAddError = "User is already a member of this repository."
 				tmpl.ExecuteTemplate(w, "layout", data)
-				return
 			}
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			w.WriteHeader(http.StatusOK)
 			data.RepoUserAddError = "User is the owner of this repository."
 			tmpl.ExecuteTemplate(w, "layout", data)
-			return
 		}
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
 		data.RepoUserAddError = "User does not exist. Check if the username is correct or ask the server/sys admin to add this user."
 		tmpl.ExecuteTemplate(w, "layout", data)
-		return
 	}
 
 	http.Redirect(w, r, "/login", http.StatusFound)
+	return
 }
 
 // GetRepoTree ...

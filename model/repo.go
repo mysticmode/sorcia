@@ -74,6 +74,56 @@ func InsertRepoMember(db *sql.DB, crm CreateRepoMember) {
 	errorhandler.CheckError("Error on model insert repo member exec", err)
 }
 
+// GetRepoMembersStruct struct
+type GetRepoMembersStruct struct {
+	RepoMembers []RepoMember
+}
+
+// RepoMember struct
+type RepoMember struct {
+	UserID     int
+	Username   string
+	Permission string
+	IsOwner    bool
+}
+
+// GetRepoMembers ...
+func GetRepoMembers(db *sql.DB, repoID int) GetRepoMembersStruct {
+	rows, err := db.Query("SELECT user_id, permission FROM repository_members WHERE repo_id = ?", repoID)
+	errorhandler.CheckError("Error on model get repos members", err)
+
+	var rm RepoMember
+	var grms GetRepoMembersStruct
+
+	for rows.Next() {
+		err := rows.Scan(&rm.UserID, &rm.Permission)
+		errorhandler.CheckError("Error on model get repo members rows scan", err)
+
+		rm.Username = GetUsernameFromUserID(db, rm.UserID)
+		rm.IsOwner = false
+
+		grms.RepoMembers = append(grms.RepoMembers, rm)
+	}
+	rows.Close()
+
+	rows, err = db.Query("SELECT user_id FROM repository WHERE id = ?", repoID)
+	errorhandler.CheckError("Error on model get repos members - repository", err)
+
+	if rows.Next() {
+		err := rows.Scan(&rm.UserID)
+		errorhandler.CheckError("Error on model get repo members rows scan", err)
+
+		rm.Username = GetUsernameFromUserID(db, rm.UserID)
+		rm.Permission = "read/write"
+		rm.IsOwner = true
+
+		grms.RepoMembers = append(grms.RepoMembers, rm)
+	}
+	rows.Close()
+
+	return grms
+}
+
 // GetReposFromUserIDResponse struct
 type GetReposFromUserIDResponse struct {
 	Repositories []ReposDetailStruct
