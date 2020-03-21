@@ -22,8 +22,8 @@ func UserMod(conf *setting.BaseStruct) {
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
-		fmt.Println("[1] Reset user password\n[2] Delete user")
-		fmt.Print("Enter your option [1/2]: ")
+		fmt.Println("[1] Add new user\n[2] Delete user\n[3] Modify user\n[4] Delete repository\n[5] Modify repository")
+		fmt.Print("Enter your option [1/2/3/4/5]: ")
 		optionInput, err := reader.ReadString('\n')
 		errorhandler.CheckError("User mod", err)
 
@@ -31,17 +31,40 @@ func UserMod(conf *setting.BaseStruct) {
 
 		switch option {
 		case "1":
-			resetUserPassword(db)
-
+			addNewUser(db, conf)
 			return
 		case "2":
 			deleteUser(db, conf)
-
 			return
+		case "3":
+			fmt.Println("modify user")
+		case "4":
+			fmt.Println("delete repository")
+		case "5":
+			fmt.Println("modify repository")
 		default:
-			fmt.Println("Unknown option - expected 1 or 2")
+			fmt.Println("Unknown option - expected 1/2/3/4/5")
 		}
 	}
+}
+
+func addNewUser(db *sql.DB, conf *setting.BaseStruct) {
+	reader := bufio.NewReader(os.Stdin)
+
+	fmt.Print("Enter username: ")
+	usernameInput, err := reader.ReadString('\n')
+	errorhandler.CheckError("Error on username", err)
+
+	username := strings.TrimSpace(usernameInput)
+
+	fmt.Print("Enter password: ")
+	passwordInput, err := reader.ReadString('\n')
+	errorhandler.CheckError("Error on username", err)
+
+	password := strings.TrimSpace(passwordInput)
+
+	fmt.Println(username)
+	fmt.Println(password)
 }
 
 func resetUserPassword(db *sql.DB) {
@@ -80,24 +103,6 @@ func resetUserPassword(db *sql.DB) {
 			return
 		case "2":
 			fmt.Print("Enter email address: ")
-			emailInput, err := reader.ReadString('\n')
-			errorhandler.CheckError("Error on email address: ", err)
-
-			fmt.Print("Enter new password: ")
-			passwordInput, err := reader.ReadString('\n')
-			errorhandler.CheckError("Error on password", err)
-
-			email := strings.TrimSpace(emailInput)
-			password := strings.TrimSpace(passwordInput)
-
-			passwordHash, token := generateHashandToken(password)
-
-			resetPass := model.ResetUserPasswordbyEmailStruct{
-				PasswordHash: passwordHash,
-				JwtToken:     token,
-				Email:        email,
-			}
-			model.ResetUserPasswordbyEmail(db, resetPass)
 
 			return
 		default:
@@ -141,11 +146,6 @@ func deleteUser(db *sql.DB, conf *setting.BaseStruct) {
 			return
 		case "2":
 			fmt.Print("Enter email address: ")
-			emailInput, err := reader.ReadString('\n')
-			errorhandler.CheckError("Error on email address", err)
-
-			email := strings.TrimSpace(emailInput)
-			model.DeleteUserbyEmail(db, email)
 
 			return
 		default:

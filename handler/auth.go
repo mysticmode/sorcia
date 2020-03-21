@@ -184,7 +184,6 @@ func invalidLoginCredentials(w http.ResponseWriter, r *http.Request, db *sql.DB,
 // RegisterRequest struct
 type RegisterRequest struct {
 	Username string `schema:"username"`
-	Email    string `schema:"email"`
 	Password string `schema:"password"`
 	Register string `schema:"register"`
 }
@@ -275,7 +274,6 @@ func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *sett
 
 	rr := model.CreateAccountStruct{
 		Username:      registerRequest.Username,
-		Email:         registerRequest.Email,
 		PasswordHash:  passwordHash,
 		Token:         token,
 		CanCreateRepo: 1,

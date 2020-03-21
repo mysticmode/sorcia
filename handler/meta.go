@@ -49,7 +49,6 @@ func GetMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.B
 	if userPresent == "true" {
 		token := w.Header().Get("sorcia-cookie-token")
 		username := model.GetUsernameFromToken(db, token)
-		email := model.GetEmailFromUsername(db, username)
 
 		userID := model.GetUserIDFromToken(db, token)
 
@@ -70,7 +69,6 @@ func GetMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.B
 			HeaderActiveMenu: "meta",
 			SorciaVersion:    conf.Version,
 			Username:         username,
-			Email:            email,
 			SiteSettings:     util.GetSiteSettings(db, conf),
 		}
 
@@ -200,7 +198,6 @@ func PostAuthKey(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 
 type PostUserRequest struct {
 	Username      string `schema:"username"`
-	Email         string `schema:"email"`
 	Password      string `schema:"password"`
 	CanCreateRepo string `schema:"createrepo"`
 }
@@ -298,7 +295,6 @@ func PostUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.
 
 		rr := model.CreateAccountStruct{
 			Username:      postUserRequest.Username,
-			Email:         postUserRequest.Email,
 			PasswordHash:  passwordHash,
 			Token:         token,
 			CanCreateRepo: canCreateRepo,
@@ -400,6 +396,7 @@ func MetaPostPassword(w http.ResponseWriter, r *http.Request, db *sql.DB, decode
 			Username:     username,
 		}
 		model.ResetUserPasswordbyUsername(db, resetPass)
+		http.Redirect(w, r, "/meta", http.StatusFound)
 		return
 	}
 
