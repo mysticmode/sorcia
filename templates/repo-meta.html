@@ -1,0 +1,46 @@
+{{define "title"}}{{ .Reponame }} - Meta{{end}}
+{{define "content"}}
+<main class="container repo">
+    <div class="repo__header">
+        <div>
+            <div class="repo__title"><a href="/r/{{ .Reponame }}">{{ .Reponame }}</a> {{if eq .IsRepoPrivate true}} <i>private</i> {{end}} </div>
+            <div class="repo__description">{{ .RepoDescription }}</div>
+        </div>
+    </div>
+    <div class="repo__menu">
+        <a href="/r/{{ .Reponame }}" class="repo__menu__item">summary</a>
+        <a href="/r/{{ .Reponame }}/tree/master" class="repo__menu__item">tree</a>
+        <a href="/r/{{ .Reponame }}/log/master" class="repo__menu__item">log</a>
+        <a href="/r/{{ .Reponame }}/refs" class="repo__menu__item">refs</a>
+        <a href="/r/{{ .Reponame }}/contributors" class="repo__menu__item">contributors</a>
+        {{if .IsLoggedIn}}
+            {{if .RepoAccess}}
+            <a href="/r/{{ .Reponame }}/meta" class="repo__menu__item repo__menu__item--active">meta</a>
+            {{end}}
+        {{end}}
+    </div>
+    <div class="repo__meta">
+        <form class="form repo__meta__form" method="POST" action="/meta/password">
+            <div class="form__title meta__form__title">general</div>
+            <p class="repo__meta__form__info">In order to delete this repository, you have to ask the server/sys admin as they only have this access.</p>
+            <p class="repo__meta__form__info">In order to change this repository to private, you have to ask the server/sys admin as they only this access.</p>
+            <div class="form__group">
+                <label for="repoName">Repository name (You can't edit this - ask the server/sys admin to change repository name)</label>
+                <input type="text" class="form__input" id="repoName" name="name" value="{{.Reponame}}" autocomplete="off" spellcheck="false" readonly="" />
+            </div>
+            <div class="form__group">
+                <label for="repoDescription">Description<i>*</i></label>
+                <input type="text" class="form__input" id="repoDescription" name="description" value="{{.RepoDescription}}" autocomplete="off" spellcheck="false" />
+            </div>
+            <input type="submit" class="button button--primary" value="Save" />
+        </form>
+        <div class="repo__meta__access">
+            <div class="repo__meta__access__title">add user and set access</div>
+            <p>This is a <strong>public</strong> repository.</p>
+            <p>The added user access can only have <strong>"Read/Write"</strong> permission. So, you have to ask the server/sys admin to add a user you want and apply <strong>"Read/Write"</strong> permission. In other words these are all can be done only by the server/sys admin for security purspose.</p>
+            <p>This is a <strong>private</strong> repository</p>
+            <p>The added user access can have <strong>"Read"</strong> or <strong>"Read/Write"</strong> permisions. So, you have to ask the server/sys admin to add a user you want and apply the permission you want that user to have. In other words these are all can be done only by the server/sys admin for security purspose.</p>
+        </div>
+    </div>
+</main>
+{{end}}
