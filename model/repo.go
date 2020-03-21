@@ -133,6 +133,34 @@ func GetRepoMembers(db *sql.DB, repoID int) GetRepoMembersStruct {
 	return grms
 }
 
+// GetRepoMemberIDFromUserID ...
+func GetRepoMemberIDFromUserID(db *sql.DB, userID int) []int {
+	rows, err := db.Query("SELECT id FROM repository_members WHERE user_id = ?", userID)
+	errorhandler.CheckError("Error on model get repos members id from user id", err)
+
+	var repoMembersID []int
+	var repoMemberID int
+
+	for rows.Next() {
+		err := rows.Scan(&repoMemberID)
+		errorhandler.CheckError("Error on model get repo members id from user id rows scan", err)
+
+		repoMembersID = append(repoMembersID, repoMemberID)
+	}
+	rows.Close()
+
+	return repoMembersID
+}
+
+// DeleteRepoMemberByID ...
+func DeleteRepoMemberByID(db *sql.DB, id int) {
+	stmt, err := db.Prepare("DELETE FROM repository_members WHERE id = ?")
+	errorhandler.CheckError("Error on model delete repository_member by id", err)
+
+	_, err = stmt.Exec(id)
+	errorhandler.CheckError("Error on model delete repository_member by id exec", err)
+}
+
 // GetReposFromUserIDResponse struct
 type GetReposFromUserIDResponse struct {
 	Repositories []ReposDetailStruct
@@ -143,6 +171,25 @@ type ReposDetailStruct struct {
 	Name        string
 	Description string
 	IsPrivate   string
+}
+
+// GetReponamesFromUserID ...
+func GetReponamesFromUserID(db *sql.DB, userID int) GetReposFromUserIDResponse {
+	rows, err := db.Query("SELECT name FROM repository WHERE user_id = ?", userID)
+	errorhandler.CheckError("Error on model get reponames from user id", err)
+
+	var grfur GetReposFromUserIDResponse
+	var rds ReposDetailStruct
+
+	for rows.Next() {
+		err = rows.Scan(&rds.Name)
+		errorhandler.CheckError("Error on model get repos from user id rows scan", err)
+
+		grfur.Repositories = append(grfur.Repositories, rds)
+	}
+	rows.Close()
+
+	return grfur
 }
 
 // GetReposFromUserID ...
