@@ -103,6 +103,9 @@ func RunWeb(conf *setting.BaseStruct) {
 	m.HandleFunc("/r/{reponame}/meta/user", func(w http.ResponseWriter, r *http.Request) {
 		handler.PostRepoMetaUser(w, r, db, conf, decoder)
 	}).Methods("POST")
+	m.HandleFunc("/r/{reponame}/meta/delete", func(w http.ResponseWriter, r *http.Request) {
+		handler.PostRepoMetaDelete(w, r, db, conf)
+	}).Methods("POST")
 	m.HandleFunc("/r/{reponame}/tree/{branch}", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetRepoTree(w, r, db, conf)
 	}).Methods("GET")
