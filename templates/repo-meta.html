@@ -94,7 +94,7 @@
             {{end}}
         </div>
         {{if .RepoAccess}}
-        <form class="form repo__meta__delete__form" method="POST" action="/r/{{.Reponame}}/meta/user">
+        <form class="form repo__meta__delete__form" method="POST" action="/r/{{.Reponame}}/meta/delete" onsubmit="return confirm('This will permanently delete your repository and cannot be undone. Are you sure?');">
             <div class="form__title meta__delete__form-title">delete this repository</div>
             <input type="submit" class="button button--danger" value="Delete" />
         </form>

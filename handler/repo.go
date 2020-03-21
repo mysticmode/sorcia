@@ -395,6 +395,39 @@ func GetRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 	return
 }
 
+// PostRepoMetaDelete ...
+func PostRepoMetaDelete(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
+	userPresent := w.Header().Get("user-present")
+	vars := mux.Vars(r)
+	reponame := vars["reponame"]
+
+	if userPresent == "true" {
+		token := w.Header().Get("sorcia-cookie-token")
+		userID := model.GetUserIDFromToken(db, token)
+		// username := model.GetUsernameFromToken(db, token)
+
+		if model.CheckRepoOwnerFromUserIDAndReponame(db, userID, reponame) {
+			model.DeleteRepobyReponame(db, reponame)
+			refsPattern := filepath.Join(conf.Paths.RefsPath, reponame+"*")
+
+			files, err := filepath.Glob(refsPattern)
+			errorhandler.CheckError("Error on post repo meta delete filepath.Glob", err)
+
+			for _, f := range files {
+				err := os.Remove(f)
+				errorhandler.CheckError("Error on removing ref files", err)
+			}
+
+			repoDir := filepath.Join(conf.Paths.RepoPath, reponame+".git")
+			err = os.RemoveAll(repoDir)
+			errorhandler.CheckError("Error on removing repository directory", err)
+		}
+		http.Redirect(w, r, "/", http.StatusFound)
+		return
+	}
+	http.Redirect(w, r, "/", http.StatusFound)
+}
+
 // PostRepoMetaStruct struct
 type PostRepoMetaStruct struct {
 	Name        string `schema:"name"`

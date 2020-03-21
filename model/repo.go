@@ -32,6 +32,15 @@ func InsertRepo(db *sql.DB, crs CreateRepoStruct) {
 	errorhandler.CheckError("Error on model insert repo exec", err)
 }
 
+// DeleteRepobyReponame ...
+func DeleteRepobyReponame(db *sql.DB, reponame string) {
+	stmt, err := db.Prepare("DELETE FROM repository WHERE name = ?")
+	errorhandler.CheckError("Error on model delete repository by reponame", err)
+
+	_, err = stmt.Exec(reponame)
+	errorhandler.CheckError("Error on model delete repository by reponame exec", err)
+}
+
 // UpdateRepoStruct struct
 type UpdateRepoStruct struct {
 	RepoID      int
