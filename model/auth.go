@@ -10,7 +10,7 @@ import (
 
 // CreateAccount ...
 func CreateAccount(db *sql.DB) {
-	stmt, err := db.Prepare("CREATE TABLE IF NOT EXISTS account (id INTEGER PRIMARY KEY, username TEXT UNIQUE NOT NULL, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, jwt_token TEXT NOT NULL, can_create_repo BOOLEAN DEFAULT 0, is_admin BOOLEAN DEFAULT 0)")
+	stmt, err := db.Prepare("CREATE TABLE IF NOT EXISTS account (id INTEGER PRIMARY KEY, username TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, jwt_token TEXT NOT NULL, can_create_repo BOOLEAN DEFAULT 0, is_admin BOOLEAN DEFAULT 0)")
 	errorhandler.CheckError("Error on model create account", err)
 
 	_, err = stmt.Exec()
@@ -20,7 +20,6 @@ func CreateAccount(db *sql.DB) {
 // CreateAccountStruct struct
 type CreateAccountStruct struct {
 	Username      string
-	Email         string
 	PasswordHash  string
 	Token         string
 	CanCreateRepo int
@@ -29,10 +28,10 @@ type CreateAccountStruct struct {
 
 // InsertAccount ...
 func InsertAccount(db *sql.DB, cas CreateAccountStruct) {
-	stmt, err := db.Prepare("INSERT INTO account (username, email, password_hash, jwt_token, can_create_repo, is_admin) VALUES (?, ?, ?, ?, ?, ?)")
+	stmt, err := db.Prepare("INSERT INTO account (username, password_hash, jwt_token, can_create_repo, is_admin) VALUES (?, ?, ?, ?, ?)")
 	errorhandler.CheckError("Error on model insert account", err)
 
-	_, err = stmt.Exec(cas.Username, cas.Email, cas.PasswordHash, cas.Token, cas.CanCreateRepo, cas.IsAdmin)
+	_, err = stmt.Exec(cas.Username, cas.PasswordHash, cas.Token, cas.CanCreateRepo, cas.IsAdmin)
 	errorhandler.CheckError("Error on model insert account exec", err)
 }
 
@@ -42,21 +41,20 @@ type Users struct {
 
 type User struct {
 	Username      string
-	Email         string
 	CanCreateRepo bool
 	IsAdmin       bool
 }
 
 // GetAllUsers
 func GetAllUsers(db *sql.DB) Users {
-	rows, err := db.Query("SELECT username, email, can_create_repo, is_admin FROM account")
+	rows, err := db.Query("SELECT username, can_create_repo, is_admin FROM account")
 	errorhandler.CheckError("Error on model get all users", err)
 
 	var user User
 	var users Users
 
 	for rows.Next() {
-		err = rows.Scan(&user.Username, &user.Email, &user.CanCreateRepo, &user.IsAdmin)
+		err = rows.Scan(&user.Username, &user.CanCreateRepo, &user.IsAdmin)
 		errorhandler.CheckError("Error on model get all users rows scan", err)
 
 		users.Users = append(users.Users, user)
@@ -146,22 +144,6 @@ func GetUsernameFromUserID(db *sql.DB, userID int) string {
 	return username
 }
 
-// GetEmailFromUsername ...
-func GetEmailFromUsername(db *sql.DB, username string) string {
-	rows, err := db.Query("SELECT email FROM account WHERE username = ?", username)
-	errorhandler.CheckError("Error on model get email from username", err)
-
-	var email string
-
-	if rows.Next() {
-		err = rows.Scan(&email)
-		errorhandler.CheckError("Error on model get email from username rows scan", err)
-	}
-	rows.Close()
-
-	return email
-}
-
 // SelectPasswordHashAndJWTTokenStruct struct
 type SelectPasswordHashAndJWTTokenStruct struct {
 	Username string
@@ -227,22 +209,6 @@ func ResetUserPasswordbyUsername(db *sql.DB, resetPass ResetUserPasswordbyUserna
 	errorhandler.CheckError("Error on model reset user password by username exec", err)
 }
 
-// ResetUserPasswordbyEmailStruct struct
-type ResetUserPasswordbyEmailStruct struct {
-	PasswordHash string
-	JwtToken     string
-	Email        string
-}
-
-// ResetUserPasswordbyEmail ...
-func ResetUserPasswordbyEmail(db *sql.DB, resetPass ResetUserPasswordbyEmailStruct) {
-	stmt, err := db.Prepare("UPDATE account SET password_hash = ?, jwt_token = ? WHERE email = ?")
-	errorhandler.CheckError("Error on model reset user password by email", err)
-
-	_, err = stmt.Exec(resetPass.PasswordHash, resetPass.JwtToken, resetPass.Email)
-	errorhandler.CheckError("Error on model reset user password by email exec", err)
-}
-
 // DeleteUserbyUsername ...
 func DeleteUserbyUsername(db *sql.DB, username string) {
 	stmt, err := db.Prepare("DELETE FROM account WHERE username = ?")
@@ -250,15 +216,6 @@ func DeleteUserbyUsername(db *sql.DB, username string) {
 
 	_, err = stmt.Exec(username)
 	errorhandler.CheckError("Error on model delete user by username exec", err)
-}
-
-// DeleteUserbyEmail ...
-func DeleteUserbyEmail(db *sql.DB, email string) {
-	stmt, err := db.Prepare("DELETE FROM account WHERE email = ?")
-	errorhandler.CheckError("Error on model delete user by email", err)
-
-	_, err = stmt.Exec(email)
-	errorhandler.CheckError("Error on model delete user by email exec", err)
 }
 
 // CreateSSHPubKey ...
