@@ -62,29 +62,36 @@
                 <input type="text" class="form__input" id="userName" name="username" value="" autocomplete="off" spellcheck="false" />
             </div>
             <div class="form__group form__radio-group">
+                {{if .IsRepoPrivate}}
                 <div class="form__radio">
-                    <input type="radio" name="is_readorwrite" value="0" id="read" checked />
+                    <input type="radio" name="is_readorwrite" value="read" id="read" checked />
                     <label for="read">Read</label>
                 </div>
                 <div class="form__radio">
-                    <input type="radio" name="is_readorwrite" value="1" id="readOrWrite" />
+                    <input type="radio" name="is_readorwrite" value="read/write" id="readOrWrite" />
                     <label for="readOrWrite">Read/Write</label>
                 </div>
+                {{else}}
+                <div class="form__radio">
+                    <input type="radio" name="is_readorwrite" value="read/write" id="readOrWrite" checked />
+                    <label for="readOrWrite">Read/Write</label>
+                </div>
+                {{end}}
             </div>
             <input type="submit" class="button button--primary" value="Add user" />
         </form>
         {{end}}
         <div class="repo__meta__users">
             <div class="repo__meta__users__title">Users</div>
+            {{range .RepoMembers.RepoMembers}}
             <div class="repo__meta__users__item">
-                <p>mysticmode</p>
-                <p class="owner">[Owner]</p>
-                <p>(Read/Write)</p>
+                <p>{{.Username}}</p>
+                {{if .IsOwner}}
+                    <p class="owner">[Owner]</p>
+                {{end}}
+                <p>({{.Permission}})</p>
             </div>
-            <div class="repo__meta__users__item">
-                <p>mysticmode</p>
-                <p>(Read/Write)</p>
-            </div>
+            {{end}}
         </div>
         {{if .RepoAccess}}
         <form class="form repo__meta__delete__form" method="POST" action="/r/{{.Reponame}}/meta/user">
