@@ -96,6 +96,9 @@ func RunWeb(conf *setting.BaseStruct) {
 	m.HandleFunc("/r/{reponame}/meta", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetRepoMeta(w, r, db, conf)
 	}).Methods("GET")
+	m.HandleFunc("/r/{reponame}/meta", func(w http.ResponseWriter, r *http.Request) {
+		handler.PostRepoMeta(w, r, db, conf, decoder)
+	}).Methods("POST")
 	m.HandleFunc("/r/{reponame}/tree/{branch}", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetRepoTree(w, r, db, conf)
 	}).Methods("GET")

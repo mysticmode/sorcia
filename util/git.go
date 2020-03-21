@@ -85,6 +85,21 @@ func GenerateRefs(refsPath, repoPath, repoGitName string) {
 	}
 }
 
+// UpdateRefsWithNewName ...
+func UpdateRefsWithNewName(refsPath, repoPath, oldRepoGitName, newRepoGitName string) {
+	refsPattern := filepath.Join(refsPath, oldRepoGitName+"*")
+
+	files, err := filepath.Glob(refsPattern)
+	errorhandler.CheckError("Error on updaterefspath filepath.Glob", err)
+
+	for _, f := range files {
+		err := os.Remove(f)
+		errorhandler.CheckError("Error on removing ref files", err)
+	}
+
+	go GenerateRefs(refsPath, repoPath, newRepoGitName+".git")
+}
+
 // GetCommitCounts ...
 func GetCommitCounts(repoPath, reponame string) string {
 	dirPath := filepath.Join(repoPath, reponame+".git")

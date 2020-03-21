@@ -179,32 +179,34 @@ func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder 
 		return
 	}
 
+	http.Redirect(w, r, "/login", http.StatusFound)
 }
 
 // GetRepoResponse struct
 type GetRepoResponse struct {
-	SiteSettings     util.SiteSettings
-	SiteStyle        string
-	IsLoggedIn       bool
-	ShowLoginMenu    bool
-	HeaderActiveMenu string
-	SorciaVersion    string
-	Username         string
-	Reponame         string
-	RepoDescription  string
-	IsRepoPrivate    bool
-	RepoAccess       bool
-	Host             string
-	SSHClone         string
-	TotalCommits     string
-	TotalRefs        int
-	RepoDetail       RepoDetail
-	RepoBranches     []string
-	IsRepoBranch     bool
-	RepoLogs         RepoLogs
-	CommitDetail     CommitDetailStruct
-	RepoRefs         []Refs
-	Contributors     Contributors
+	SiteSettings       util.SiteSettings
+	SiteStyle          string
+	IsLoggedIn         bool
+	ShowLoginMenu      bool
+	HeaderActiveMenu   string
+	SorciaVersion      string
+	Username           string
+	Reponame           string
+	ReponameErrMessage string
+	RepoDescription    string
+	IsRepoPrivate      bool
+	RepoAccess         bool
+	Host               string
+	SSHClone           string
+	TotalCommits       string
+	TotalRefs          int
+	RepoDetail         RepoDetail
+	RepoBranches       []string
+	IsRepoBranch       bool
+	RepoLogs           RepoLogs
+	CommitDetail       CommitDetailStruct
+	RepoRefs           []Refs
+	Contributors       Contributors
 }
 
 // RepoDetail struct
@@ -356,13 +358,13 @@ func GetRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 
 	userPresent := w.Header().Get("user-present")
 	var loggedInUserID int
+	var token string
 	if userPresent == "true" {
-		token := w.Header().Get("sorcia-cookie-token")
+		token = w.Header().Get("sorcia-cookie-token")
 		loggedInUserID = model.GetUserIDFromToken(db, token)
 	}
 
-	userID := model.GetUserIDFromReponame(db, reponame)
-	username := model.GetUsernameFromUserID(db, userID)
+	username := model.GetUsernameFromToken(db, token)
 	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
 
 	data := GetRepoResponse{
@@ -385,6 +387,136 @@ func GetRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 
 	writeRepoResponse(w, r, db, reponame, "repo-meta.html", data)
 	return
+}
+
+// PostRepoMetaStruct struct
+type PostRepoMetaStruct struct {
+	Name        string `schema:"name"`
+	Description string `schema:"description"`
+	IsPrivate   string `schema:"is_private"`
+}
+
+// PostRepoMeta ...
+func PostRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct, decoder *schema.Decoder) {
+	userPresent := w.Header().Get("user-present")
+	vars := mux.Vars(r)
+	reponame := vars["reponame"]
+
+	if userPresent == "true" {
+		token := w.Header().Get("sorcia-cookie-token")
+		userID := model.GetUserIDFromToken(db, token)
+		username := model.GetUsernameFromToken(db, token)
+
+		if err := r.ParseForm(); err != nil {
+			fmt.Fprintf(w, "ParseForm() err: %v", err)
+			errorResponse := &errorhandler.Response{
+				Error: err.Error(),
+			}
+
+			errorJSON, err := json.Marshal(errorResponse)
+			errorhandler.CheckError("Error on post create repo json marshal", err)
+
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+
+			w.Write(errorJSON)
+		}
+
+		var postRepoMetaStruct = &PostRepoMetaStruct{}
+		err := decoder.Decode(postRepoMetaStruct, r.PostForm)
+		errorhandler.CheckError("Error on post create repo decoder", err)
+
+		s := postRepoMetaStruct.Name
+		if len(s) > 100 || len(s) < 1 {
+			layoutPage := path.Join("./templates", "layout.html")
+			headerPage := path.Join("./templates", "header.html")
+			repoMetaPage := path.Join("./templates", "repo-meta.html")
+			footerPage := path.Join("./templates", "footer.html")
+
+			tmpl, err := template.ParseFiles(layoutPage, headerPage, repoMetaPage, footerPage)
+			errorhandler.CheckError("Error on template parse", err)
+
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			w.WriteHeader(http.StatusOK)
+
+			data := GetRepoResponse{
+				SiteSettings:       util.GetSiteSettings(db, conf),
+				IsLoggedIn:         checkUserLoggedIn(w),
+				ShowLoginMenu:      true,
+				HeaderActiveMenu:   "",
+				SorciaVersion:      conf.Version,
+				Username:           username,
+				Reponame:           reponame,
+				ReponameErrMessage: "Repository name is too long (maximum is 100 characters).",
+				RepoDescription:    model.GetRepoDescriptionFromRepoName(db, reponame),
+				IsRepoPrivate:      model.GetRepoType(db, reponame),
+				RepoAccess:         model.CheckRepoAccessFromUserIDAndReponame(db, userID, reponame),
+			}
+
+			tmpl.ExecuteTemplate(w, "layout", data)
+			return
+		} else if strings.HasPrefix(s, "-") || strings.Contains(s, "--") || strings.HasSuffix(s, "-") || !util.IsAlnumOrHyphen(s) {
+			layoutPage := path.Join("./templates", "layout.html")
+			headerPage := path.Join("./templates", "header.html")
+			repoMetaPage := path.Join("./templates", "repo-meta.html")
+			footerPage := path.Join("./templates", "footer.html")
+
+			tmpl, err := template.ParseFiles(layoutPage, headerPage, repoMetaPage, footerPage)
+			errorhandler.CheckError("Error on template parse", err)
+
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			w.WriteHeader(http.StatusOK)
+
+			data := GetRepoResponse{
+				SiteSettings:       util.GetSiteSettings(db, conf),
+				IsLoggedIn:         checkUserLoggedIn(w),
+				ShowLoginMenu:      true,
+				HeaderActiveMenu:   "",
+				SorciaVersion:      conf.Version,
+				Username:           username,
+				Reponame:           reponame,
+				ReponameErrMessage: "Repository name may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen.",
+				RepoDescription:    model.GetRepoDescriptionFromRepoName(db, reponame),
+				IsRepoPrivate:      model.GetRepoType(db, reponame),
+				RepoAccess:         model.CheckRepoAccessFromUserIDAndReponame(db, userID, reponame),
+			}
+
+			tmpl.ExecuteTemplate(w, "layout", data)
+			return
+		}
+
+		var isPrivate int
+		if isPrivate = 0; postRepoMetaStruct.IsPrivate == "1" {
+			isPrivate = 1
+		}
+
+		if model.CheckRepoAccessFromUserIDAndReponame(db, userID, reponame) == true {
+			urs := model.UpdateRepoStruct{
+				RepoID:      model.GetRepoIDFromReponame(db, reponame),
+				NewName:     postRepoMetaStruct.Name,
+				Description: postRepoMetaStruct.Description,
+				IsPrivate:   isPrivate,
+			}
+
+			model.UpdateRepo(db, urs)
+
+			// Update repository dir name
+			oldRepoDir := filepath.Join(conf.Paths.RepoPath, reponame+".git")
+			newRepoDir := filepath.Join(conf.Paths.RepoPath, urs.NewName+".git")
+
+			if _, err := os.Stat(newRepoDir); os.IsNotExist(err) {
+				err = os.Rename(oldRepoDir, newRepoDir)
+				errorhandler.CheckError("Error on update repository dir name", err)
+			}
+
+			util.UpdateRefsWithNewName(conf.Paths.RefsPath, conf.Paths.RepoPath, reponame, urs.NewName)
+
+			http.Redirect(w, r, "/", http.StatusFound)
+			return
+		}
+	}
+
+	http.Redirect(w, r, "/login", http.StatusFound)
 }
 
 // GetRepoTree ...
