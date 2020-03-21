@@ -49,6 +49,31 @@ func UpdateRepo(db *sql.DB, urs UpdateRepoStruct) {
 	errorhandler.CheckError("Error on model update repo exec", err)
 }
 
+// CreateRepoMembers ...
+func CreateRepoMembers(db *sql.DB) {
+	stmt, err := db.Prepare("CREATE TABLE IF NOT EXISTS repository_members (id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, repo_id INTEGER NOT NULL, permission TEXT NOT NULL, FOREIGN KEY (repo_id) REFERENCES repository (id) ON DELETE CASCADE)")
+	errorhandler.CheckError("Error on model create repo members", err)
+
+	_, err = stmt.Exec()
+	errorhandler.CheckError("Error on model create repo members exec", err)
+}
+
+// CreateRepoMember struct
+type CreateRepoMember struct {
+	UserID     int
+	RepoID     int
+	Permission string
+}
+
+// InsertRepoMember ...
+func InsertRepoMember(db *sql.DB, crm CreateRepoMember) {
+	stmt, err := db.Prepare("INSERT INTO repository_members (user_id, repo_id, permission) VALUES (?, ?, ?)")
+	errorhandler.CheckError("Error on model insert repo member", err)
+
+	_, err = stmt.Exec(crm.UserID, crm.RepoID, crm.Permission)
+	errorhandler.CheckError("Error on model insert repo member exec", err)
+}
+
 // GetReposFromUserIDResponse struct
 type GetReposFromUserIDResponse struct {
 	Repositories []ReposDetailStruct
@@ -193,16 +218,36 @@ func GetRepoType(db *sql.DB, reponame string) bool {
 	return isPrivate
 }
 
-// CheckRepoAccessFromUserID ...
-func CheckRepoAccessFromUserIDAndReponame(db *sql.DB, userID int, reponame string) bool {
+// CheckRepoOwnerFromUserID ...
+func CheckRepoOwnerFromUserIDAndReponame(db *sql.DB, userID int, reponame string) bool {
 	rows, err := db.Query("SELECT id FROM repository WHERE user_id = ? AND name = ?", userID, reponame)
-	errorhandler.CheckError("Error on model check repo access from userid and reponame", err)
+	errorhandler.CheckError("Error on model check repo owner from userid and reponame", err)
 
 	var id int
 
 	if rows.Next() {
 		err = rows.Scan(&id)
-		errorhandler.CheckError("Error on model check repo access from userid and reponame rows scan", err)
+		errorhandler.CheckError("Error on model check repo owner from userid and reponame rows scan", err)
+	}
+	rows.Close()
+
+	if id > 0 {
+		return true
+	}
+
+	return false
+}
+
+// CheckRepoMemberExistFromUserIDAndRepoID ...
+func CheckRepoMemberExistFromUserIDAndRepoID(db *sql.DB, userID, repoID int) bool {
+	rows, err := db.Query("SELECT id FROM repository_members WHERE user_id = ? AND repo_id = ?", userID, repoID)
+	errorhandler.CheckError("Error on model check repo member exist from userid and repoid", err)
+
+	var id int
+
+	if rows.Next() {
+		err = rows.Scan(&id)
+		errorhandler.CheckError("Error on model check repo member exist from userid and repoid rows scan", err)
 	}
 	rows.Close()
 
