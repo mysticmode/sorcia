@@ -34,19 +34,65 @@ type gitHandler struct {
 	db          *sql.DB
 }
 
-func (gh *gitHandler) basicAuth(username, passwordHash, realm string) bool {
+func (gh *gitHandler) basicAuth(realm string) bool {
 
 	user, pass, ok := gh.r.BasicAuth()
 
-	isPasswordValid := CheckPasswordHash(pass, passwordHash)
+	sphjwt := model.SelectPasswordHashAndJWTTokenStruct{
+		Username: user,
+	}
+	sphjwtr := model.SelectPasswordHashAndJWTToken(gh.db, sphjwt)
 
-	if !ok || user != username || !isPasswordValid {
-		gh.w.Header().Set("WWW-Authenticate", `Basic realm="`+realm+`"`)
-		writeHdr(gh.w, http.StatusUnauthorized, "The repository cannot be accessed with your credentials.\n")
+	isPasswordValid := CheckPasswordHash(pass, sphjwtr.PasswordHash)
+
+	if !ok {
+		gh.repoNoAccess(realm)
 		return false
 	}
 
-	return true
+	if isRepoPrivate := model.GetRepoType(gh.db, gh.reponame); isRepoPrivate && gh.rpc == "upload-pack" && isPasswordValid {
+		userID := model.GetUserIDFromUsername(gh.db, user)
+		repoID := model.GetRepoIDFromReponame(gh.db, gh.reponame)
+		if model.CheckRepoOwnerFromUserIDAndReponame(gh.db, userID, gh.reponame) {
+			return true
+		} else if model.CheckRepoMemberExistFromUserIDAndRepoID(gh.db, userID, repoID) {
+			permission := model.GetRepoMemberPermissionFromUserIDAndRepoID(gh.db, userID, repoID)
+			if permission == "read" || permission == "read/write" {
+				return true
+			}
+		}
+	} else {
+		gh.repoNoAccess(realm)
+		return false
+	}
+
+	if gh.rpc == "receive-pack" && isPasswordValid {
+		userID := model.GetUserIDFromUsername(gh.db, user)
+		repoID := model.GetRepoIDFromReponame(gh.db, gh.reponame)
+		if model.CheckRepoOwnerFromUserIDAndReponame(gh.db, userID, gh.reponame) {
+			return true
+		} else if model.CheckRepoMemberExistFromUserIDAndRepoID(gh.db, userID, repoID) {
+			permission := model.GetRepoMemberPermissionFromUserIDAndRepoID(gh.db, userID, repoID)
+			if permission == "read/write" {
+				return true
+			}
+		} else {
+			gh.w.Header().Set("WWW-Authenticate", `Basic realm="`+realm+`"`)
+			writeHdr(gh.w, http.StatusUnauthorized, "The repository cannot be accessed with your credentials.\n")
+			return false
+		}
+	} else {
+		gh.repoNoAccess(realm)
+		return false
+	}
+
+	gh.repoNoAccess(realm)
+	return false
+}
+
+func (gh *gitHandler) repoNoAccess(realm string) {
+	gh.w.Header().Set("WWW-Authenticate", `Basic realm="`+realm+`"`)
+	writeHdr(gh.w, http.StatusUnauthorized, "The repository cannot be accessed with your credentials.\n")
 }
 
 func getServiceType(r *http.Request) string {
@@ -120,38 +166,8 @@ func serviceReceivePack(gh gitHandler) {
 }
 
 func postServiceRPC(gh gitHandler, rpc string) {
-	if isRepoPrivate := model.GetRepoType(gh.db, gh.reponame); isRepoPrivate && rpc == "upload-pack" {
-		userID := model.GetUserIDFromReponame(gh.db, gh.reponame)
-		repoID := model.GetRepoIDFromReponame(gh.db, gh.reponame)
-		if model.CheckRepoOwnerFromUserIDAndReponame(gh.db, userID, gh.reponame) {
-			if processRepoAccess(gh) == false {
-				return
-			}
-		} else if model.CheckRepoMemberExistFromUserIDAndRepoID(gh.db, userID, repoID) {
-			permission := model.GetRepoMemberPermissionFromUserIDAndRepoID(gh.db, userID, repoID)
-			if permission == "read" || permission == "read/write" {
-				if processRepoAccess(gh) == false {
-					return
-				}
-			}
-		}
-	}
-
-	if rpc == "receive-pack" {
-		userID := model.GetUserIDFromReponame(gh.db, gh.reponame)
-		repoID := model.GetRepoIDFromReponame(gh.db, gh.reponame)
-		if model.CheckRepoOwnerFromUserIDAndReponame(gh.db, userID, gh.reponame) {
-			if processRepoAccess(gh) == false {
-				return
-			}
-		} else if model.CheckRepoMemberExistFromUserIDAndRepoID(gh.db, userID, repoID) {
-			permission := model.GetRepoMemberPermissionFromUserIDAndRepoID(gh.db, userID, repoID)
-			if permission == "read/write" {
-				if processRepoAccess(gh) == false {
-					return
-				}
-			}
-		}
+	if !gh.basicAuth("Please enter your username and password") {
+		return
 	}
 
 	if gh.r.Header.Get("Content-Type") != fmt.Sprintf("application/x-git-%s-request", rpc) {
@@ -195,6 +211,10 @@ func postServiceRPC(gh gitHandler, rpc string) {
 func getInfoRefs(gh gitHandler) {
 	gh.hdrNocache()
 
+	if !gh.basicAuth("Please enter your username and password") {
+		return
+	}
+
 	rpc := getServiceType(gh.r)
 
 	if rpc != "upload-pack" && rpc != "receive-pack" {
@@ -202,45 +222,6 @@ func getInfoRefs(gh gitHandler) {
 		updateServerInfo(gh.dir)
 		gh.sendFile("text/plain; charset=utf-8")
 		return
-	}
-
-	if isRepoPrivate := model.GetRepoType(gh.db, gh.reponame); isRepoPrivate && rpc == "upload-pack" {
-		userID := model.GetUserIDFromReponame(gh.db, gh.reponame)
-		repoID := model.GetRepoIDFromReponame(gh.db, gh.reponame)
-		if model.CheckRepoOwnerFromUserIDAndReponame(gh.db, userID, gh.reponame) {
-			if processRepoAccess(gh) == false {
-				return
-			}
-		} else if model.CheckRepoMemberExistFromUserIDAndRepoID(gh.db, userID, repoID) {
-			permission := model.GetRepoMemberPermissionFromUserIDAndRepoID(gh.db, userID, repoID)
-			if permission == "read" || permission == "read/write" {
-				if processRepoAccess(gh) == false {
-					return
-				}
-			}
-		} else {
-			return
-		}
-	}
-
-	// Check if repository is private
-	if isRepoPrivate := model.GetRepoType(gh.db, gh.reponame); isRepoPrivate || rpc == "receive-pack" {
-		userID := model.GetUserIDFromReponame(gh.db, gh.reponame)
-		repoID := model.GetRepoIDFromReponame(gh.db, gh.reponame)
-		if model.CheckRepoOwnerFromUserIDAndReponame(gh.db, userID, gh.reponame) {
-			if processRepoAccess(gh) == false {
-				return
-			}
-		} else if model.CheckRepoMemberExistFromUserIDAndRepoID(gh.db, userID, repoID) {
-			permission := model.GetRepoMemberPermissionFromUserIDAndRepoID(gh.db, userID, repoID)
-			if permission == "read/write" {
-				if processRepoAccess(gh) == false {
-					return
-				}
-			}
-		} else {
-			return
-		}
 	}
 
 	refs := gitCommand(gh.dir, rpc, "--stateless-rpc", "--advertise-refs", ".")
@@ -308,23 +289,6 @@ func getProjectRootDir() string {
 	projectRootDir, err := filepath.Abs(filepath.Dir(os.Args[0]))
 	errorhandler.CheckError("Error on get project root dir function", err)
 	return projectRootDir
-}
-
-func processRepoAccess(gh gitHandler) bool {
-	userID := model.GetUserIDFromReponame(gh.db, gh.reponame)
-	username := model.GetUsernameFromUserID(gh.db, userID)
-
-	sphjwt := model.SelectPasswordHashAndJWTTokenStruct{
-		Username: username,
-	}
-	sphjwtr := model.SelectPasswordHashAndJWTToken(gh.db, sphjwt)
-	passwordHash := sphjwtr.PasswordHash
-
-	if gh.basicAuth(username, passwordHash, "Please enter your username and password") {
-		return true
-	}
-
-	return false
 }
 
 // GitviaHTTP ...
