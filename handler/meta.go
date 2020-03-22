@@ -196,6 +196,7 @@ func PostAuthKey(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 	http.Redirect(w, r, "/login", http.StatusFound)
 }
 
+// PostUserRequest struct
 type PostUserRequest struct {
 	Username      string `schema:"username"`
 	Password      string `schema:"password"`
