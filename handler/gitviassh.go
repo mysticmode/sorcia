@@ -43,19 +43,36 @@ func RunSSH(conf *setting.BaseStruct, db *sql.DB) {
 			}
 
 			reponame = strings.Split(gitRepo, ".git")[0]
+			userIDInt, err := strconv.Atoi(userID)
+			if err != nil {
+				log.Printf("ssh: cannot convert userID to integer")
+				return
+			}
+			repoID := model.GetRepoIDFromReponame(db, reponame)
 
-			// Check if repository is private
-			if isRepoPrivate := model.GetRepoType(db, reponame); isRepoPrivate || gitRPC == "git-receive-pack" {
-				userIDInt, err := strconv.Atoi(userID)
-				if err != nil {
-					log.Printf("ssh: cannot convert userID to integer")
-					return
-				}
-
-				repoID := model.GetRepoIDFromReponame(db, reponame)
+			if isRepoPrivate := model.GetRepoType(db, reponame); isRepoPrivate && gitRPC == "upload-pack" {
 				if !model.CheckRepoOwnerFromUserIDAndReponame(db, userIDInt, reponame) && !model.CheckRepoMemberExistFromUserIDAndRepoID(db, userIDInt, repoID) {
 					log.Printf("ssh: no repo access")
 					return
+				} else if model.CheckRepoMemberExistFromUserIDAndRepoID(db, userIDInt, repoID) {
+					permission := model.GetRepoMemberPermissionFromUserIDAndRepoID(db, userIDInt, repoID)
+					if permission != "read" && permission != "read/write" {
+						log.Printf("ssh: no repo access")
+						return
+					}
+				}
+			}
+
+			if gitRPC == "git-receive-pack" {
+				if !model.CheckRepoOwnerFromUserIDAndReponame(db, userIDInt, reponame) && !model.CheckRepoMemberExistFromUserIDAndRepoID(db, userIDInt, repoID) {
+					log.Printf("ssh: no repo access")
+					return
+				} else if model.CheckRepoMemberExistFromUserIDAndRepoID(db, userIDInt, repoID) {
+					permission := model.GetRepoMemberPermissionFromUserIDAndRepoID(db, userIDInt, repoID)
+					if permission != "read/write" {
+						log.Printf("ssh: no repo access")
+						return
+					}
 				}
 			}
 		} else {

@@ -364,6 +364,22 @@ func CheckRepoMemberExistFromUserIDAndRepoID(db *sql.DB, userID, repoID int) boo
 	return false
 }
 
+// GetRepoMemberPermissionFromUserIDAndRepoID ...
+func GetRepoMemberPermissionFromUserIDAndRepoID(db *sql.DB, userID, repoID int) string {
+	rows, err := db.Query("SELECT permission FROM repository_members WHERE user_id = ? AND repo_id = ?", userID, repoID)
+	errorhandler.CheckError("Error on model check repo permissions from userid and repoid", err)
+
+	var permission string
+
+	if rows.Next() {
+		err = rows.Scan(&permission)
+		errorhandler.CheckError("Error on model check repo permissions from userid and repoid rows scan", err)
+	}
+	rows.Close()
+
+	return permission
+}
+
 // GetUserIDFromReponame ...
 func GetUserIDFromReponame(db *sql.DB, reponame string) int {
 	rows, err := db.Query("SELECT user_id FROM repository WHERE name = ?", reponame)
