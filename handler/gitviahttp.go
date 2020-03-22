@@ -120,13 +120,36 @@ func serviceReceivePack(gh gitHandler) {
 }
 
 func postServiceRPC(gh gitHandler, rpc string) {
-	// Check if repository is private
-	if isRepoPrivate := model.GetRepoType(gh.db, gh.reponame); isRepoPrivate || rpc == "receive-pack" {
+	if isRepoPrivate := model.GetRepoType(gh.db, gh.reponame); isRepoPrivate && rpc == "upload-pack" {
 		userID := model.GetUserIDFromReponame(gh.db, gh.reponame)
 		repoID := model.GetRepoIDFromReponame(gh.db, gh.reponame)
-		if model.CheckRepoOwnerFromUserIDAndReponame(gh.db, userID, gh.reponame) || model.CheckRepoMemberExistFromUserIDAndRepoID(gh.db, userID, repoID) {
+		if model.CheckRepoOwnerFromUserIDAndReponame(gh.db, userID, gh.reponame) {
 			if processRepoAccess(gh) == false {
 				return
+			}
+		} else if model.CheckRepoMemberExistFromUserIDAndRepoID(gh.db, userID, repoID) {
+			permission := model.GetRepoMemberPermissionFromUserIDAndRepoID(gh.db, userID, repoID)
+			if permission == "read" || permission == "read/write" {
+				if processRepoAccess(gh) == false {
+					return
+				}
+			}
+		}
+	}
+
+	if rpc == "receive-pack" {
+		userID := model.GetUserIDFromReponame(gh.db, gh.reponame)
+		repoID := model.GetRepoIDFromReponame(gh.db, gh.reponame)
+		if model.CheckRepoOwnerFromUserIDAndReponame(gh.db, userID, gh.reponame) {
+			if processRepoAccess(gh) == false {
+				return
+			}
+		} else if model.CheckRepoMemberExistFromUserIDAndRepoID(gh.db, userID, repoID) {
+			permission := model.GetRepoMemberPermissionFromUserIDAndRepoID(gh.db, userID, repoID)
+			if permission == "read/write" {
+				if processRepoAccess(gh) == false {
+					return
+				}
 			}
 		}
 	}
@@ -181,14 +204,42 @@ func getInfoRefs(gh gitHandler) {
 		return
 	}
 
+	if isRepoPrivate := model.GetRepoType(gh.db, gh.reponame); isRepoPrivate && rpc == "upload-pack" {
+		userID := model.GetUserIDFromReponame(gh.db, gh.reponame)
+		repoID := model.GetRepoIDFromReponame(gh.db, gh.reponame)
+		if model.CheckRepoOwnerFromUserIDAndReponame(gh.db, userID, gh.reponame) {
+			if processRepoAccess(gh) == false {
+				return
+			}
+		} else if model.CheckRepoMemberExistFromUserIDAndRepoID(gh.db, userID, repoID) {
+			permission := model.GetRepoMemberPermissionFromUserIDAndRepoID(gh.db, userID, repoID)
+			if permission == "read" || permission == "read/write" {
+				if processRepoAccess(gh) == false {
+					return
+				}
+			}
+		} else {
+			return
+		}
+	}
+
 	// Check if repository is private
 	if isRepoPrivate := model.GetRepoType(gh.db, gh.reponame); isRepoPrivate || rpc == "receive-pack" {
 		userID := model.GetUserIDFromReponame(gh.db, gh.reponame)
 		repoID := model.GetRepoIDFromReponame(gh.db, gh.reponame)
-		if model.CheckRepoOwnerFromUserIDAndReponame(gh.db, userID, gh.reponame) || model.CheckRepoMemberExistFromUserIDAndRepoID(gh.db, userID, repoID) {
+		if model.CheckRepoOwnerFromUserIDAndReponame(gh.db, userID, gh.reponame) {
 			if processRepoAccess(gh) == false {
 				return
 			}
+		} else if model.CheckRepoMemberExistFromUserIDAndRepoID(gh.db, userID, repoID) {
+			permission := model.GetRepoMemberPermissionFromUserIDAndRepoID(gh.db, userID, repoID)
+			if permission == "read/write" {
+				if processRepoAccess(gh) == false {
+					return
+				}
+			}
+		} else {
+			return
 		}
 	}
 
