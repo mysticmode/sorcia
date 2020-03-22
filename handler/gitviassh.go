@@ -53,7 +53,7 @@ func RunSSH(conf *setting.BaseStruct, db *sql.DB) {
 				}
 
 				repoID := model.GetRepoIDFromReponame(db, reponame)
-				if !model.CheckRepoOwnerFromUserIDAndReponame(db, userIDInt, reponame) || !model.CheckRepoMemberExistFromUserIDAndRepoID(db, userIDInt, repoID) {
+				if !model.CheckRepoOwnerFromUserIDAndReponame(db, userIDInt, reponame) && !model.CheckRepoMemberExistFromUserIDAndRepoID(db, userIDInt, repoID) {
 					log.Printf("ssh: no repo access")
 					return
 				}
