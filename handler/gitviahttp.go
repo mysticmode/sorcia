@@ -34,65 +34,78 @@ type gitHandler struct {
 	db          *sql.DB
 }
 
-func (gh *gitHandler) basicAuth(realm string) bool {
-
+func (gh *gitHandler) basicAuth(realm string) (string, string, bool) {
 	user, pass, ok := gh.r.BasicAuth()
 
-	sphjwt := model.SelectPasswordHashAndJWTTokenStruct{
-		Username: user,
-	}
-	sphjwtr := model.SelectPasswordHashAndJWTToken(gh.db, sphjwt)
-
-	isPasswordValid := CheckPasswordHash(pass, sphjwtr.PasswordHash)
-
-	if !ok {
-		gh.repoNoAccess(realm)
-		return false
-	}
-
-	if isRepoPrivate := model.GetRepoType(gh.db, gh.reponame); isRepoPrivate && gh.rpc == "upload-pack" && isPasswordValid {
-		userID := model.GetUserIDFromUsername(gh.db, user)
-		repoID := model.GetRepoIDFromReponame(gh.db, gh.reponame)
-		if model.CheckRepoOwnerFromUserIDAndReponame(gh.db, userID, gh.reponame) {
-			return true
-		} else if model.CheckRepoMemberExistFromUserIDAndRepoID(gh.db, userID, repoID) {
-			permission := model.GetRepoMemberPermissionFromUserIDAndRepoID(gh.db, userID, repoID)
-			if permission == "read" || permission == "read/write" {
-				return true
-			}
-		}
-	} else {
-		gh.repoNoAccess(realm)
-		return false
-	}
-
-	if gh.rpc == "receive-pack" && isPasswordValid {
-		userID := model.GetUserIDFromUsername(gh.db, user)
-		repoID := model.GetRepoIDFromReponame(gh.db, gh.reponame)
-		if model.CheckRepoOwnerFromUserIDAndReponame(gh.db, userID, gh.reponame) {
-			return true
-		} else if model.CheckRepoMemberExistFromUserIDAndRepoID(gh.db, userID, repoID) {
-			permission := model.GetRepoMemberPermissionFromUserIDAndRepoID(gh.db, userID, repoID)
-			if permission == "read/write" {
-				return true
-			}
-		} else {
-			gh.w.Header().Set("WWW-Authenticate", `Basic realm="`+realm+`"`)
-			writeHdr(gh.w, http.StatusUnauthorized, "The repository cannot be accessed with your credentials.\n")
-			return false
-		}
-	} else {
-		gh.repoNoAccess(realm)
-		return false
-	}
-
-	gh.repoNoAccess(realm)
-	return false
+	return user, pass, ok
 }
 
-func (gh *gitHandler) repoNoAccess(realm string) {
-	gh.w.Header().Set("WWW-Authenticate", `Basic realm="`+realm+`"`)
-	writeHdr(gh.w, http.StatusUnauthorized, "The repository cannot be accessed with your credentials.\n")
+func (gh *gitHandler) processRepoAccess(rpc, realm string) bool {
+	isRepoPrivate := model.GetRepoType(gh.db, gh.reponame)
+
+	if isRepoPrivate && rpc == "upload-pack" {
+		username, password, ok := gh.basicAuth(realm)
+		if !ok {
+			return false
+		}
+
+		sphjwt := model.SelectPasswordHashAndJWTTokenStruct{
+			Username: username,
+		}
+		sphjwtr := model.SelectPasswordHashAndJWTToken(gh.db, sphjwt)
+
+		isPasswordValid := CheckPasswordHash(password, sphjwtr.PasswordHash)
+
+		if isPasswordValid {
+			userID := model.GetUserIDFromUsername(gh.db, username)
+			repoID := model.GetRepoIDFromReponame(gh.db, gh.reponame)
+			if model.CheckRepoOwnerFromUserIDAndReponame(gh.db, userID, gh.reponame) {
+				return true
+			} else if model.CheckRepoMemberExistFromUserIDAndRepoID(gh.db, userID, repoID) {
+				permission := model.GetRepoMemberPermissionFromUserIDAndRepoID(gh.db, userID, repoID)
+				if permission == "read" || permission == "read/write" {
+					return true
+				}
+			}
+		} else {
+			return false
+		}
+	} else if rpc == "upload-pack" {
+		return true
+	} else if rpc == "receive-pack" {
+		username, password, ok := gh.basicAuth(realm)
+		if !ok {
+			return false
+		}
+
+		sphjwt := model.SelectPasswordHashAndJWTTokenStruct{
+			Username: username,
+		}
+		sphjwtr := model.SelectPasswordHashAndJWTToken(gh.db, sphjwt)
+
+		isPasswordValid := CheckPasswordHash(password, sphjwtr.PasswordHash)
+
+		if isPasswordValid {
+			userID := model.GetUserIDFromUsername(gh.db, username)
+			repoID := model.GetRepoIDFromReponame(gh.db, gh.reponame)
+			if model.CheckRepoOwnerFromUserIDAndReponame(gh.db, userID, gh.reponame) {
+				return true
+			} else if model.CheckRepoMemberExistFromUserIDAndRepoID(gh.db, userID, repoID) {
+				permission := model.GetRepoMemberPermissionFromUserIDAndRepoID(gh.db, userID, repoID)
+				if permission == "read/write" {
+					return true
+				} else {
+					return false
+				}
+			} else {
+				return false
+			}
+		} else {
+			return false
+		}
+	}
+
+	return true
 }
 
 func getServiceType(r *http.Request) string {
@@ -166,73 +179,76 @@ func serviceReceivePack(gh gitHandler) {
 }
 
 func postServiceRPC(gh gitHandler, rpc string) {
-	if !gh.basicAuth("Please enter your username and password") {
-		return
-	}
-
-	if gh.r.Header.Get("Content-Type") != fmt.Sprintf("application/x-git-%s-request", rpc) {
-		gh.w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-
-	gh.w.Header().Set("Content-Type", fmt.Sprintf("application/x-git-%s-result", rpc))
-
-	var err error
-	reqBody := gh.r.Body
-
-	// Handle GZIP
-	if gh.r.Header.Get("Content-Encoding") == "gzip" {
-		reqBody, err = gzip.NewReader(reqBody)
-		if err != nil {
-			fmt.Printf("Fail to create gzip reader: %v", err)
-			gh.w.WriteHeader(http.StatusInternalServerError)
+	if gh.processRepoAccess(rpc, "Please enter your username and password") {
+		if gh.r.Header.Get("Content-Type") != fmt.Sprintf("application/x-git-%s-request", rpc) {
+			gh.w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
-	}
 
-	cmd := exec.Command("git", rpc, "--stateless-rpc", gh.dir)
+		gh.w.Header().Set("Content-Type", fmt.Sprintf("application/x-git-%s-result", rpc))
 
-	var stderr bytes.Buffer
+		var err error
+		reqBody := gh.r.Body
 
-	cmd.Dir = gh.dir
-	cmd.Stdin = reqBody
-	cmd.Stdout = gh.w
-	cmd.Stderr = &stderr
-	if err := cmd.Run(); err != nil {
-		fmt.Println(fmt.Sprintf("Fail to serve RPC(%s): %v - %s", rpc, err, stderr.String()))
-		return
-	}
+		// Handle GZIP
+		if gh.r.Header.Get("Content-Encoding") == "gzip" {
+			reqBody, err = gzip.NewReader(reqBody)
+			if err != nil {
+				fmt.Printf("Fail to create gzip reader: %v", err)
+				gh.w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+		}
 
-	if rpc == "receive-pack" {
-		go util.GenerateRefs(gh.refsPath, gh.repoPath, gh.repoGitName)
+		cmd := exec.Command("git", rpc, "--stateless-rpc", gh.dir)
+
+		var stderr bytes.Buffer
+
+		cmd.Dir = gh.dir
+		cmd.Stdin = reqBody
+		cmd.Stdout = gh.w
+		cmd.Stderr = &stderr
+		if err := cmd.Run(); err != nil {
+			fmt.Println(fmt.Sprintf("Fail to serve RPC(%s): %v - %s", rpc, err, stderr.String()))
+			return
+		}
+
+		if rpc == "receive-pack" {
+			go util.GenerateRefs(gh.refsPath, gh.repoPath, gh.repoGitName)
+		}
+	} else {
+		gh.w.Header().Set("WWW-Authenticate", "Basic realm=\".\"")
+		writeHdr(gh.w, http.StatusUnauthorized, "The repository cannot be accessed with your credentials.\n")
 	}
 }
 
 func getInfoRefs(gh gitHandler) {
 	gh.hdrNocache()
 
-	if !gh.basicAuth("Please enter your username and password") {
-		return
-	}
-
 	rpc := getServiceType(gh.r)
 
-	if rpc != "upload-pack" && rpc != "receive-pack" {
-		gh := gitHandler{}
-		updateServerInfo(gh.dir)
-		gh.sendFile("text/plain; charset=utf-8")
-		return
-	}
+	if gh.processRepoAccess(rpc, "Please enter your username and password") {
 
-	refs := gitCommand(gh.dir, rpc, "--stateless-rpc", "--advertise-refs", ".")
-	gh.w.Header().Set("Content-Type", fmt.Sprintf("application/x-git-%s-advertisement", rpc))
-	gh.w.WriteHeader(http.StatusOK)
-	gh.w.Write(packetWrite("# service=git-" + rpc + "\n"))
-	gh.w.Write([]byte("0000"))
-	gh.w.Write(refs)
+		if rpc != "upload-pack" && rpc != "receive-pack" {
+			gh := gitHandler{}
+			updateServerInfo(gh.dir)
+			gh.sendFile("text/plain; charset=utf-8")
+			return
+		}
 
-	if rpc == "receive-pack" {
-		go util.GenerateRefs(gh.refsPath, gh.repoPath, gh.repoGitName)
+		refs := gitCommand(gh.dir, rpc, "--stateless-rpc", "--advertise-refs", ".")
+		gh.w.Header().Set("Content-Type", fmt.Sprintf("application/x-git-%s-advertisement", rpc))
+		gh.w.WriteHeader(http.StatusOK)
+		gh.w.Write(packetWrite("# service=git-" + rpc + "\n"))
+		gh.w.Write([]byte("0000"))
+		gh.w.Write(refs)
+
+		if rpc == "receive-pack" {
+			go util.GenerateRefs(gh.refsPath, gh.repoPath, gh.repoGitName)
+		}
+	} else {
+		gh.w.Header().Set("WWW-Authenticate", "Basic realm=\".\"")
+		writeHdr(gh.w, http.StatusUnauthorized, "The repository cannot be accessed with your credentials.\n")
 	}
 }
 
