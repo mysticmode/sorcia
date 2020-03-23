@@ -155,8 +155,8 @@ type IndexPageResponse struct {
 	HeaderActiveMenu string
 	SorciaVersion    string
 	CanCreateRepo    bool
-	Repos            *model.GetReposFromUserIDResponse
-	AllPublicRepos   *model.GetAllPublicReposResponse
+	Repos            model.GetReposStruct
+	AllPublicRepos   model.GetAllPublicReposResponse
 	SiteSettings     util.SiteSettings
 }
 
@@ -167,7 +167,17 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.B
 	if userPresent == "true" {
 		token := w.Header().Get("sorcia-cookie-token")
 		userID := model.GetUserIDFromToken(db, token)
-		repos := model.GetReposFromUserID(db, userID)
+
+		var reposAsMember model.GetReposStruct
+		var repoAsMember model.RepoDetailStruct
+
+		reposAsMember = model.GetReposFromUserID(db, userID)
+
+		repoIDs := model.GetRepoIDsOnRepoMembersUsingUserID(db, userID)
+		for _, repoID := range repoIDs {
+			repoAsMember = model.GetRepoFromRepoID(db, repoID)
+			reposAsMember.Repositories = append(reposAsMember.Repositories, repoAsMember)
+		}
 
 		layoutPage := path.Join("./templates", "layout.html")
 		headerPage := path.Join("./templates", "header.html")
@@ -185,7 +195,7 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.B
 			HeaderActiveMenu: "",
 			SorciaVersion:    conf.Version,
 			CanCreateRepo:    model.CheckifUserCanCreateRepo(db, userID),
-			Repos:            repos,
+			Repos:            reposAsMember,
 			SiteSettings:     util.GetSiteSettings(db, conf),
 		}
 

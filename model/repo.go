@@ -133,6 +133,23 @@ func GetRepoMembers(db *sql.DB, repoID int) GetRepoMembersStruct {
 	return grms
 }
 
+// GetRepoIDsOnRepoMembersUsingUserID ...
+func GetRepoIDsOnRepoMembersUsingUserID(db *sql.DB, userID int) []int {
+	rows, err := db.Query("SELECT repo_id FROM repository_members WHERE user_id = ?", userID)
+	errorhandler.CheckError("Error on model get repoids on repomembers using user id", err)
+
+	var repoIDs []int
+	var repoID int
+	for rows.Next() {
+		err := rows.Scan(&repoID)
+		errorhandler.CheckError("Error on model get repoids on repomembers using user id rows scan", err)
+
+		repoIDs = append(repoIDs, repoID)
+	}
+
+	return repoIDs
+}
+
 // GetRepoMemberIDFromUserID ...
 func GetRepoMemberIDFromUserID(db *sql.DB, userID int) []int {
 	rows, err := db.Query("SELECT id FROM repository_members WHERE user_id = ?", userID)
@@ -161,44 +178,25 @@ func DeleteRepoMemberByID(db *sql.DB, id int) {
 	errorhandler.CheckError("Error on model delete repository_member by id exec", err)
 }
 
-// GetReposFromUserIDResponse struct
-type GetReposFromUserIDResponse struct {
-	Repositories []ReposDetailStruct
+// GetReposStruct struct
+type GetReposStruct struct {
+	Repositories []RepoDetailStruct
 }
 
 // ReposDetailStruct struct
-type ReposDetailStruct struct {
+type RepoDetailStruct struct {
 	Name        string
 	Description string
 	IsPrivate   string
 }
 
-// GetReponamesFromUserID ...
-func GetReponamesFromUserID(db *sql.DB, userID int) GetReposFromUserIDResponse {
-	rows, err := db.Query("SELECT name FROM repository WHERE user_id = ?", userID)
-	errorhandler.CheckError("Error on model get reponames from user id", err)
-
-	var grfur GetReposFromUserIDResponse
-	var rds ReposDetailStruct
-
-	for rows.Next() {
-		err = rows.Scan(&rds.Name)
-		errorhandler.CheckError("Error on model get repos from user id rows scan", err)
-
-		grfur.Repositories = append(grfur.Repositories, rds)
-	}
-	rows.Close()
-
-	return grfur
-}
-
 // GetReposFromUserID ...
-func GetReposFromUserID(db *sql.DB, userID int) *GetReposFromUserIDResponse {
+func GetReposFromUserID(db *sql.DB, userID int) GetReposStruct {
 	rows, err := db.Query("SELECT name, description, is_private FROM repository WHERE user_id = ?", userID)
 	errorhandler.CheckError("Error on model get repos from user id", err)
 
-	var grfur GetReposFromUserIDResponse
-	var rds ReposDetailStruct
+	var grfur GetReposStruct
+	var rds RepoDetailStruct
 
 	for rows.Next() {
 		err = rows.Scan(&rds.Name, &rds.Description, &rds.IsPrivate)
@@ -208,26 +206,23 @@ func GetReposFromUserID(db *sql.DB, userID int) *GetReposFromUserIDResponse {
 	}
 	rows.Close()
 
-	rows, err = db.Query("SELECT name, description FROM repository WHERE is_private = ?", false)
-	errorhandler.CheckError("Error on model get repos from userID --public-- repos", err)
+	return grfur
+}
+
+// GetReposFromRepoID ...
+func GetRepoFromRepoID(db *sql.DB, repoID int) RepoDetailStruct {
+	rows, err := db.Query("SELECT name, description, is_private FROM repository WHERE id = ?", repoID)
+	errorhandler.CheckError("Error on model get repos from user id", err)
+
+	var rds RepoDetailStruct
 
 	for rows.Next() {
-		err = rows.Scan(&rds.Name, &rds.Description)
-		errorhandler.CheckError("Error on model get repos from userID --public-- repos rows scan", err)
-		rds.IsPrivate = "false"
-		if len(grfur.Repositories) == 0 {
-			grfur.Repositories = append(grfur.Repositories, rds)
-		} else {
-			for _, repo := range grfur.Repositories {
-				if repo.Name != rds.Name {
-					grfur.Repositories = append(grfur.Repositories, rds)
-				}
-			}
-		}
+		err = rows.Scan(&rds.Name, &rds.Description, &rds.IsPrivate)
+		errorhandler.CheckError("Error on model get repos from user id rows scan", err)
 	}
 	rows.Close()
 
-	return &grfur
+	return rds
 }
 
 type GetAllPublicReposResponse struct {
@@ -240,7 +235,7 @@ type ReposDetail struct {
 }
 
 // GetAllPublicRepos ...
-func GetAllPublicRepos(db *sql.DB) *GetAllPublicReposResponse {
+func GetAllPublicRepos(db *sql.DB) GetAllPublicReposResponse {
 	rows, err := db.Query("SELECT name, description FROM repository WHERE is_private = ?", false)
 	errorhandler.CheckError("Error on model get all public repos", err)
 
@@ -255,7 +250,7 @@ func GetAllPublicRepos(db *sql.DB) *GetAllPublicReposResponse {
 	}
 	rows.Close()
 
-	return &grfur
+	return grfur
 }
 
 // GetRepoDescriptionFromRepoName ...

@@ -132,7 +132,7 @@ func deleteUser(db *sql.DB, conf *setting.BaseStruct) {
 
 		if userID > 0 {
 
-			rds := model.GetReponamesFromUserID(db, userID)
+			rds := model.GetReposFromUserID(db, userID)
 
 			for _, repo := range rds.Repositories {
 				refsPattern := filepath.Join(conf.Paths.RefsPath, repo.Name+"*")
