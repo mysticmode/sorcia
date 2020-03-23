@@ -9,14 +9,17 @@
     </div>
     <div class="repo__menu">
         <a href="" class="repo__menu__item repo__menu__item--active">summary</a>
+        {{if eq .RepoEmpty false}}
         <a href="/r/{{ .Reponame }}/tree/master" class="repo__menu__item">tree</a>
         <a href="/r/{{ .Reponame }}/log/master" class="repo__menu__item">log</a>
         <a href="/r/{{ .Reponame }}/refs" class="repo__menu__item">refs</a>
         <a href="/r/{{ .Reponame }}/contributors" class="repo__menu__item">contributors</a>
+        {{end}}
         {{if .IsLoggedIn}}
             <a href="/r/{{ .Reponame }}/meta" class="repo__menu__item">meta</a>
         {{end}}
     </div>
+    {{if eq .RepoEmpty false}}
     <div class="repo__sub-menu">
         <a href="/r/{{ .Reponame }}/log/master" class="repo__sub-menu__item">{{.TotalCommits}} commits</a>
         <p class="repo__sub-menu__bullet">&bull;</p>
@@ -24,7 +27,9 @@
         <p class="repo__sub-menu__bullet">&bull;</p>
         <a href="/r/{{ .Reponame }}/contributors" class="repo__sub-menu__item">{{.Contributors.Total}} contributors</a>
     </div>
+    {{end}}
     <div class="repo__summary">
+        {{if eq .RepoEmpty false}}
         <div class="repo__summary__left">
             <ul class="repo__latest-commits">
                 {{range .RepoLogs.History}}
@@ -38,6 +43,7 @@
                 {{end}}
             </ul>
         </div>
+        {{end}}
         <div class="repo__summary__right">
             <div class="repo__owner">
                 <div class="repo__owner__title">owner</div>

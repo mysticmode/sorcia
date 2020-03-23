@@ -197,6 +197,7 @@ type GetRepoResponse struct {
 	RepoDescription    string
 	IsRepoPrivate      bool
 	RepoAccess         bool
+	RepoEmpty          bool
 	RepoMembers        model.GetRepoMembersStruct
 	Host               string
 	SSHClone           string
@@ -314,8 +315,7 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.B
 	}
 
 	if totalCommits == "" {
-		writeRepoResponse(w, r, db, reponame, "repo-summary-empty.html", data)
-		return
+		data.RepoEmpty = true
 	}
 
 	data.RepoDetail.Readme = processREADME(repoDir)
@@ -389,6 +389,10 @@ func GetRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 	if !data.IsLoggedIn && data.IsRepoPrivate {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
+	}
+
+	if util.GetCommitCounts(conf.Paths.RepoPath, reponame) == "" {
+		data.RepoEmpty = true
 	}
 
 	writeRepoResponse(w, r, db, reponame, "repo-meta.html", data)
@@ -663,6 +667,11 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 		return
 	}
 
+	if util.GetCommitCounts(conf.Paths.RepoPath, reponame) == "" {
+		http.Redirect(w, r, "/r/"+reponame, http.StatusFound)
+		return
+	}
+
 	userPresent := w.Header().Get("user-present")
 	var loggedInUserID int
 	if userPresent == "true" {
@@ -717,6 +726,11 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 
 	if repoExists := model.CheckRepoExists(db, reponame); !repoExists {
 		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	if util.GetCommitCounts(conf.Paths.RepoPath, reponame) == "" {
+		http.Redirect(w, r, "/r/"+reponame, http.StatusFound)
 		return
 	}
 
@@ -961,6 +975,11 @@ func GetRepoLog(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *settin
 		return
 	}
 
+	if util.GetCommitCounts(conf.Paths.RepoPath, reponame) == "" {
+		http.Redirect(w, r, "/r/"+reponame, http.StatusFound)
+		return
+	}
+
 	userPresent := w.Header().Get("user-present")
 	var loggedInUserID int
 	if userPresent == "true" {
@@ -1012,6 +1031,11 @@ func GetRepoRefs(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 
 	if repoExists := model.CheckRepoExists(db, reponame); !repoExists {
 		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	if util.GetCommitCounts(conf.Paths.RepoPath, reponame) == "" {
+		http.Redirect(w, r, "/r/"+reponame, http.StatusFound)
 		return
 	}
 
@@ -1115,6 +1139,11 @@ func GetRepoContributors(w http.ResponseWriter, r *http.Request, db *sql.DB, con
 		return
 	}
 
+	if util.GetCommitCounts(conf.Paths.RepoPath, reponame) == "" {
+		http.Redirect(w, r, "/r/"+reponame, http.StatusFound)
+		return
+	}
+
 	userPresent := w.Header().Get("user-present")
 	var loggedInUserID int
 	if userPresent == "true" {
@@ -1181,6 +1210,11 @@ func GetCommitDetail(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 
 	if repoExists := model.CheckRepoExists(db, reponame); !repoExists {
 		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	if util.GetCommitCounts(conf.Paths.RepoPath, reponame) == "" {
+		http.Redirect(w, r, "/r/"+reponame, http.StatusFound)
 		return
 	}
 
