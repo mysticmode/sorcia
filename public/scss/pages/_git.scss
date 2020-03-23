@@ -553,12 +553,16 @@
             }
         }
 
+        & .hljs {
+            line-height: 0;
+        }
+
         & .green {
-            background-color: #c1f0d0;
+            background-color: #e2fdeb;
         }
 
         & .red {
-            background-color: #f2c4c4;
+            background-color: #ffe1e1;
         }
     }
 }
