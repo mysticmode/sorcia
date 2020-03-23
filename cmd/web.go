@@ -156,13 +156,14 @@ type IndexPageResponse struct {
 	SorciaVersion    string
 	CanCreateRepo    bool
 	Repos            model.GetReposStruct
-	AllPublicRepos   model.GetAllPublicReposResponse
 	SiteSettings     util.SiteSettings
 }
 
 // GetHome ...
 func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
 	userPresent := w.Header().Get("user-present")
+
+	repos := model.GetAllPublicRepos(db)
 
 	if userPresent == "true" {
 		token := w.Header().Get("sorcia-cookie-token")
@@ -177,6 +178,23 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.B
 		for _, repoID := range repoIDs {
 			repoAsMember = model.GetRepoFromRepoID(db, repoID)
 			reposAsMember.Repositories = append(reposAsMember.Repositories, repoAsMember)
+		}
+
+		repoExistCount := 0
+
+		if len(reposAsMember.Repositories) > 0 {
+			for _, repo := range reposAsMember.Repositories {
+				repoExistCount = 0
+				for _, publicRepo := range repos.Repositories {
+					if publicRepo.Name == repo.Name {
+						repoExistCount = 1
+					}
+				}
+
+				if repoExistCount == 0 {
+					repos.Repositories = append(repos.Repositories, repo)
+				}
+			}
 		}
 
 		layoutPage := path.Join("./templates", "layout.html")
@@ -195,7 +213,7 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.B
 			HeaderActiveMenu: "",
 			SorciaVersion:    conf.Version,
 			CanCreateRepo:    model.CheckifUserCanCreateRepo(db, userID),
-			Repos:            reposAsMember,
+			Repos:            repos,
 			SiteSettings:     util.GetSiteSettings(db, conf),
 		}
 
@@ -209,7 +227,6 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.B
 		headerPage := path.Join("./templates", "header.html")
 		indexPage := path.Join("./templates", "index.html")
 		footerPage := path.Join("./templates", "footer.html")
-		repos := model.GetAllPublicRepos(db)
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, indexPage, footerPage)
 		errorhandler.CheckError("Error on template parse", err)
@@ -218,11 +235,11 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.B
 		w.WriteHeader(http.StatusOK)
 
 		data := IndexPageResponse{
-			IsLoggedIn:     false,
-			ShowLoginMenu:  true,
-			SorciaVersion:  conf.Version,
-			AllPublicRepos: repos,
-			SiteSettings:   util.GetSiteSettings(db, conf),
+			IsLoggedIn:    false,
+			ShowLoginMenu: true,
+			SorciaVersion: conf.Version,
+			Repos:         repos,
+			SiteSettings:  util.GetSiteSettings(db, conf),
 		}
 
 		tmpl.ExecuteTemplate(w, "layout", data)
