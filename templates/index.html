@@ -30,7 +30,7 @@
     <div class="git__repos" style="width: 100%;">
         <div class="git__repos__title">repositories</div>
         <ul class="repos">
-            {{range .AllPublicRepos.Repositories}}
+            {{range .Repos.Repositories}}
             <li>
                 <a href="/r/{{.Name}}">{{.Name}}</a>
                 <p>{{.Description}}</p>

@@ -225,22 +225,13 @@ func GetRepoFromRepoID(db *sql.DB, repoID int) RepoDetailStruct {
 	return rds
 }
 
-type GetAllPublicReposResponse struct {
-	Repositories []ReposDetail
-}
-
-type ReposDetail struct {
-	Name        string
-	Description string
-}
-
 // GetAllPublicRepos ...
-func GetAllPublicRepos(db *sql.DB) GetAllPublicReposResponse {
+func GetAllPublicRepos(db *sql.DB) GetReposStruct {
 	rows, err := db.Query("SELECT name, description FROM repository WHERE is_private = ?", false)
 	errorhandler.CheckError("Error on model get all public repos", err)
 
-	var grfur GetAllPublicReposResponse
-	var rds ReposDetail
+	var grfur GetReposStruct
+	var rds RepoDetailStruct
 
 	for rows.Next() {
 		err = rows.Scan(&rds.Name, &rds.Description)
