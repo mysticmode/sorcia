@@ -94,9 +94,10 @@ func (gh *gitHandler) processRepoAccess(rpc, realm string) bool {
 				permission := model.GetRepoMemberPermissionFromUserIDAndRepoID(gh.db, userID, repoID)
 				if permission == "read/write" {
 					return true
-				} else {
-					return false
 				}
+
+				return false
+
 			} else {
 				return false
 			}

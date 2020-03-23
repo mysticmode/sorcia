@@ -1235,6 +1235,7 @@ func GetCommitDetail(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 
 	data := GetRepoResponse{
 		SiteSettings:     util.GetSiteSettings(db, conf),
+		SiteStyle:        model.GetSiteStyle(db),
 		IsLoggedIn:       checkUserLoggedIn(w),
 		ShowLoginMenu:    true,
 		HeaderActiveMenu: "",
