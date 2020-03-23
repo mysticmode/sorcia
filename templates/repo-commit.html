@@ -52,10 +52,18 @@
                 </div>
                 <div class="repo-commit__code-line">
                     <div>{{.Ampersand}}</div>
-                    <pre><code>{{.CodeLines}}</code>
+                    <pre><code class="{{.FileExt}}">{{.CodeLines}}</code></pre>
                 </div>
             {{end}}
         </div>
     </div>
+    {{if eq .SiteStyle "dark"}}
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/railscasts.min.css">
+    {{else}}
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/github.min.css">
+    {{end}}
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.7.0/highlightjs-line-numbers.min.js"></script>
+    <script src="/public/js/codelines-selection.js"></script>
 </main>
 {{end}}
