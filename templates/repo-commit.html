@@ -52,7 +52,7 @@
                 </div>
                 <div class="repo-commit__code-line">
                     {{range .Ampersands}}
-                    <div>{{.Ampersand}}</div>
+                    {{.Ampersand}}
                     <pre><code class="{{.FileExt}}">{{.CodeLines}}</code></pre>
                     {{end}}
                 </div>

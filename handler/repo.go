@@ -1200,7 +1200,7 @@ type CommitFile struct {
 
 // CommitAmpersand struct
 type CommitAmpersand struct {
-	Ampersand string
+	Ampersand template.HTML
 	CodeLines template.HTML
 	FileExt   string
 }
@@ -1306,18 +1306,26 @@ func GetCommitDetail(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 			}
 
 			if strings.HasPrefix(ts, "@@") {
-				ca.Ampersand = ts
-				codeLines := []string{}
+				ts = fmt.Sprintf("<div>%s</div>", ts)
+				ca.Ampersand = template.HTML(ts)
+				codeLines := ""
 				for j, newLine := range lines[i+1:] {
 					if strings.HasPrefix(newLine, "@@") {
-						ca.CodeLines = template.HTML(template.HTMLEscaper(strings.Join(codeLines, "\n")))
+						ca.CodeLines = template.HTML(codeLines)
 						cf.Ampersands = append(cf.Ampersands, ca)
-						ca.Ampersand = newLine
-						codeLines = []string{}
+						newLine = fmt.Sprintf("<div>%s</div>", newLine)
+						ca.Ampersand = template.HTML(newLine)
+						codeLines = ""
 					} else if j != len(lines[i+1:len(lines)-1]) {
-						codeLines = append(codeLines, newLine)
+						if strings.HasPrefix(newLine, "+") {
+							codeLines = fmt.Sprintf("%s\n<p class=\"green\">%s</p>", codeLines, template.HTMLEscaper(newLine))
+						} else if strings.HasPrefix(newLine, "-") {
+							codeLines = fmt.Sprintf("%s\n<p class=\"red\">%s</p>", codeLines, template.HTMLEscaper(newLine))
+						} else {
+							codeLines = fmt.Sprintf("%s\n<p>%s</p>", codeLines, template.HTMLEscaper(newLine))
+						}
 					} else {
-						ca.CodeLines = template.HTML(template.HTMLEscaper(strings.Join(codeLines, "\n")))
+						ca.CodeLines = template.HTML(codeLines)
 						cf.Ampersands = append(cf.Ampersands, ca)
 					}
 				}
