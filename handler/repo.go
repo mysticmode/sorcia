@@ -1193,6 +1193,7 @@ type CommitDetailStruct struct {
 // CommitFile struct
 type CommitFile struct {
 	Filename     string
+	FileExt      string
 	State        string
 	PreviousHash string
 	Ampersand    string
@@ -1275,6 +1276,12 @@ func GetCommitDetail(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 	for _, file := range lines[1:] {
 		cf.State = strings.Fields(file)[0]
 		cf.Filename = strings.Fields(file)[1]
+
+		fileDotSplit := strings.Split(cf.Filename, ".")
+		cf.FileExt = "plaintext"
+		if len(fileDotSplit) > 1 {
+			cf.FileExt = fileDotSplit[1]
+		}
 
 		args := []string{"show", commitHash, commitHash, "--pretty=format:", "--full-index", "--", cf.Filename}
 		out := util.ForkExec(gitPath, args, repoDir)
