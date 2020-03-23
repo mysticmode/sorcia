@@ -51,8 +51,10 @@
                     </div>
                 </div>
                 <div class="repo-commit__code-line">
+                    {{range .Ampersands}}
                     <div>{{.Ampersand}}</div>
                     <pre><code class="{{.FileExt}}">{{.CodeLines}}</code></pre>
+                    {{end}}
                 </div>
             {{end}}
         </div>
@@ -63,7 +65,13 @@
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/github.min.css">
     {{end}}
     <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.7.0/highlightjs-line-numbers.min.js"></script>
-    <script src="/public/js/codelines-selection.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+
+document.querySelectorAll('pre code').forEach((block) => {
+    hljs.highlightBlock(block);
+});
+});
+    </script>
 </main>
 {{end}}

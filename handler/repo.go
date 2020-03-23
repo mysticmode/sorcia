@@ -1193,11 +1193,16 @@ type CommitDetailStruct struct {
 // CommitFile struct
 type CommitFile struct {
 	Filename     string
-	FileExt      string
 	State        string
 	PreviousHash string
-	Ampersand    string
-	CodeLines    template.HTML
+	Ampersands   []CommitAmpersand
+}
+
+// CommitAmpersand struct
+type CommitAmpersand struct {
+	Ampersand string
+	CodeLines template.HTML
+	FileExt   string
 }
 
 // GetCommitDetail ...
@@ -1272,39 +1277,52 @@ func GetCommitDetail(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 		cds.Date = ss[3]
 	}
 
-	var cf CommitFile
 	for _, file := range lines[1:] {
+		cf := CommitFile{}
+		ca := CommitAmpersand{}
+
 		cf.State = strings.Fields(file)[0]
 		cf.Filename = strings.Fields(file)[1]
 
 		fileDotSplit := strings.Split(cf.Filename, ".")
-		cf.FileExt = "plaintext"
+		ca.FileExt = "plaintext"
 		if len(fileDotSplit) > 1 {
-			cf.FileExt = fileDotSplit[1]
+			ca.FileExt = fileDotSplit[1]
 		}
 
 		args := []string{"show", commitHash, commitHash, "--pretty=format:", "--full-index", "--", cf.Filename}
 		out := util.ForkExec(gitPath, args, repoDir)
 
 		lines = strings.Split(out, "\n")
-		// Remove empty last line
-		lines = lines[:len(lines)-1]
 
 		// Get PreviousHash and Ampersand
 		for i, line := range lines {
 			ts := strings.TrimSpace(line)
+
 			if strings.HasPrefix(ts, fmt.Sprintf("diff --git a/%s b/%s", cf.Filename, cf.Filename)) {
 				indexSplit := strings.Fields(strings.TrimSpace(lines[i+1]))
 				cf.PreviousHash = strings.Split(indexSplit[1], "..")[0]
 			}
 
 			if strings.HasPrefix(ts, "@@") {
-				cf.Ampersand = ts
+				ca.Ampersand = ts
+				codeLines := []string{}
+				for j, newLine := range lines[i+1:] {
+					if strings.HasPrefix(newLine, "@@") {
+						ca.CodeLines = template.HTML(template.HTMLEscaper(strings.Join(codeLines, "\n")))
+						cf.Ampersands = append(cf.Ampersands, ca)
+						ca.Ampersand = newLine
+						codeLines = []string{}
+					} else if j != len(lines[i+1:len(lines)-1]) {
+						codeLines = append(codeLines, newLine)
+					} else {
+						ca.CodeLines = template.HTML(template.HTMLEscaper(strings.Join(codeLines, "\n")))
+						cf.Ampersands = append(cf.Ampersands, ca)
+					}
+				}
+				break
 			}
 		}
-
-		line := strings.Join(lines[5:], "\n")
-		cf.CodeLines = template.HTML(template.HTMLEscaper(line))
 
 		cds.Files = append(cds.Files, cf)
 	}
