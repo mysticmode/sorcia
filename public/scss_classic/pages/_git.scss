@@ -560,6 +560,18 @@
             }
         }
     }
+
+    & .hljs {
+        line-height: 0;
+    }
+
+    & .green {
+        background-color: #e2fdeb;
+    }
+
+    & .red {
+        background-color: #ffe1e1;
+    }
 }
 
 .repo__meta {
