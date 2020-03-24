@@ -1,12 +1,26 @@
 .file-viewer {
     & code {
         line-height: 22px;
+        background: $hljs-bg !important;
         overflow-x: auto !important;
+        border: 1px solid $brand-border;
+        padding: 10px;
 
         & tr {
             &.hljs-selection {
                 background: $hljs-selection;
             }
         }
+    }
+
+    & .hljs {
+        background: $hljs-bg !important;
+        color: $text-color;
+        padding: 0;
+        overflow: hidden;
+    }
+
+    & .hljs-ln-numbers {
+        color: $hljs-ln-color;
     }
 }

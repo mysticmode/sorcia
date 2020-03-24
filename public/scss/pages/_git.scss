@@ -346,18 +346,6 @@
     }
 }
 
-.file-viewer {
-    border: 1px solid $brand-border;
-    padding: 10px;
-
-    & .hljs {
-        background: white;
-        color: $text-color;
-        padding: 0;
-        overflow: hidden;
-    }
-}
-
 .repo-refs {
     &__info {
         background: $brand-bg-1;
