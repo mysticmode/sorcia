@@ -155,8 +155,22 @@ type IndexPageResponse struct {
 	HeaderActiveMenu string
 	SorciaVersion    string
 	CanCreateRepo    bool
-	Repos            model.GetReposStruct
+	Repos            GetReposStruct
 	SiteSettings     util.SiteSettings
+}
+
+// GetReposStruct struct
+type GetReposStruct struct {
+	Repositories []RepoDetailStruct
+}
+
+// ReposDetailStruct struct
+type RepoDetailStruct struct {
+	ID          int
+	Name        string
+	Description string
+	IsPrivate   bool
+	Permission  string
 }
 
 // GetHome ...
@@ -164,10 +178,28 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.B
 	userPresent := w.Header().Get("user-present")
 
 	repos := model.GetAllPublicRepos(db)
+	var grs GetReposStruct
 
 	if userPresent == "true" {
 		token := w.Header().Get("sorcia-cookie-token")
 		userID := model.GetUserIDFromToken(db, token)
+
+		for _, repo := range repos.Repositories {
+			rd := RepoDetailStruct{
+				ID:          repo.ID,
+				Name:        repo.Name,
+				Description: repo.Description,
+				IsPrivate:   repo.IsPrivate,
+				Permission:  repo.Permission,
+			}
+			if model.CheckRepoMemberExistFromUserIDAndRepoID(db, userID, repo.ID) {
+				rd.Permission = model.GetRepoMemberPermissionFromUserIDAndRepoID(db, userID, repo.ID)
+			} else if model.CheckRepoOwnerFromUserIDAndReponame(db, userID, repo.Name) {
+				rd.Permission = "read/write"
+			}
+
+			grs.Repositories = append(grs.Repositories, rd)
+		}
 
 		var reposAsMember model.GetReposStruct
 		var repoAsMember model.RepoDetailStruct
@@ -180,20 +212,29 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.B
 			reposAsMember.Repositories = append(reposAsMember.Repositories, repoAsMember)
 		}
 
-		repoExistCount := 0
+		for _, repo := range reposAsMember.Repositories {
+			repoExistCount := 0
+			for _, publicRepo := range grs.Repositories {
+				if publicRepo.Name == repo.Name {
+					repoExistCount = 1
+				}
+			}
 
-		if len(reposAsMember.Repositories) > 0 {
-			for _, repo := range reposAsMember.Repositories {
-				repoExistCount = 0
-				for _, publicRepo := range repos.Repositories {
-					if publicRepo.Name == repo.Name {
-						repoExistCount = 1
-					}
+			if repoExistCount == 0 {
+				rd := RepoDetailStruct{
+					ID:          repo.ID,
+					Name:        repo.Name,
+					Description: repo.Description,
+					IsPrivate:   repo.IsPrivate,
+					Permission:  repo.Permission,
+				}
+				if model.CheckRepoMemberExistFromUserIDAndRepoID(db, userID, repo.ID) {
+					rd.Permission = model.GetRepoMemberPermissionFromUserIDAndRepoID(db, userID, repo.ID)
+				} else if model.CheckRepoOwnerFromUserIDAndReponame(db, userID, repo.Name) {
+					rd.Permission = "read/write"
 				}
 
-				if repoExistCount == 0 {
-					repos.Repositories = append(repos.Repositories, repo)
-				}
+				grs.Repositories = append(grs.Repositories, rd)
 			}
 		}
 
@@ -213,7 +254,7 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.B
 			HeaderActiveMenu: "",
 			SorciaVersion:    conf.Version,
 			CanCreateRepo:    model.CheckifUserCanCreateRepo(db, userID),
-			Repos:            repos,
+			Repos:            grs,
 			SiteSettings:     util.GetSiteSettings(db, conf),
 		}
 
@@ -238,7 +279,7 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.B
 			IsLoggedIn:    false,
 			ShowLoginMenu: true,
 			SorciaVersion: conf.Version,
-			Repos:         repos,
+			Repos:         grs,
 			SiteSettings:  util.GetSiteSettings(db, conf),
 		}
 

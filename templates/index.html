@@ -20,7 +20,18 @@
         <ul class="repos">
             {{range .Repos.Repositories}}
             <li>
-                <a href="/r/{{.Name}}"><p>{{.Name}}</p>{{if eq .IsPrivate "true"}}<i>private</i>{{end}}</a>
+                <a href="/r/{{.Name}}">
+                    <p>{{.Name}}</p>
+                    {{if .IsPrivate}}<i>private</i>{{end}}
+                    {{if eq .Permission "read"}}<i>read</i>{{end}}
+                    {{if eq .Permission "read/write"}}<i>read/write</i>{{end}}
+                    {{if not .IsPrivate}}
+                        {{if eq .Permission "read/write"}}
+                        {{else}}
+                        <i>read</i>
+                        {{end}}
+                    {{end}}
+                </a>
                 <p>{{.Description}}</p>
             </li>
             {{end}}
