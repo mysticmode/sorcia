@@ -264,6 +264,18 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.B
 			http.Redirect(w, r, "/login", http.StatusFound)
 			return
 		}
+
+		for _, repo := range repos.Repositories {
+			rd := RepoDetailStruct{
+				ID:          repo.ID,
+				Name:        repo.Name,
+				Description: repo.Description,
+				IsPrivate:   repo.IsPrivate,
+				Permission:  repo.Permission,
+			}
+			grs.Repositories = append(grs.Repositories, rd)
+		}
+
 		layoutPage := path.Join("./templates", "layout.html")
 		headerPage := path.Join("./templates", "header.html")
 		indexPage := path.Join("./templates", "index.html")
