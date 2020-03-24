@@ -22,6 +22,7 @@
             <li>
                 <a href="/r/{{.Name}}">
                     <p>{{.Name}}</p>
+                    {{if .IsLoggedIn}}
                     {{if .IsPrivate}}<i>private</i>{{end}}
                     {{if eq .Permission "read"}}<i>read</i>{{end}}
                     {{if eq .Permission "read/write"}}<i>read/write</i>{{end}}
@@ -30,6 +31,7 @@
                         {{else}}
                         <i>read</i>
                         {{end}}
+                    {{end}}
                     {{end}}
                 </a>
                 <p>{{.Description}}</p>
