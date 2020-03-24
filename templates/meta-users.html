@@ -29,14 +29,34 @@
         {{end}}
         <div class="meta__users">
             <div class="meta__users__title">users</div>
-            {{range .Users.Users}}
-            <div class="meta__users__item">
-                <div>Username {{if .IsAdmin}} [Admin] {{end}}</div>
-                <p>{{.Username}}</p>
-                {{if .CanCreateRepo}}
-                <p>This user can create repo. In order to revoke this - you have to ask the server/sys admin.</p>
+            {{if .IsAdmin}}
+                {{range .Users.Users}}
+                <div class="meta__users__item">
+                    <div>Username {{if .IsAdmin}} [Admin] {{end}}</div>
+                    <p>{{.Username}}</p>
+                    {{if .CanCreateRepo}}
+                        <p class="create-repo-access">This user can create repositories.</p>
+                    {{end}}
+                    {{if not .IsAdmin}}
+                    <div class="meta__users__item__buttons">
+                        {{if .CanCreateRepo}}
+                        <a href="" class="button button--danger">Revoke access</a>
+                        {{end}}
+                        <a href="" class="button button--danger">Delete user</a>
+                    </div>
+                    {{end}}
+                </div>
                 {{end}}
-            </div>
+            {{else}}
+            {{range .Users.Users}}
+                <div class="meta__users__item">
+                    <div>Username {{if .IsAdmin}} [Admin] {{end}}</div>
+                    <p>{{.Username}}</p>
+                    {{if .CanCreateRepo}}
+                        <p class="create-repo-access">This user can create repositories.</p>
+                    {{end}}
+                </div>
+                {{end}}
             {{end}}
         </div>
     </div>

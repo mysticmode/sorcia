@@ -60,6 +60,21 @@
 
             & p {
                 margin-bottom: 10px;
+
+                &.create-repo-access {
+                    display: flex;
+                    align-items: center;
+
+                    & a {
+                        margin-left: 10px;
+                    }
+                }
+            }
+
+            &__buttons {
+                & a {
+                    margin-right: 20px;
+                }
             }
 
             & a {
