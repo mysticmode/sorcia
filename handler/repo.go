@@ -197,6 +197,7 @@ type GetRepoResponse struct {
 	RepoDescription    string
 	IsRepoPrivate      bool
 	RepoAccess         bool
+	RepoPermission     string
 	RepoEmpty          bool
 	RepoMembers        model.GetRepoMembersStruct
 	Host               string
@@ -286,6 +287,13 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.B
 	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
 	totalCommits := util.GetCommitCounts(conf.Paths.RepoPath, reponame)
 
+	var permission string
+	if model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame) {
+		permission = "read/write"
+	} else {
+		permission = model.GetRepoMemberPermissionFromUserIDAndRepoID(db, loggedInUserID, model.GetRepoIDFromReponame(db, reponame))
+	}
+
 	data := GetRepoResponse{
 		SiteSettings:     util.GetSiteSettings(db, conf),
 		IsLoggedIn:       checkUserLoggedIn(w),
@@ -297,6 +305,7 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.B
 		RepoDescription:  repoDescription,
 		IsRepoPrivate:    model.GetRepoType(db, reponame),
 		RepoAccess:       model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame),
+		RepoPermission:   permission,
 		Host:             r.Host,
 		TotalCommits:     totalCommits,
 	}
@@ -372,6 +381,13 @@ func GetRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 
 	grms := model.GetRepoMembers(db, repoID)
 
+	var permission string
+	if model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame) {
+		permission = "read/write"
+	} else {
+		permission = model.GetRepoMemberPermissionFromUserIDAndRepoID(db, loggedInUserID, model.GetRepoIDFromReponame(db, reponame))
+	}
+
 	data := GetRepoResponse{
 		SiteSettings:     util.GetSiteSettings(db, conf),
 		IsLoggedIn:       checkUserLoggedIn(w),
@@ -383,6 +399,7 @@ func GetRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 		RepoDescription:  repoDescription,
 		IsRepoPrivate:    model.GetRepoType(db, reponame),
 		RepoAccess:       model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame),
+		RepoPermission:   permission,
 		RepoMembers:      grms,
 	}
 
@@ -681,6 +698,13 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 
 	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
 
+	var permission string
+	if model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame) {
+		permission = "read/write"
+	} else {
+		permission = model.GetRepoMemberPermissionFromUserIDAndRepoID(db, loggedInUserID, model.GetRepoIDFromReponame(db, reponame))
+	}
+
 	data := GetRepoResponse{
 		SiteSettings:     util.GetSiteSettings(db, conf),
 		IsLoggedIn:       checkUserLoggedIn(w),
@@ -689,6 +713,7 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 		SorciaVersion:    conf.Version,
 		Reponame:         reponame,
 		RepoAccess:       model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame),
+		RepoPermission:   permission,
 		RepoDescription:  repoDescription,
 		IsRepoPrivate:    model.GetRepoType(db, reponame),
 		RepoBranches:     util.GetGitBranches(repoDir),
@@ -744,6 +769,13 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 	repoDir := filepath.Join(conf.Paths.RepoPath, reponame+".git")
 	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
 
+	var permission string
+	if model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame) {
+		permission = "read/write"
+	} else {
+		permission = model.GetRepoMemberPermissionFromUserIDAndRepoID(db, loggedInUserID, model.GetRepoIDFromReponame(db, reponame))
+	}
+
 	data := GetRepoResponse{
 		SiteSettings:     util.GetSiteSettings(db, conf),
 		IsLoggedIn:       checkUserLoggedIn(w),
@@ -752,6 +784,7 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 		SorciaVersion:    conf.Version,
 		Reponame:         reponame,
 		RepoAccess:       model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame),
+		RepoPermission:   permission,
 		RepoDescription:  repoDescription,
 		IsRepoBranch:     true,
 		IsRepoPrivate:    model.GetRepoType(db, reponame),
@@ -989,6 +1022,13 @@ func GetRepoLog(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *settin
 
 	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
 
+	var permission string
+	if model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame) {
+		permission = "read/write"
+	} else {
+		permission = model.GetRepoMemberPermissionFromUserIDAndRepoID(db, loggedInUserID, model.GetRepoIDFromReponame(db, reponame))
+	}
+
 	data := GetRepoResponse{
 		SiteSettings:     util.GetSiteSettings(db, conf),
 		IsLoggedIn:       checkUserLoggedIn(w),
@@ -997,6 +1037,7 @@ func GetRepoLog(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *settin
 		SorciaVersion:    conf.Version,
 		Reponame:         reponame,
 		RepoAccess:       model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame),
+		RepoPermission:   permission,
 		RepoDescription:  repoDescription,
 		IsRepoPrivate:    model.GetRepoType(db, reponame),
 		RepoBranches:     util.GetGitBranches(repoDir),
@@ -1048,6 +1089,13 @@ func GetRepoRefs(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 
 	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
 
+	var permission string
+	if model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame) {
+		permission = "read/write"
+	} else {
+		permission = model.GetRepoMemberPermissionFromUserIDAndRepoID(db, loggedInUserID, model.GetRepoIDFromReponame(db, reponame))
+	}
+
 	data := GetRepoResponse{
 		SiteSettings:     util.GetSiteSettings(db, conf),
 		IsLoggedIn:       checkUserLoggedIn(w),
@@ -1056,6 +1104,7 @@ func GetRepoRefs(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 		SorciaVersion:    conf.Version,
 		Reponame:         reponame,
 		RepoAccess:       model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame),
+		RepoPermission:   permission,
 		RepoDescription:  repoDescription,
 		IsRepoPrivate:    model.GetRepoType(db, reponame),
 	}
@@ -1153,6 +1202,13 @@ func GetRepoContributors(w http.ResponseWriter, r *http.Request, db *sql.DB, con
 
 	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
 
+	var permission string
+	if model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame) {
+		permission = "read/write"
+	} else {
+		permission = model.GetRepoMemberPermissionFromUserIDAndRepoID(db, loggedInUserID, model.GetRepoIDFromReponame(db, reponame))
+	}
+
 	data := GetRepoResponse{
 		SiteSettings:     util.GetSiteSettings(db, conf),
 		IsLoggedIn:       checkUserLoggedIn(w),
@@ -1161,6 +1217,7 @@ func GetRepoContributors(w http.ResponseWriter, r *http.Request, db *sql.DB, con
 		SorciaVersion:    conf.Version,
 		Reponame:         reponame,
 		RepoAccess:       model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame),
+		RepoPermission:   permission,
 		RepoDescription:  repoDescription,
 		IsRepoPrivate:    model.GetRepoType(db, reponame),
 	}
@@ -1233,6 +1290,13 @@ func GetCommitDetail(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 
 	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
 
+	var permission string
+	if model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame) {
+		permission = "read/write"
+	} else {
+		permission = model.GetRepoMemberPermissionFromUserIDAndRepoID(db, loggedInUserID, model.GetRepoIDFromReponame(db, reponame))
+	}
+
 	data := GetRepoResponse{
 		SiteSettings:     util.GetSiteSettings(db, conf),
 		SiteStyle:        model.GetSiteStyle(db),
@@ -1242,6 +1306,7 @@ func GetCommitDetail(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 		SorciaVersion:    conf.Version,
 		Reponame:         reponame,
 		RepoAccess:       model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame),
+		RepoPermission:   permission,
 		RepoDescription:  repoDescription,
 		IsRepoPrivate:    model.GetRepoType(db, reponame),
 	}
