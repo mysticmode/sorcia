@@ -5,7 +5,7 @@
 
         & tr {
             &.hljs-selection {
-                background: #CDF0FD;
+                background: $hljs-selection;
             }
         }
     }

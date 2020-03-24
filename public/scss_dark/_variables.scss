@@ -1,21 +1,40 @@
 // Brand colors
-$brand-primary: #64c7ff;
+$brand-primary: #00a3ff;
 $brand-border: #515151;
-$brand-danger: #d15555;
+$brand-danger: #bd3c3c;
 
 $brand-bg: #282828;
-$brand-bg-1: #626262;
+$brand-bg-1: #404040;
+
+// Button color
+$button-bg: #2183bb;
 
 // Text color
 $text-color: white;
-$text-color-2: #333333;
-$text-color-3: black;
+$text-color-2: black;
+
+// Input color
+$input-color: black;
+
+// Link text-decoration
+$link-text-decoration: none;
+
+// Repo Link
+$repo-link: none;
+
+// Folder font weight
+$folder-font-weight: bold;
 
 // Button color
 $button-primary: #e6e6e6;
 
 // Highlight js
 $hljs-bg: #222222;
+
+// HL.JS code highlighter
+$hljs-code-green: #384f40;
+$hljs-code-red: #4f2828;
+$hljs-selection: black;
 
 // Default font
 $font-default: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "DejaVu Sans", "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";

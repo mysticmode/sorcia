@@ -4,16 +4,20 @@
     box-sizing: border-box;
 }
 
+html, body {
+    background: $brand-bg;
+}
+
 body {
     width: 860px;
     margin: 0 auto;
     font-family: $font-default;
     font-size: 14px;
-    color: #333333;
+    color: $text-color;
 }
 
 a {
-    text-decoration: none;
+    text-decoration: $link-text-decoration;
     color: $brand-primary;
     outline: none;
 
