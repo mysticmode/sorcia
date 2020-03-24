@@ -132,6 +132,13 @@ func deleteUser(db *sql.DB, conf *setting.BaseStruct) {
 
 		if userID > 0 {
 
+			isAdmin := model.CheckifUserIsAnAdmin(db, userID)
+
+			if isAdmin {
+				fmt.Println("You cannot delete an admin user of Sorcia.")
+				return
+			}
+
 			rds := model.GetReposFromUserID(db, userID)
 
 			for _, repo := range rds.Repositories {
