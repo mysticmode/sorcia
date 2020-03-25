@@ -162,12 +162,12 @@ You can now see your domain with https served by Let's Encrypt.
 ### post installation
 There is this important CLI utility from Sorcia which I need to mention. As Sorcia doesn't rely on SMTP settings, this CLI utility can be used to change:
 
- * Username of any user
- * Email address of any user
- * Password of any user
- * Delete any user. If it is an admin user you want to delete, the prompt will ask you to select another user as an admin before deletion of the current admin.
+ * Reset username of any user
+ * Reset password of any user
+ * Delete any user except the admin user
+ * Delete any repository
 
-Remember, this can only be done by the server administrator who can SSH into the sorcia instance.
+Remember, this can only be done by the server/sys administrator who can SSH into the sorcia instance.
 
 With the root user or user with root privileges, do `cd /home/git/sorcia` and enter the following command
 ```
