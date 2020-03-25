@@ -109,6 +109,9 @@ func RunWeb(conf *setting.BaseStruct) {
 	m.HandleFunc("/r/{reponame}/meta/user", func(w http.ResponseWriter, r *http.Request) {
 		handler.PostRepoMetaUser(w, r, db, conf, decoder)
 	}).Methods("POST")
+	m.HandleFunc("/r/{reponame}/meta/user/remove/{username}", func(w http.ResponseWriter, r *http.Request) {
+		handler.RemoveRepoMetaUser(w, r, db, conf)
+	}).Methods("GET")
 	m.HandleFunc("/r/{reponame}/meta/delete", func(w http.ResponseWriter, r *http.Request) {
 		handler.PostRepoMetaDelete(w, r, db, conf)
 	}).Methods("POST")

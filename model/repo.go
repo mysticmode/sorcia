@@ -83,6 +83,15 @@ func InsertRepoMember(db *sql.DB, crm CreateRepoMember) {
 	errorhandler.CheckError("Error on model insert repo member exec", err)
 }
 
+// RemoveRepoMember ...
+func RemoveRepoMember(db *sql.DB, userID, repoID int) {
+	stmt, err := db.Prepare("DELETE FROM repository_members WHERE user_id = ? AND repo_id = ?")
+	errorhandler.CheckError("Error on model remove repo member", err)
+
+	_, err = stmt.Exec(userID, repoID)
+	errorhandler.CheckError("Error on model remove repo member exec", err)
+}
+
 // GetRepoMembersStruct struct
 type GetRepoMembersStruct struct {
 	RepoMembers []RepoMember
