@@ -91,6 +91,12 @@ func RunWeb(conf *setting.BaseStruct) {
 	m.HandleFunc("/meta/users", func(w http.ResponseWriter, r *http.Request) {
 		handler.PostUser(w, r, db, conf, decoder)
 	}).Methods("POST")
+	m.HandleFunc("/meta/user/revoke-access/{username}", func(w http.ResponseWriter, r *http.Request) {
+		handler.RevokeCreateRepoAccess(w, r, db, conf)
+	}).Methods("GET")
+	m.HandleFunc("/meta/user/add-access/{username}", func(w http.ResponseWriter, r *http.Request) {
+		handler.AddCreateRepoAccess(w, r, db, conf)
+	}).Methods("GET")
 	m.HandleFunc("/r/{reponame}", func(w http.ResponseWriter, r *http.Request) {
 		handler.GetRepo(w, r, db, conf)
 	}).Methods("GET")
