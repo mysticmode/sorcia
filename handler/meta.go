@@ -196,6 +196,48 @@ func PostAuthKey(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 	http.Redirect(w, r, "/login", http.StatusFound)
 }
 
+// RevokeCreateRepoAccess ...
+func RevokeCreateRepoAccess(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
+	userPresent := w.Header().Get("user-present")
+	vars := mux.Vars(r)
+	username := vars["username"]
+
+	if userPresent == "true" {
+		token := w.Header().Get("sorcia-cookie-token")
+		userID := model.GetUserIDFromToken(db, token)
+
+		if model.CheckifUserIsAnAdmin(db, userID) {
+			model.RevokeCanCreateRepo(db, username)
+
+			http.Redirect(w, r, "/meta/users", http.StatusFound)
+			return
+		}
+	}
+
+	http.Redirect(w, r, "/meta/users", http.StatusFound)
+}
+
+// AddCreateRepoAccess ...
+func AddCreateRepoAccess(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
+	userPresent := w.Header().Get("user-present")
+	vars := mux.Vars(r)
+	username := vars["username"]
+
+	if userPresent == "true" {
+		token := w.Header().Get("sorcia-cookie-token")
+		userID := model.GetUserIDFromToken(db, token)
+
+		if model.CheckifUserIsAnAdmin(db, userID) {
+			model.AddCanCreateRepo(db, username)
+
+			http.Redirect(w, r, "/meta/users", http.StatusFound)
+			return
+		}
+	}
+
+	http.Redirect(w, r, "/meta/users", http.StatusFound)
+}
+
 // PostUserRequest struct
 type PostUserRequest struct {
 	Username      string `schema:"username"`

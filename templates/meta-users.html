@@ -34,16 +34,14 @@
                 <div class="meta__users__item">
                     <div>Username {{if .IsAdmin}} [Admin] {{end}}</div>
                     <p>{{.Username}}</p>
-                    {{if .CanCreateRepo}}
-                        <p class="create-repo-access">This user can create repositories.</p>
-                    {{end}}
                     {{if not .IsAdmin}}
-                    <div class="meta__users__item__buttons">
-                        {{if .CanCreateRepo}}
-                        <a href="" class="button button--danger">Revoke access</a>
-                        {{end}}
-                        <a href="" class="button button--danger">Delete user</a>
-                    </div>
+                    {{if .CanCreateRepo}}
+                        <p class="create-repo-access">This user can create repositories. <a onclick="return confirm('Are you sure, you want to revoke create repository access for this user?');" href="/meta/user/revoke-access/{{.Username}}" class="button button--danger">Revoke access</a></p>
+                    {{else}}
+                        <a href="/meta/user/add-access/{{.Username}}" class="button button--primary">Add create repo access</a>
+                    {{end}}
+                    {{else}}
+                        <p class="create-repo-access">This user is an admin, hence he can create repositories.</p>
                     {{end}}
                 </div>
                 {{end}}
@@ -52,8 +50,12 @@
                 <div class="meta__users__item">
                     <div>Username {{if .IsAdmin}} [Admin] {{end}}</div>
                     <p>{{.Username}}</p>
+                    {{if not .IsAdmin}}
                     {{if .CanCreateRepo}}
                         <p class="create-repo-access">This user can create repositories.</p>
+                    {{end}}
+                    {{else}}
+                        <p class="create-repo-access">This user is an admin, hence he can create repositories.</p>
                     {{end}}
                 </div>
                 {{end}}

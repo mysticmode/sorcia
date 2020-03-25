@@ -35,6 +35,24 @@ func InsertAccount(db *sql.DB, cas CreateAccountStruct) {
 	errorhandler.CheckError("Error on model insert account exec", err)
 }
 
+// RevokeCanCreateRepo ...
+func RevokeCanCreateRepo(db *sql.DB, username string) {
+	stmt, err := db.Prepare("UPDATE account SET can_create_repo = ? WHERE username = ?")
+	errorhandler.CheckError("Error on model revoke can create repo", err)
+
+	_, err = stmt.Exec(false, username)
+	errorhandler.CheckError("Error on model revoke can create repo exec", err)
+}
+
+// AddCanCreateRepo ...
+func AddCanCreateRepo(db *sql.DB, username string) {
+	stmt, err := db.Prepare("UPDATE account SET can_create_repo = ? WHERE username = ?")
+	errorhandler.CheckError("Error on model revoke can create repo", err)
+
+	_, err = stmt.Exec(true, username)
+	errorhandler.CheckError("Error on model revoke can create repo exec", err)
+}
+
 type Users struct {
 	Users []User
 }
