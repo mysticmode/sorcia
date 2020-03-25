@@ -579,6 +579,29 @@ func PostRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *sett
 	http.Redirect(w, r, "/login", http.StatusFound)
 }
 
+// RemoveRepoMetaUser ...
+func RemoveRepoMetaUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
+	userPresent := w.Header().Get("user-present")
+	vars := mux.Vars(r)
+	reponame := vars["reponame"]
+	username := vars["username"]
+
+	if userPresent == "true" {
+		token := w.Header().Get("sorcia-cookie-token")
+		loggedInUserID := model.GetUserIDFromToken(db, token)
+
+		if model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame) {
+			userIDToRemove := model.GetUserIDFromUsername(db, username)
+			repoID := model.GetRepoIDFromReponame(db, reponame)
+			model.RemoveRepoMember(db, userIDToRemove, repoID)
+
+			http.Redirect(w, r, "/r/"+reponame+"/meta", http.StatusFound)
+			return
+		}
+	}
+	http.Redirect(w, r, "/r/"+reponame+"/meta", http.StatusFound)
+}
+
 // PostRepoMetaMember struct
 type PostRepoMetaMember struct {
 	Username   string `schema:"username"`
