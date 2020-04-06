@@ -1,5 +1,0 @@
-Host git
-    HostName your-server-ip-address
-    User root
-    Port 22
-
