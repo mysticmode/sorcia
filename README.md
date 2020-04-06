@@ -34,7 +34,7 @@ sudo su - git
 
 **Install from binary**
 ```
-wget https://sorcia.mysticmode.org/dl/sorcia-0.3.0-linux-amd64.tar.gz
+wget https://sorcia.mysticmode.org/dl/sorcia-0.3.1-linux-amd64.tar.gz
 mkdir sorcia
 tar -C sorcia -xzf sorcia.linux-amd64.tar.gz
 cd sorcia
@@ -57,9 +57,9 @@ source ~/.bashrc
 
 Now download the latest or appropriate Sorcia version in tar.gz or zip formats from [https://git.mysticmode.org/r/sorcia/refs](https://git.mysticmode.org/r/sorcia/refs) and build from source. Example below
 ```
-wget https://git.mysticmode.org/dl/sorcia-0.3.0.tar.gz
+wget https://git.mysticmode.org/dl/sorcia-0.3.1.tar.gz
 mkdir sorcia
-tar -C sorcia -xzf sorcia-0.3.0.tar.gz
+tar -C sorcia -xzf sorcia-0.3.1.tar.gz
 cd sorcia
 go build sorcia.go
 chmod +x sorcia
