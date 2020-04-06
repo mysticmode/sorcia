@@ -1,4 +1,4 @@
-package handler
+package internal
 
 import (
 	"database/sql"
@@ -20,10 +20,8 @@ import (
 	"strconv"
 	"strings"
 
-	errorhandler "sorcia/error"
-	"sorcia/model"
-	"sorcia/setting"
-	"sorcia/util"
+	"sorcia/models"
+	"sorcia/pkg"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
@@ -37,20 +35,20 @@ type MetaResponse struct {
 	SorciaVersion      string
 	Username           string
 	Email              string
-	Users              model.Users
+	Users              models.Users
 	RegisterErrMessage string
-	SiteSettings       util.SiteSettings
+	SiteSettings       SiteSettings
 }
 
 // GetMeta ...
-func GetMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
+func GetMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct) {
 	userPresent := w.Header().Get("user-present")
 
 	if userPresent == "true" {
 		token := w.Header().Get("sorcia-cookie-token")
-		username := model.GetUsernameFromToken(db, token)
+		username := models.GetUsernameFromToken(db, token)
 
-		userID := model.GetUserIDFromToken(db, token)
+		userID := models.GetUserIDFromToken(db, token)
 
 		layoutPage := path.Join("./templates", "layout.html")
 		headerPage := path.Join("./templates", "header.html")
@@ -58,18 +56,18 @@ func GetMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.B
 		footerPage := path.Join("./templates", "footer.html")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, metaPage, footerPage)
-		errorhandler.CheckError("Error on template parse", err)
+		pkg.CheckError("Error on template parse", err)
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
 
 		data := MetaResponse{
 			IsLoggedIn:       true,
-			IsAdmin:          model.CheckifUserIsAnAdmin(db, userID),
+			IsAdmin:          models.CheckifUserIsAnAdmin(db, userID),
 			HeaderActiveMenu: "meta",
 			SorciaVersion:    conf.Version,
 			Username:         username,
-			SiteSettings:     util.GetSiteSettings(db, conf),
+			SiteSettings:     GetSiteSettings(db, conf),
 		}
 
 		tmpl.ExecuteTemplate(w, "layout", data)
@@ -84,19 +82,19 @@ type MetaKeysResponse struct {
 	IsAdmin          bool
 	HeaderActiveMenu string
 	SorciaVersion    string
-	SSHKeys          *model.SSHKeysResponse
-	SiteSettings     util.SiteSettings
+	SSHKeys          *models.SSHKeysResponse
+	SiteSettings     SiteSettings
 }
 
 // GetMetaKeys ...
-func GetMetaKeys(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
+func GetMetaKeys(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct) {
 	userPresent := w.Header().Get("user-present")
 
 	if userPresent == "true" {
 		token := w.Header().Get("sorcia-cookie-token")
-		userID := model.GetUserIDFromToken(db, token)
+		userID := models.GetUserIDFromToken(db, token)
 
-		sshKeys := model.GetSSHKeysFromUserId(db, userID)
+		sshKeys := models.GetSSHKeysFromUserID(db, userID)
 
 		layoutPage := path.Join("./templates", "layout.html")
 		headerPage := path.Join("./templates", "header.html")
@@ -104,18 +102,18 @@ func GetMetaKeys(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 		footerPage := path.Join("./templates", "footer.html")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, metaPage, footerPage)
-		errorhandler.CheckError("Error on template parse", err)
+		pkg.CheckError("Error on template parse", err)
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
 
 		data := MetaKeysResponse{
 			IsLoggedIn:       true,
-			IsAdmin:          model.CheckifUserIsAnAdmin(db, userID),
+			IsAdmin:          models.CheckifUserIsAnAdmin(db, userID),
 			HeaderActiveMenu: "meta",
 			SorciaVersion:    conf.Version,
 			SSHKeys:          sshKeys,
-			SiteSettings:     util.GetSiteSettings(db, conf),
+			SiteSettings:     GetSiteSettings(db, conf),
 		}
 
 		tmpl.ExecuteTemplate(w, "layout", data)
@@ -133,9 +131,9 @@ func DeleteMetaKey(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 	if userPresent == "true" {
 		i, err := strconv.Atoi(keyID)
-		errorhandler.CheckError("Error on converting SSH key id(string) to int on delete meta keys", err)
+		pkg.CheckError("Error on converting SSH key id(string) to int on delete meta keys", err)
 
-		model.DeleteMetaKeyByID(db, i)
+		models.DeleteMetaKeyByID(db, i)
 		http.Redirect(w, r, "/meta/keys", http.StatusFound)
 	} else {
 		http.Redirect(w, r, "/login", http.StatusFound)
@@ -149,7 +147,7 @@ type CreateAuthKeyRequest struct {
 }
 
 // PostAuthKey ...
-func PostAuthKey(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct, decoder *schema.Decoder) {
+func PostAuthKey(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct, decoder *schema.Decoder) {
 	userPresent := w.Header().Get("user-present")
 
 	if userPresent == "true" {
@@ -158,12 +156,12 @@ func PostAuthKey(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 		// NOTE: Invoke ParseForm or ParseMultipartForm before reading form values
 		if err := r.ParseForm(); err != nil {
 			fmt.Fprintf(w, "ParseForm() err: %v", err)
-			errorResponse := &errorhandler.Response{
+			errorResponse := &pkg.Response{
 				Error: err.Error(),
 			}
 
 			errorJSON, err := json.Marshal(errorResponse)
-			errorhandler.CheckError("Error on json marshal", err)
+			pkg.CheckError("Error on json marshal", err)
 
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadRequest)
@@ -173,21 +171,21 @@ func PostAuthKey(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 
 		var createAuthKeyRequest = &CreateAuthKeyRequest{}
 		err := decoder.Decode(createAuthKeyRequest, r.PostForm)
-		errorhandler.CheckError("Error on auth key decode", err)
+		pkg.CheckError("Error on auth key decode", err)
 
-		userID := model.GetUserIDFromToken(db, token)
+		userID := models.GetUserIDFromToken(db, token)
 
 		authKey := strings.TrimSpace(createAuthKeyRequest.AuthKey)
-		fingerPrint := util.SSHFingerPrint(authKey)
+		fingerPrint := pkg.SSHFingerPrint(authKey)
 
-		ispk := model.InsertSSHPubKeyStruct{
+		ispk := models.InsertSSHPubKeyStruct{
 			AuthKey:     authKey,
 			Title:       strings.TrimSpace(createAuthKeyRequest.Title),
 			Fingerprint: fingerPrint,
 			UserID:      userID,
 		}
 
-		model.InsertSSHPubKey(db, ispk)
+		models.InsertSSHPubKey(db, ispk)
 
 		http.Redirect(w, r, "/meta/keys", http.StatusFound)
 		return
@@ -197,17 +195,17 @@ func PostAuthKey(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 }
 
 // RevokeCreateRepoAccess ...
-func RevokeCreateRepoAccess(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
+func RevokeCreateRepoAccess(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct) {
 	userPresent := w.Header().Get("user-present")
 	vars := mux.Vars(r)
 	username := vars["username"]
 
 	if userPresent == "true" {
 		token := w.Header().Get("sorcia-cookie-token")
-		userID := model.GetUserIDFromToken(db, token)
+		userID := models.GetUserIDFromToken(db, token)
 
-		if model.CheckifUserIsAnAdmin(db, userID) {
-			model.RevokeCanCreateRepo(db, username)
+		if models.CheckifUserIsAnAdmin(db, userID) {
+			models.RevokeCanCreateRepo(db, username)
 
 			http.Redirect(w, r, "/meta/users", http.StatusFound)
 			return
@@ -218,17 +216,17 @@ func RevokeCreateRepoAccess(w http.ResponseWriter, r *http.Request, db *sql.DB, 
 }
 
 // AddCreateRepoAccess ...
-func AddCreateRepoAccess(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
+func AddCreateRepoAccess(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct) {
 	userPresent := w.Header().Get("user-present")
 	vars := mux.Vars(r)
 	username := vars["username"]
 
 	if userPresent == "true" {
 		token := w.Header().Get("sorcia-cookie-token")
-		userID := model.GetUserIDFromToken(db, token)
+		userID := models.GetUserIDFromToken(db, token)
 
-		if model.CheckifUserIsAnAdmin(db, userID) {
-			model.AddCanCreateRepo(db, username)
+		if models.CheckifUserIsAnAdmin(db, userID) {
+			models.AddCanCreateRepo(db, username)
 
 			http.Redirect(w, r, "/meta/users", http.StatusFound)
 			return
@@ -246,18 +244,18 @@ type PostUserRequest struct {
 }
 
 // PostUser ...
-func PostUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct, decoder *schema.Decoder) {
+func PostUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct, decoder *schema.Decoder) {
 	userPresent := w.Header().Get("user-present")
 
 	if userPresent == "true" {
 		if err := r.ParseForm(); err != nil {
 			fmt.Fprintf(w, "ParseForm() err: %v", err)
-			errorResponse := &errorhandler.Response{
+			errorResponse := &pkg.Response{
 				Error: err.Error(),
 			}
 
 			errorJSON, err := json.Marshal(errorResponse)
-			errorhandler.CheckError("Error on json marshal", err)
+			pkg.CheckError("Error on json marshal", err)
 
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadRequest)
@@ -267,15 +265,15 @@ func PostUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.
 
 		var postUserRequest = &PostUserRequest{}
 		err := decoder.Decode(postUserRequest, r.PostForm)
-		errorhandler.CheckError("Error on meta post user", err)
+		pkg.CheckError("Error on meta post user", err)
 
 		// Generate password hash using bcrypt
 		passwordHash, err := HashPassword(postUserRequest.Password)
-		errorhandler.CheckError("Error on post register hash password", err)
+		pkg.CheckError("Error on post register hash password", err)
 
 		// Generate JWT token using the hash password above
 		token, err := GenerateJWTToken(passwordHash)
-		errorhandler.CheckError("Error on post register generate jwt token", err)
+		pkg.CheckError("Error on post register generate jwt token", err)
 
 		s := postUserRequest.Username
 
@@ -286,7 +284,7 @@ func PostUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.
 			footerPage := path.Join("./templates", "footer.html")
 
 			tmpl, err := template.ParseFiles(layoutPage, headerPage, metaUsersPage, footerPage)
-			errorhandler.CheckError("Error on template parse", err)
+			pkg.CheckError("Error on template parse", err)
 
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			w.WriteHeader(http.StatusOK)
@@ -296,22 +294,22 @@ func PostUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.
 				ShowLoginMenu:      false,
 				HeaderActiveMenu:   "",
 				SorciaVersion:      conf.Version,
-				IsShowSignUp:       !model.CheckIfFirstUserExists(db),
+				IsShowSignUp:       !models.CheckIfFirstUserExists(db),
 				LoginErrMessage:    "",
 				RegisterErrMessage: "Username is too long (maximum is 39 characters).",
-				SiteSettings:       util.GetSiteSettings(db, conf),
+				SiteSettings:       GetSiteSettings(db, conf),
 			}
 
 			tmpl.ExecuteTemplate(w, "layout", data)
 			return
-		} else if strings.HasPrefix(s, "-") || strings.Contains(s, "--") || strings.HasSuffix(s, "-") || !util.IsAlnumOrHyphen(s) {
+		} else if strings.HasPrefix(s, "-") || strings.Contains(s, "--") || strings.HasSuffix(s, "-") || !pkg.IsAlnumOrHyphen(s) {
 			layoutPage := path.Join("./templates", "layout.html")
 			headerPage := path.Join("./templates", "header.html")
 			metaUsersPage := path.Join("./templates", "meta-users.html")
 			footerPage := path.Join("./templates", "footer.html")
 
 			tmpl, err := template.ParseFiles(layoutPage, headerPage, metaUsersPage, footerPage)
-			errorhandler.CheckError("Error on template parse", err)
+			pkg.CheckError("Error on template parse", err)
 
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			w.WriteHeader(http.StatusOK)
@@ -321,10 +319,10 @@ func PostUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.
 				ShowLoginMenu:      false,
 				HeaderActiveMenu:   "",
 				SorciaVersion:      conf.Version,
-				IsShowSignUp:       !model.CheckIfFirstUserExists(db),
+				IsShowSignUp:       !models.CheckIfFirstUserExists(db),
 				LoginErrMessage:    "",
 				RegisterErrMessage: "Username may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen.",
-				SiteSettings:       util.GetSiteSettings(db, conf),
+				SiteSettings:       GetSiteSettings(db, conf),
 			}
 
 			tmpl.ExecuteTemplate(w, "layout", data)
@@ -336,7 +334,7 @@ func PostUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.
 			canCreateRepo = 1
 		}
 
-		rr := model.CreateAccountStruct{
+		rr := models.CreateAccountStruct{
 			Username:      postUserRequest.Username,
 			PasswordHash:  passwordHash,
 			Token:         token,
@@ -344,7 +342,7 @@ func PostUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.
 			IsAdmin:       0,
 		}
 
-		model.InsertAccount(db, rr)
+		models.InsertAccount(db, rr)
 
 		http.Redirect(w, r, "/meta/users", http.StatusFound)
 		return
@@ -354,14 +352,14 @@ func PostUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.
 }
 
 // GetMetaUsers ...
-func GetMetaUsers(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
+func GetMetaUsers(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct) {
 	userPresent := w.Header().Get("user-present")
 
 	if userPresent == "true" {
 		token := w.Header().Get("sorcia-cookie-token")
-		userID := model.GetUserIDFromToken(db, token)
+		userID := models.GetUserIDFromToken(db, token)
 
-		users := model.GetAllUsers(db)
+		users := models.GetAllUsers(db)
 
 		layoutPage := path.Join("./templates", "layout.html")
 		headerPage := path.Join("./templates", "header.html")
@@ -369,19 +367,19 @@ func GetMetaUsers(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *sett
 		footerPage := path.Join("./templates", "footer.html")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, metaPage, footerPage)
-		errorhandler.CheckError("Error on template parse", err)
+		pkg.CheckError("Error on template parse", err)
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
 
 		data := MetaResponse{
 			IsLoggedIn:         true,
-			IsAdmin:            model.CheckifUserIsAnAdmin(db, userID),
+			IsAdmin:            models.CheckifUserIsAnAdmin(db, userID),
 			RegisterErrMessage: "",
 			HeaderActiveMenu:   "meta",
 			SorciaVersion:      conf.Version,
 			Users:              users,
-			SiteSettings:       util.GetSiteSettings(db, conf),
+			SiteSettings:       GetSiteSettings(db, conf),
 		}
 
 		tmpl.ExecuteTemplate(w, "layout", data)
@@ -406,12 +404,12 @@ func MetaPostPassword(w http.ResponseWriter, r *http.Request, db *sql.DB, decode
 		// NOTE: Invoke ParseForm or ParseMultipartForm before reading form values
 		if err := r.ParseForm(); err != nil {
 			fmt.Fprintf(w, "ParseForm() err: %v", err)
-			errorResponse := &errorhandler.Response{
+			errorResponse := &pkg.Response{
 				Error: err.Error(),
 			}
 
 			errorJSON, err := json.Marshal(errorResponse)
-			errorhandler.CheckError("Error on json marshal", err)
+			pkg.CheckError("Error on json marshal", err)
 
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadRequest)
@@ -421,24 +419,24 @@ func MetaPostPassword(w http.ResponseWriter, r *http.Request, db *sql.DB, decode
 
 		postPasswordRequest := &PostPasswordRequest{}
 		err := decoder.Decode(postPasswordRequest, r.PostForm)
-		errorhandler.CheckError("Error on post password decoder", err)
+		pkg.CheckError("Error on post password decoder", err)
 
-		username := model.GetUsernameFromToken(db, token)
+		username := models.GetUsernameFromToken(db, token)
 
 		// Generate password hash using bcrypt
 		passwordHash, err := HashPassword(postPasswordRequest.Password)
-		errorhandler.CheckError("Error on password hash", err)
+		pkg.CheckError("Error on password hash", err)
 
 		// Generate JWT token using the hash password above
 		jwtToken, err := GenerateJWTToken(passwordHash)
-		errorhandler.CheckError("Error on generating jwt token", err)
+		pkg.CheckError("Error on generating jwt token", err)
 
-		resetPass := model.ResetUserPasswordbyUsernameStruct{
+		resetPass := models.ResetUserPasswordbyUsernameStruct{
 			PasswordHash: passwordHash,
 			JwtToken:     jwtToken,
 			Username:     username,
 		}
-		model.ResetUserPasswordbyUsername(db, resetPass)
+		models.ResetUserPasswordbyUsername(db, resetPass)
 		http.Redirect(w, r, "/meta", http.StatusFound)
 		return
 	}
@@ -447,7 +445,7 @@ func MetaPostPassword(w http.ResponseWriter, r *http.Request, db *sql.DB, decode
 }
 
 // MetaPostSiteSettings ...
-func MetaPostSiteSettings(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
+func MetaPostSiteSettings(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct) {
 	userPresent := w.Header().Get("user-present")
 
 	if userPresent == "true" {
@@ -463,8 +461,8 @@ func MetaPostSiteSettings(w http.ResponseWriter, r *http.Request, db *sql.DB, co
 			return
 		}
 
-		if !model.CheckIFSiteSettingsExists(db) {
-			css := model.CreateSiteSettingsStruct{
+		if !models.CheckIFSiteSettingsExists(db) {
+			css := models.CreateSiteSettingsStruct{
 				Title:      siteTitle,
 				Favicon:    faviconPath,
 				Logo:       logoPath,
@@ -472,26 +470,26 @@ func MetaPostSiteSettings(w http.ResponseWriter, r *http.Request, db *sql.DB, co
 				LogoHeight: logoHeight,
 				Style:      siteStyle,
 			}
-			model.InsertSiteSettings(db, css)
+			models.InsertSiteSettings(db, css)
 
 			http.Redirect(w, r, "/meta", http.StatusFound)
 			return
 		}
 
 		if siteTitle != "" {
-			model.UpdateSiteTitle(db, siteTitle)
+			models.UpdateSiteTitle(db, siteTitle)
 		}
 
 		if siteStyle != "" {
-			model.UpdateSiteStyle(db, siteStyle)
+			models.UpdateSiteStyle(db, siteStyle)
 		}
 
 		if gotFavicon {
-			model.UpdateSiteFavicon(db, faviconPath)
+			models.UpdateSiteFavicon(db, faviconPath)
 		}
 
 		if gotLogo {
-			model.UpdateSiteLogo(db, logoPath, logoWidth, logoHeight)
+			models.UpdateSiteLogo(db, logoPath, logoWidth, logoHeight)
 		}
 
 		http.Redirect(w, r, "/meta", http.StatusFound)
@@ -514,10 +512,10 @@ func faviconUpload(w http.ResponseWriter, r *http.Request, db *sql.DB, uploadAss
 
 	if contentType == "image/ico" || contentType == "image/png" || contentType == "image/jpeg" {
 
-		oldFavicon := model.GetSiteFavicon(db)
+		oldFavicon := models.GetSiteFavicon(db)
 		if oldFavicon != "" {
 			err = os.Remove(oldFavicon)
-			errorhandler.CheckError("Error on removing old favicon", err)
+			pkg.CheckError("Error on removing old favicon", err)
 		}
 
 		ext := strings.Split(contentType, "image/")[1]
@@ -525,7 +523,7 @@ func faviconUpload(w http.ResponseWriter, r *http.Request, db *sql.DB, uploadAss
 		filePath := filepath.Join(uploadAssetPath, "favicon."+ext)
 
 		f, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, os.ModePerm)
-		errorhandler.CheckError("Error on opening favicon path", err)
+		pkg.CheckError("Error on opening favicon path", err)
 		defer f.Close()
 
 		io.Copy(f, file)
@@ -549,10 +547,10 @@ func logoUpload(w http.ResponseWriter, r *http.Request, db *sql.DB, uploadAssetP
 
 	if contentType == "image/svg+xml" || contentType == "image/png" || contentType == "image/jpeg" {
 
-		oldLogo := model.GetSiteLogo(db)
+		oldLogo := models.GetSiteLogo(db)
 		if oldLogo != "" {
 			err = os.Remove(oldLogo)
-			errorhandler.CheckError("Error on removing old logo", err)
+			pkg.CheckError("Error on removing old logo", err)
 		}
 
 		ext := strings.Split(contentType, "image/")[1]
@@ -564,20 +562,20 @@ func logoUpload(w http.ResponseWriter, r *http.Request, db *sql.DB, uploadAssetP
 		filePath := filepath.Join(uploadAssetPath, "logo."+ext)
 
 		f, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, os.ModePerm)
-		errorhandler.CheckError("Error on opening favicon path", err)
+		pkg.CheckError("Error on opening favicon path", err)
 		defer f.Close()
 
 		io.Copy(f, file)
 
 		getFile, err := os.Open(filePath)
-		errorhandler.CheckError("Error on opening logo upload file", err)
+		pkg.CheckError("Error on opening logo upload file", err)
 		defer getFile.Close()
 
 		var logoWidth, logoHeight string
 
 		if ext != "svg" {
 			image, _, err := image.DecodeConfig(getFile)
-			errorhandler.CheckError("Error on DecodeConfig in logoUpload function", err)
+			pkg.CheckError("Error on DecodeConfig in logoUpload function", err)
 			logoWidth = strconv.Itoa(image.Width)
 			logoHeight = strconv.Itoa(image.Height)
 		}

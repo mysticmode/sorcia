@@ -1,4 +1,4 @@
-package handler
+package internal
 
 import (
 	"database/sql"
@@ -10,10 +10,8 @@ import (
 	"strconv"
 	"strings"
 
-	errorhandler "sorcia/error"
-	"sorcia/model"
-	"sorcia/setting"
-	"sorcia/util"
+	"sorcia/models"
+	"sorcia/pkg"
 
 	"github.com/gliderlabs/ssh"
 	gossh "golang.org/x/crypto/ssh"
@@ -25,7 +23,7 @@ var userID string
 var reponame string
 
 // RunSSH ...
-func RunSSH(conf *setting.BaseStruct, db *sql.DB) {
+func RunSSH(conf *pkg.BaseStruct, db *sql.DB) {
 	ssh.Handle(func(s ssh.Session) {
 		authorizedKey = gossh.MarshalAuthorizedKey(s.PublicKey())
 
@@ -48,14 +46,14 @@ func RunSSH(conf *setting.BaseStruct, db *sql.DB) {
 				log.Printf("ssh: cannot convert userID to integer")
 				return
 			}
-			repoID := model.GetRepoIDFromReponame(db, reponame)
+			repoID := models.GetRepoIDFromReponame(db, reponame)
 
-			if isRepoPrivate := model.GetRepoType(db, reponame); isRepoPrivate && gitRPC == "upload-pack" {
-				if !model.CheckRepoOwnerFromUserIDAndReponame(db, userIDInt, reponame) && !model.CheckRepoMemberExistFromUserIDAndRepoID(db, userIDInt, repoID) {
+			if isRepoPrivate := models.GetRepoType(db, reponame); isRepoPrivate && gitRPC == "upload-pack" {
+				if !models.CheckRepoOwnerFromUserIDAndReponame(db, userIDInt, reponame) && !models.CheckRepoMemberExistFromUserIDAndRepoID(db, userIDInt, repoID) {
 					log.Printf("ssh: no repo access")
 					return
-				} else if model.CheckRepoMemberExistFromUserIDAndRepoID(db, userIDInt, repoID) {
-					permission := model.GetRepoMemberPermissionFromUserIDAndRepoID(db, userIDInt, repoID)
+				} else if models.CheckRepoMemberExistFromUserIDAndRepoID(db, userIDInt, repoID) {
+					permission := models.GetRepoMemberPermissionFromUserIDAndRepoID(db, userIDInt, repoID)
 					if permission != "read" && permission != "read/write" {
 						log.Printf("ssh: no repo access")
 						return
@@ -64,11 +62,11 @@ func RunSSH(conf *setting.BaseStruct, db *sql.DB) {
 			}
 
 			if gitRPC == "git-receive-pack" {
-				if !model.CheckRepoOwnerFromUserIDAndReponame(db, userIDInt, reponame) && !model.CheckRepoMemberExistFromUserIDAndRepoID(db, userIDInt, repoID) {
+				if !models.CheckRepoOwnerFromUserIDAndReponame(db, userIDInt, reponame) && !models.CheckRepoMemberExistFromUserIDAndRepoID(db, userIDInt, repoID) {
 					log.Printf("ssh: no repo access")
 					return
-				} else if model.CheckRepoMemberExistFromUserIDAndRepoID(db, userIDInt, repoID) {
-					permission := model.GetRepoMemberPermissionFromUserIDAndRepoID(db, userIDInt, repoID)
+				} else if models.CheckRepoMemberExistFromUserIDAndRepoID(db, userIDInt, repoID) {
+					permission := models.GetRepoMemberPermissionFromUserIDAndRepoID(db, userIDInt, repoID)
 					if permission != "read/write" {
 						log.Printf("ssh: no repo access")
 						return
@@ -118,19 +116,19 @@ func RunSSH(conf *setting.BaseStruct, db *sql.DB) {
 		s.SendRequest("exit-status", false, []byte{0, 0, 0, 0})
 
 		if gitRPC == "git-receive-pack" {
-			go util.GenerateRefs(conf.Paths.RefsPath, conf.Paths.RepoPath, gitRepo)
+			go pkg.GenerateRefs(conf.Paths.RefsPath, conf.Paths.RepoPath, gitRepo)
 		}
 
 		return
 	})
 
 	publicKeyOption := ssh.PublicKeyAuth(func(ctx ssh.Context, key ssh.PublicKey) bool {
-		sshDetail := model.GetSSHAllAuthKeys(db)
+		sshDetail := models.GetSSHAllAuthKeys(db)
 
 		for i := 0; i < len(sshDetail.AuthKeys); i++ {
 			authKeyByte := []byte(sshDetail.AuthKeys[i])
 			allowed, _, _, _, err := gossh.ParseAuthorizedKey(authKeyByte)
-			errorhandler.CheckError("Error on Parse authorized key", err)
+			pkg.CheckError("Error on Parse authorized key", err)
 
 			if ssh.KeysEqual(key, allowed) {
 				userID = sshDetail.UserIDs[i]

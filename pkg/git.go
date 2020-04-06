@@ -1,4 +1,4 @@
-package util
+package pkg
 
 import (
 	"bytes"
@@ -8,10 +8,9 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-
-	errorhandler "sorcia/error"
 )
 
+// GetGitBranches ...
 func GetGitBranches(repoDir string) []string {
 	var branches = []string{"master"}
 
@@ -24,11 +23,12 @@ func GetGitBranches(repoDir string) []string {
 		}
 		return nil
 	})
-	errorhandler.CheckError("Error on util get git branches filepath walk", err)
+	CheckError("Error on util get git branches filepath walk", err)
 
 	return branches
 }
 
+// GetGitTags ...
 func GetGitTags(repoDir string) ([]string, int) {
 	gitPath := GetGitBinPath()
 
@@ -46,7 +46,7 @@ func GetGitTags(repoDir string) ([]string, int) {
 	return tags, len(tags)
 }
 
-// GenerateRefs
+// GenerateRefs ...
 func GenerateRefs(refsPath, repoPath, repoGitName string) {
 	gitPath := GetGitBinPath()
 
@@ -91,11 +91,11 @@ func UpdateRefsWithNewName(refsPath, repoPath, oldRepoGitName, newRepoGitName st
 		refsPattern := filepath.Join(refsPath, oldRepoGitName+"*")
 
 		files, err := filepath.Glob(refsPattern)
-		errorhandler.CheckError("Error on updaterefspath filepath.Glob", err)
+		CheckError("Error on updaterefspath filepath.Glob", err)
 
 		for _, f := range files {
 			err := os.Remove(f)
-			errorhandler.CheckError("Error on removing ref files", err)
+			CheckError("Error on removing ref files", err)
 		}
 
 		go GenerateRefs(refsPath, repoPath, newRepoGitName+".git")
