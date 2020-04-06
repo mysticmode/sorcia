@@ -1,5 +1,5 @@
 ## sorcia
-Sorcia is a self-hosted web frontend for git repositories which is written in Golang.
+Sorcia is a self-hosted web frontend for git repositories which is written in Golang [https://sorcia.mysticmode.org](https://sorcia.mysticmode.org)
 
 ### community
  * Ask your questions on [sorcia@googlegroups.com](https://groups.google.com/d/forum/sorcia).
@@ -98,7 +98,7 @@ That's it, sorcia will run on port `1937`.
 
 If you want to move further and setup your systemd service with your domain configured with Nginx, please follow
 ```
-sudo cp /home/git/sorcia/config/sorcia-web.service /etc/systemd/system/
+sudo cp /home/git/sorcia/scripts/sorcia-web.service /etc/systemd/system/
 sudo systemctl start sorcia-web.service
 sudo systemctl enable sorcia-web.service
 ```
@@ -107,7 +107,7 @@ Let's configure Nginx now. **Note:** Change the `git.example.com` to your domain
 ```
 sudo mv /etc/nginx/sites-available/default /etc/nginx/sites-available/default.backup
 sudo rm /etc/nginx/sites-enabled/default
-sudo cp /home/git/sorcia/config/nginx.conf /etc/nginx/sites-available/git.example.com
+sudo cp /home/git/sorcia/scripts/nginx.conf /etc/nginx/sites-available/git.example.com
 sudo ln -s /etc/nginx/sites-available/git.example.com /etc/nginx/sites-enabled/
 ```
 
