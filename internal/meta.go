@@ -50,10 +50,10 @@ func GetMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseS
 
 		userID := models.GetUserIDFromToken(db, token)
 
-		layoutPage := path.Join("./templates", "layout.html")
-		headerPage := path.Join("./templates", "header.html")
-		metaPage := path.Join("./templates", "meta.html")
-		footerPage := path.Join("./templates", "footer.html")
+		layoutPage := path.Join("./public/templates", "layout.html")
+		headerPage := path.Join("./public/templates", "header.html")
+		metaPage := path.Join("./public/templates", "meta.html")
+		footerPage := path.Join("./public/templates", "footer.html")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, metaPage, footerPage)
 		pkg.CheckError("Error on template parse", err)
@@ -96,10 +96,10 @@ func GetMetaKeys(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.B
 
 		sshKeys := models.GetSSHKeysFromUserID(db, userID)
 
-		layoutPage := path.Join("./templates", "layout.html")
-		headerPage := path.Join("./templates", "header.html")
-		metaPage := path.Join("./templates", "meta-keys.html")
-		footerPage := path.Join("./templates", "footer.html")
+		layoutPage := path.Join("./public/templates", "layout.html")
+		headerPage := path.Join("./public/templates", "header.html")
+		metaPage := path.Join("./public/templates", "meta-keys.html")
+		footerPage := path.Join("./public/templates", "footer.html")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, metaPage, footerPage)
 		pkg.CheckError("Error on template parse", err)
@@ -278,10 +278,10 @@ func PostUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.Base
 		s := postUserRequest.Username
 
 		if len(s) > 39 || len(s) < 1 {
-			layoutPage := path.Join("./templates", "layout.html")
-			headerPage := path.Join("./templates", "header.html")
-			metaUsersPage := path.Join("./templates", "meta-users.html")
-			footerPage := path.Join("./templates", "footer.html")
+			layoutPage := path.Join("./public/templates", "layout.html")
+			headerPage := path.Join("./public/templates", "header.html")
+			metaUsersPage := path.Join("./public/templates", "meta-users.html")
+			footerPage := path.Join("./public/templates", "footer.html")
 
 			tmpl, err := template.ParseFiles(layoutPage, headerPage, metaUsersPage, footerPage)
 			pkg.CheckError("Error on template parse", err)
@@ -303,10 +303,10 @@ func PostUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.Base
 			tmpl.ExecuteTemplate(w, "layout", data)
 			return
 		} else if strings.HasPrefix(s, "-") || strings.Contains(s, "--") || strings.HasSuffix(s, "-") || !pkg.IsAlnumOrHyphen(s) {
-			layoutPage := path.Join("./templates", "layout.html")
-			headerPage := path.Join("./templates", "header.html")
-			metaUsersPage := path.Join("./templates", "meta-users.html")
-			footerPage := path.Join("./templates", "footer.html")
+			layoutPage := path.Join("./public/templates", "layout.html")
+			headerPage := path.Join("./public/templates", "header.html")
+			metaUsersPage := path.Join("./public/templates", "meta-users.html")
+			footerPage := path.Join("./public/templates", "footer.html")
 
 			tmpl, err := template.ParseFiles(layoutPage, headerPage, metaUsersPage, footerPage)
 			pkg.CheckError("Error on template parse", err)
@@ -361,10 +361,10 @@ func GetMetaUsers(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.
 
 		users := models.GetAllUsers(db)
 
-		layoutPage := path.Join("./templates", "layout.html")
-		headerPage := path.Join("./templates", "header.html")
-		metaPage := path.Join("./templates", "meta-users.html")
-		footerPage := path.Join("./templates", "footer.html")
+		layoutPage := path.Join("./public/templates", "layout.html")
+		headerPage := path.Join("./public/templates", "header.html")
+		metaPage := path.Join("./public/templates", "meta-users.html")
+		footerPage := path.Join("./public/templates", "footer.html")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, metaPage, footerPage)
 		pkg.CheckError("Error on template parse", err)

@@ -102,10 +102,10 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseS
 			}
 		}
 
-		layoutPage := path.Join("./templates", "layout.html")
-		headerPage := path.Join("./templates", "header.html")
-		indexPage := path.Join("./templates", "index.html")
-		footerPage := path.Join("./templates", "footer.html")
+		layoutPage := path.Join("./public/templates", "layout.html")
+		headerPage := path.Join("./public/templates", "header.html")
+		indexPage := path.Join("./public/templates", "index.html")
+		footerPage := path.Join("./public/templates", "footer.html")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, indexPage, footerPage)
 		pkg.CheckError("Error on template parse", err)
@@ -140,10 +140,10 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseS
 			grs.Repositories = append(grs.Repositories, rd)
 		}
 
-		layoutPage := path.Join("./templates", "layout.html")
-		headerPage := path.Join("./templates", "header.html")
-		indexPage := path.Join("./templates", "index.html")
-		footerPage := path.Join("./templates", "footer.html")
+		layoutPage := path.Join("./public/templates", "layout.html")
+		headerPage := path.Join("./public/templates", "header.html")
+		indexPage := path.Join("./public/templates", "index.html")
+		footerPage := path.Join("./public/templates", "footer.html")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, indexPage, footerPage)
 		pkg.CheckError("Error on template parse", err)

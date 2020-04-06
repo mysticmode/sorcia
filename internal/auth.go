@@ -68,10 +68,10 @@ func GetLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.Base
 	if userPresent == "true" {
 		http.Redirect(w, r, "/", http.StatusFound)
 	} else {
-		layoutPage := path.Join("./templates", "layout.html")
-		headerPage := path.Join("./templates", "header.html")
-		loginPage := path.Join("./templates", "login.html")
-		footerPage := path.Join("./templates", "footer.html")
+		layoutPage := path.Join("./public/templates", "layout.html")
+		headerPage := path.Join("./public/templates", "header.html")
+		loginPage := path.Join("./public/templates", "login.html")
+		footerPage := path.Join("./public/templates", "footer.html")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, loginPage, footerPage)
 		pkg.CheckError("Error on template parse", err)
@@ -155,10 +155,10 @@ func PostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.Bas
 }
 
 func invalidLoginCredentials(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct) {
-	layoutPage := path.Join("./templates", "layout.html")
-	headerPage := path.Join("./templates", "header.html")
-	loginPage := path.Join("./templates", "login.html")
-	footerPage := path.Join("./templates", "footer.html")
+	layoutPage := path.Join("./public/templates", "layout.html")
+	headerPage := path.Join("./public/templates", "header.html")
+	loginPage := path.Join("./public/templates", "login.html")
+	footerPage := path.Join("./public/templates", "footer.html")
 
 	tmpl, err := template.ParseFiles(layoutPage, headerPage, loginPage, footerPage)
 	pkg.CheckError("Error on template parse", err)
@@ -219,10 +219,10 @@ func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.
 	s := registerRequest.Username
 
 	if len(s) > 39 || len(s) < 1 {
-		layoutPage := path.Join("./templates", "layout.html")
-		headerPage := path.Join("./templates", "header.html")
-		loginPage := path.Join("./templates", "login.html")
-		footerPage := path.Join("./templates", "footer.html")
+		layoutPage := path.Join("./public/templates", "layout.html")
+		headerPage := path.Join("./public/templates", "header.html")
+		loginPage := path.Join("./public/templates", "login.html")
+		footerPage := path.Join("./public/templates", "footer.html")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, loginPage, footerPage)
 		pkg.CheckError("Error on template parse", err)
@@ -244,10 +244,10 @@ func postRegister(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.
 		tmpl.ExecuteTemplate(w, "layout", data)
 		return
 	} else if strings.HasPrefix(s, "-") || strings.Contains(s, "--") || strings.HasSuffix(s, "-") || !pkg.IsAlnumOrHyphen(s) {
-		layoutPage := path.Join("./templates", "layout.html")
-		headerPage := path.Join("./templates", "header.html")
-		loginPage := path.Join("./templates", "login.html")
-		footerPage := path.Join("./templates", "footer.html")
+		layoutPage := path.Join("./public/templates", "layout.html")
+		headerPage := path.Join("./public/templates", "header.html")
+		loginPage := path.Join("./public/templates", "login.html")
+		footerPage := path.Join("./public/templates", "footer.html")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, loginPage, footerPage)
 		pkg.CheckError("Error on template parse", err)
