@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"sorcia/cmd"
-	"sorcia/setting"
+	"sorcia/pkg"
 )
 
 func main() {
@@ -15,7 +15,7 @@ func main() {
 	}
 
 	// Get config values
-	conf := setting.GetConf()
+	conf := pkg.GetConf()
 
 	switch os.Args[1] {
 	case "web":

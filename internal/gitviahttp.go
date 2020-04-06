@@ -1,4 +1,4 @@
-package handler
+package internal
 
 import (
 	"bytes"
@@ -15,10 +15,8 @@ import (
 	"strings"
 	"time"
 
-	errorhandler "sorcia/error"
-	"sorcia/model"
-	"sorcia/setting"
-	"sorcia/util"
+	"sorcia/models"
+	"sorcia/pkg"
 )
 
 type gitHandler struct {
@@ -41,7 +39,7 @@ func (gh *gitHandler) basicAuth(realm string) (string, string, bool) {
 }
 
 func (gh *gitHandler) processRepoAccess(rpc, realm string) bool {
-	isRepoPrivate := model.GetRepoType(gh.db, gh.reponame)
+	isRepoPrivate := models.GetRepoType(gh.db, gh.reponame)
 
 	if isRepoPrivate && rpc == "upload-pack" {
 		username, password, ok := gh.basicAuth(realm)
@@ -49,20 +47,20 @@ func (gh *gitHandler) processRepoAccess(rpc, realm string) bool {
 			return false
 		}
 
-		sphjwt := model.SelectPasswordHashAndJWTTokenStruct{
+		sphjwt := models.SelectPasswordHashAndJWTTokenStruct{
 			Username: username,
 		}
-		sphjwtr := model.SelectPasswordHashAndJWTToken(gh.db, sphjwt)
+		sphjwtr := models.SelectPasswordHashAndJWTToken(gh.db, sphjwt)
 
 		isPasswordValid := CheckPasswordHash(password, sphjwtr.PasswordHash)
 
 		if isPasswordValid {
-			userID := model.GetUserIDFromUsername(gh.db, username)
-			repoID := model.GetRepoIDFromReponame(gh.db, gh.reponame)
-			if model.CheckRepoOwnerFromUserIDAndReponame(gh.db, userID, gh.reponame) {
+			userID := models.GetUserIDFromUsername(gh.db, username)
+			repoID := models.GetRepoIDFromReponame(gh.db, gh.reponame)
+			if models.CheckRepoOwnerFromUserIDAndReponame(gh.db, userID, gh.reponame) {
 				return true
-			} else if model.CheckRepoMemberExistFromUserIDAndRepoID(gh.db, userID, repoID) {
-				permission := model.GetRepoMemberPermissionFromUserIDAndRepoID(gh.db, userID, repoID)
+			} else if models.CheckRepoMemberExistFromUserIDAndRepoID(gh.db, userID, repoID) {
+				permission := models.GetRepoMemberPermissionFromUserIDAndRepoID(gh.db, userID, repoID)
 				if permission == "read" || permission == "read/write" {
 					return true
 				}
@@ -78,20 +76,20 @@ func (gh *gitHandler) processRepoAccess(rpc, realm string) bool {
 			return false
 		}
 
-		sphjwt := model.SelectPasswordHashAndJWTTokenStruct{
+		sphjwt := models.SelectPasswordHashAndJWTTokenStruct{
 			Username: username,
 		}
-		sphjwtr := model.SelectPasswordHashAndJWTToken(gh.db, sphjwt)
+		sphjwtr := models.SelectPasswordHashAndJWTToken(gh.db, sphjwt)
 
 		isPasswordValid := CheckPasswordHash(password, sphjwtr.PasswordHash)
 
 		if isPasswordValid {
-			userID := model.GetUserIDFromUsername(gh.db, username)
-			repoID := model.GetRepoIDFromReponame(gh.db, gh.reponame)
-			if model.CheckRepoOwnerFromUserIDAndReponame(gh.db, userID, gh.reponame) {
+			userID := models.GetUserIDFromUsername(gh.db, username)
+			repoID := models.GetRepoIDFromReponame(gh.db, gh.reponame)
+			if models.CheckRepoOwnerFromUserIDAndReponame(gh.db, userID, gh.reponame) {
 				return true
-			} else if model.CheckRepoMemberExistFromUserIDAndRepoID(gh.db, userID, repoID) {
-				permission := model.GetRepoMemberPermissionFromUserIDAndRepoID(gh.db, userID, repoID)
+			} else if models.CheckRepoMemberExistFromUserIDAndRepoID(gh.db, userID, repoID) {
+				permission := models.GetRepoMemberPermissionFromUserIDAndRepoID(gh.db, userID, repoID)
 				if permission == "read/write" {
 					return true
 				}
@@ -122,7 +120,7 @@ func gitCommand(dir string, args ...string) []byte {
 	cmd := exec.Command("git", args...)
 	cmd.Dir = dir
 	out, err := cmd.Output()
-	errorhandler.CheckError("Error on git command function", err)
+	pkg.CheckError("Error on git command function", err)
 
 	return out
 }
@@ -215,7 +213,7 @@ func postServiceRPC(gh gitHandler, rpc string) {
 		}
 
 		if rpc == "receive-pack" {
-			go util.GenerateRefs(gh.refsPath, gh.repoPath, gh.repoGitName)
+			go pkg.GenerateRefs(gh.refsPath, gh.repoPath, gh.repoGitName)
 		}
 	} else {
 		gh.w.Header().Set("WWW-Authenticate", "Basic realm=\".\"")
@@ -245,7 +243,7 @@ func getInfoRefs(gh gitHandler) {
 		gh.w.Write(refs)
 
 		if rpc == "receive-pack" {
-			go util.GenerateRefs(gh.refsPath, gh.repoPath, gh.repoGitName)
+			go pkg.GenerateRefs(gh.refsPath, gh.repoPath, gh.repoGitName)
 		}
 	} else {
 		gh.w.Header().Set("WWW-Authenticate", "Basic realm=\".\"")
@@ -299,17 +297,17 @@ var routes = []struct {
 func writeHdr(w http.ResponseWriter, status int, text string) {
 	w.WriteHeader(status)
 	_, err := w.Write([]byte(text))
-	errorhandler.CheckError("Error on write hdr function", err)
+	pkg.CheckError("Error on write hdr function", err)
 }
 
 func getProjectRootDir() string {
 	projectRootDir, err := filepath.Abs(filepath.Dir(os.Args[0]))
-	errorhandler.CheckError("Error on get project root dir function", err)
+	pkg.CheckError("Error on get project root dir function", err)
 	return projectRootDir
 }
 
 // GitviaHTTP ...
-func GitviaHTTP(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
+func GitviaHTTP(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct) {
 	for _, route := range routes {
 		reqPath := strings.ToLower(r.URL.Path)
 		reqPath = "/" + strings.Split(reqPath, "/r/")[1]

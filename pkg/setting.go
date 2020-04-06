@@ -1,12 +1,10 @@
-package setting
+package pkg
 
 import (
 	"database/sql"
 	"fmt"
 	"os"
 	"path"
-
-	errorhandler "sorcia/error"
 
 	// SQLite3 driver
 	_ "github.com/mattn/go-sqlite3"
@@ -70,7 +68,7 @@ func init() {
 	}
 
 	db, err := sql.Open("sqlite3", path.Join(conf.Paths.DBPath, "sorcia.db?_foreign_keys=on"))
-	errorhandler.CheckError("Error on opening sqlite3", err)
+	CheckError("Error on opening sqlite3", err)
 
 	conf.DBConn = db
 }

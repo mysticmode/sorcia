@@ -1,4 +1,4 @@
-package handler
+package internal
 
 import (
 	"crypto/md5"
@@ -14,10 +14,8 @@ import (
 	"strconv"
 	"strings"
 
-	errorhandler "sorcia/error"
-	"sorcia/model"
-	"sorcia/setting"
-	"sorcia/util"
+	"sorcia/models"
+	"sorcia/pkg"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
@@ -30,18 +28,18 @@ type GetCreateRepoResponse struct {
 	HeaderActiveMenu   string
 	ReponameErrMessage string
 	SorciaVersion      string
-	SiteSettings       util.SiteSettings
+	SiteSettings       SiteSettings
 }
 
 // GetCreateRepo ...
-func GetCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
+func GetCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct) {
 	userPresent := w.Header().Get("user-present")
 
 	if userPresent == "true" {
 		token := w.Header().Get("sorcia-cookie-token")
-		userID := model.GetUserIDFromToken(db, token)
+		userID := models.GetUserIDFromToken(db, token)
 
-		if !model.CheckifUserCanCreateRepo(db, userID) {
+		if !models.CheckifUserCanCreateRepo(db, userID) {
 			http.Redirect(w, r, "/", http.StatusFound)
 		}
 
@@ -51,7 +49,7 @@ func GetCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *set
 		footerPage := path.Join("./templates", "footer.html")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, createRepoPage, footerPage)
-		errorhandler.CheckError("Error on template parse", err)
+		pkg.CheckError("Error on template parse", err)
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
@@ -60,7 +58,7 @@ func GetCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *set
 			IsLoggedIn:       true,
 			HeaderActiveMenu: "",
 			SorciaVersion:    conf.Version,
-			SiteSettings:     util.GetSiteSettings(db, conf),
+			SiteSettings:     GetSiteSettings(db, conf),
 		}
 
 		tmpl.ExecuteTemplate(w, "layout", data)
@@ -77,25 +75,25 @@ type CreateRepoRequest struct {
 }
 
 // PostCreateRepo ...
-func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder *schema.Decoder, conf *setting.BaseStruct) {
+func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder *schema.Decoder, conf *pkg.BaseStruct) {
 	userPresent := w.Header().Get("user-present")
 
 	if userPresent == "true" {
 		token := w.Header().Get("sorcia-cookie-token")
-		userID := model.GetUserIDFromToken(db, token)
+		userID := models.GetUserIDFromToken(db, token)
 
-		if !model.CheckifUserCanCreateRepo(db, userID) {
+		if !models.CheckifUserCanCreateRepo(db, userID) {
 			http.Redirect(w, r, "/", http.StatusFound)
 		}
 
 		if err := r.ParseForm(); err != nil {
 			fmt.Fprintf(w, "ParseForm() err: %v", err)
-			errorResponse := &errorhandler.Response{
+			errorResponse := &pkg.Response{
 				Error: err.Error(),
 			}
 
 			errorJSON, err := json.Marshal(errorResponse)
-			errorhandler.CheckError("Error on post create repo json marshal", err)
+			pkg.CheckError("Error on post create repo json marshal", err)
 
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadRequest)
@@ -105,7 +103,7 @@ func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder 
 
 		var createRepoRequest = &CreateRepoRequest{}
 		err := decoder.Decode(createRepoRequest, r.PostForm)
-		errorhandler.CheckError("Error on post create repo decoder", err)
+		pkg.CheckError("Error on post create repo decoder", err)
 
 		s := createRepoRequest.Name
 		if len(s) > 100 || len(s) < 1 {
@@ -115,7 +113,7 @@ func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder 
 			footerPage := path.Join("./templates", "footer.html")
 
 			tmpl, err := template.ParseFiles(layoutPage, headerPage, createRepoPage, footerPage)
-			errorhandler.CheckError("Error on template parse", err)
+			pkg.CheckError("Error on template parse", err)
 
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			w.WriteHeader(http.StatusOK)
@@ -125,19 +123,19 @@ func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder 
 				HeaderActiveMenu:   "",
 				ReponameErrMessage: "Repository name is too long (maximum is 100 characters).",
 				SorciaVersion:      conf.Version,
-				SiteSettings:       util.GetSiteSettings(db, conf),
+				SiteSettings:       GetSiteSettings(db, conf),
 			}
 
 			tmpl.ExecuteTemplate(w, "layout", data)
 			return
-		} else if strings.HasPrefix(s, "-") || strings.Contains(s, "--") || strings.HasSuffix(s, "-") || !util.IsAlnumOrHyphen(s) {
+		} else if strings.HasPrefix(s, "-") || strings.Contains(s, "--") || strings.HasSuffix(s, "-") || !pkg.IsAlnumOrHyphen(s) {
 			layoutPage := path.Join("./templates", "layout.html")
 			headerPage := path.Join("./templates", "header.html")
 			createRepoPage := path.Join("./templates", "create-repo.html")
 			footerPage := path.Join("./templates", "footer.html")
 
 			tmpl, err := template.ParseFiles(layoutPage, headerPage, createRepoPage, footerPage)
-			errorhandler.CheckError("Error on template parse", err)
+			pkg.CheckError("Error on template parse", err)
 
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			w.WriteHeader(http.StatusOK)
@@ -147,7 +145,7 @@ func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder 
 				HeaderActiveMenu:   "",
 				ReponameErrMessage: "Repository name may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen.",
 				SorciaVersion:      conf.Version,
-				SiteSettings:       util.GetSiteSettings(db, conf),
+				SiteSettings:       GetSiteSettings(db, conf),
 			}
 
 			tmpl.ExecuteTemplate(w, "layout", data)
@@ -159,21 +157,21 @@ func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder 
 			isPrivate = 1
 		}
 
-		crs := model.CreateRepoStruct{
+		crs := models.CreateRepoStruct{
 			Name:        createRepoRequest.Name,
 			Description: createRepoRequest.Description,
 			IsPrivate:   isPrivate,
 			UserID:      userID,
 		}
 
-		model.InsertRepo(db, crs)
+		models.InsertRepo(db, crs)
 
 		// Create Git bare repository
 		bareRepoDir := filepath.Join(conf.Paths.RepoPath, createRepoRequest.Name+".git")
-		gitPath := util.GetGitBinPath()
+		gitPath := pkg.GetGitBinPath()
 
 		args := []string{"init", "--bare", bareRepoDir}
-		_ = util.ForkExec(gitPath, args, ".")
+		_ = pkg.ForkExec(gitPath, args, ".")
 
 		http.Redirect(w, r, "/", http.StatusFound)
 		return
@@ -184,7 +182,7 @@ func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder 
 
 // GetRepoResponse struct
 type GetRepoResponse struct {
-	SiteSettings       util.SiteSettings
+	SiteSettings       SiteSettings
 	SiteStyle          string
 	IsLoggedIn         bool
 	ShowLoginMenu      bool
@@ -199,7 +197,7 @@ type GetRepoResponse struct {
 	RepoAccess         bool
 	RepoPermission     string
 	RepoEmpty          bool
-	RepoMembers        model.GetRepoMembersStruct
+	RepoMembers        models.GetRepoMembersStruct
 	Host               string
 	SSHClone           string
 	TotalCommits       string
@@ -264,13 +262,13 @@ func checkUserLoggedIn(w http.ResponseWriter) bool {
 }
 
 // GetRepo ...
-func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
+func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct) {
 	vars := mux.Vars(r)
 	reponame := vars["reponame"]
 
 	repoDir := filepath.Join(conf.Paths.RepoPath, reponame+".git")
 
-	if repoExists := model.CheckRepoExists(db, reponame); !repoExists {
+	if repoExists := models.CheckRepoExists(db, reponame); !repoExists {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
@@ -279,23 +277,23 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.B
 	var loggedInUserID int
 	if userPresent == "true" {
 		token := w.Header().Get("sorcia-cookie-token")
-		loggedInUserID = model.GetUserIDFromToken(db, token)
+		loggedInUserID = models.GetUserIDFromToken(db, token)
 	}
 
-	userID := model.GetUserIDFromReponame(db, reponame)
-	username := model.GetUsernameFromUserID(db, userID)
-	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
-	totalCommits := util.GetCommitCounts(conf.Paths.RepoPath, reponame)
+	userID := models.GetUserIDFromReponame(db, reponame)
+	username := models.GetUsernameFromUserID(db, userID)
+	repoDescription := models.GetRepoDescriptionFromRepoName(db, reponame)
+	totalCommits := pkg.GetCommitCounts(conf.Paths.RepoPath, reponame)
 
 	var permission string
-	if model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame) {
+	if models.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame) {
 		permission = "read/write"
 	} else {
-		permission = model.GetRepoMemberPermissionFromUserIDAndRepoID(db, loggedInUserID, model.GetRepoIDFromReponame(db, reponame))
+		permission = models.GetRepoMemberPermissionFromUserIDAndRepoID(db, loggedInUserID, models.GetRepoIDFromReponame(db, reponame))
 	}
 
 	data := GetRepoResponse{
-		SiteSettings:     util.GetSiteSettings(db, conf),
+		SiteSettings:     GetSiteSettings(db, conf),
 		IsLoggedIn:       checkUserLoggedIn(w),
 		ShowLoginMenu:    true,
 		HeaderActiveMenu: "",
@@ -303,8 +301,8 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.B
 		Username:         username,
 		Reponame:         reponame,
 		RepoDescription:  repoDescription,
-		IsRepoPrivate:    model.GetRepoType(db, reponame),
-		RepoAccess:       model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame),
+		IsRepoPrivate:    models.GetRepoType(db, reponame),
+		RepoAccess:       models.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame),
 		RepoPermission:   permission,
 		Host:             r.Host,
 		TotalCommits:     totalCommits,
@@ -332,7 +330,7 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.B
 	commits := getCommits(repoDir, "master", -3)
 	data.RepoLogs = *commits
 
-	_, totalTags := util.GetGitTags(repoDir)
+	_, totalTags := pkg.GetGitTags(repoDir)
 	data.TotalRefs = totalTags
 
 	contributors := getContributors(repoDir, false)
@@ -344,10 +342,10 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.B
 
 func processREADME(repoPath string) template.HTML {
 
-	gitPath := util.GetGitBinPath()
+	gitPath := pkg.GetGitBinPath()
 	args := []string{"show", "master:README.md"}
 
-	out := util.ForkExec(gitPath, args, repoPath)
+	out := pkg.ForkExec(gitPath, args, repoPath)
 
 	md := []byte(out)
 	output := blackfriday.Run(md)
@@ -358,11 +356,11 @@ func processREADME(repoPath string) template.HTML {
 }
 
 // GetRepoMeta ...
-func GetRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
+func GetRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct) {
 	vars := mux.Vars(r)
 	reponame := vars["reponame"]
 
-	if repoExists := model.CheckRepoExists(db, reponame); !repoExists {
+	if repoExists := models.CheckRepoExists(db, reponame); !repoExists {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
@@ -372,24 +370,24 @@ func GetRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 	var token string
 	if userPresent == "true" {
 		token = w.Header().Get("sorcia-cookie-token")
-		loggedInUserID = model.GetUserIDFromToken(db, token)
+		loggedInUserID = models.GetUserIDFromToken(db, token)
 	}
 
-	username := model.GetUsernameFromToken(db, token)
-	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
-	repoID := model.GetRepoIDFromReponame(db, reponame)
+	username := models.GetUsernameFromToken(db, token)
+	repoDescription := models.GetRepoDescriptionFromRepoName(db, reponame)
+	repoID := models.GetRepoIDFromReponame(db, reponame)
 
-	grms := model.GetRepoMembers(db, repoID)
+	grms := models.GetRepoMembers(db, repoID)
 
 	var permission string
-	if model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame) {
+	if models.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame) {
 		permission = "read/write"
 	} else {
-		permission = model.GetRepoMemberPermissionFromUserIDAndRepoID(db, loggedInUserID, model.GetRepoIDFromReponame(db, reponame))
+		permission = models.GetRepoMemberPermissionFromUserIDAndRepoID(db, loggedInUserID, models.GetRepoIDFromReponame(db, reponame))
 	}
 
 	data := GetRepoResponse{
-		SiteSettings:     util.GetSiteSettings(db, conf),
+		SiteSettings:     GetSiteSettings(db, conf),
 		IsLoggedIn:       checkUserLoggedIn(w),
 		ShowLoginMenu:    true,
 		HeaderActiveMenu: "",
@@ -397,8 +395,8 @@ func GetRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 		Username:         username,
 		Reponame:         reponame,
 		RepoDescription:  repoDescription,
-		IsRepoPrivate:    model.GetRepoType(db, reponame),
-		RepoAccess:       model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame),
+		IsRepoPrivate:    models.GetRepoType(db, reponame),
+		RepoAccess:       models.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame),
 		RepoPermission:   permission,
 		RepoMembers:      grms,
 	}
@@ -408,7 +406,7 @@ func GetRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 		return
 	}
 
-	if util.GetCommitCounts(conf.Paths.RepoPath, reponame) == "" {
+	if pkg.GetCommitCounts(conf.Paths.RepoPath, reponame) == "" {
 		data.RepoEmpty = true
 	}
 
@@ -417,31 +415,31 @@ func GetRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 }
 
 // PostRepoMetaDelete ...
-func PostRepoMetaDelete(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
+func PostRepoMetaDelete(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct) {
 	userPresent := w.Header().Get("user-present")
 	vars := mux.Vars(r)
 	reponame := vars["reponame"]
 
 	if userPresent == "true" {
 		token := w.Header().Get("sorcia-cookie-token")
-		userID := model.GetUserIDFromToken(db, token)
-		// username := model.GetUsernameFromToken(db, token)
+		userID := models.GetUserIDFromToken(db, token)
+		// username := models.GetUsernameFromToken(db, token)
 
-		if model.CheckRepoOwnerFromUserIDAndReponame(db, userID, reponame) {
-			model.DeleteRepobyReponame(db, reponame)
+		if models.CheckRepoOwnerFromUserIDAndReponame(db, userID, reponame) {
+			models.DeleteRepobyReponame(db, reponame)
 			refsPattern := filepath.Join(conf.Paths.RefsPath, reponame+"*")
 
 			files, err := filepath.Glob(refsPattern)
-			errorhandler.CheckError("Error on post repo meta delete filepath.Glob", err)
+			pkg.CheckError("Error on post repo meta delete filepath.Glob", err)
 
 			for _, f := range files {
 				err := os.Remove(f)
-				errorhandler.CheckError("Error on removing ref files", err)
+				pkg.CheckError("Error on removing ref files", err)
 			}
 
 			repoDir := filepath.Join(conf.Paths.RepoPath, reponame+".git")
 			err = os.RemoveAll(repoDir)
-			errorhandler.CheckError("Error on removing repository directory", err)
+			pkg.CheckError("Error on removing repository directory", err)
 		}
 		http.Redirect(w, r, "/", http.StatusFound)
 		return
@@ -457,24 +455,24 @@ type PostRepoMetaStruct struct {
 }
 
 // PostRepoMeta ...
-func PostRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct, decoder *schema.Decoder) {
+func PostRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct, decoder *schema.Decoder) {
 	userPresent := w.Header().Get("user-present")
 	vars := mux.Vars(r)
 	reponame := vars["reponame"]
 
 	if userPresent == "true" {
 		token := w.Header().Get("sorcia-cookie-token")
-		userID := model.GetUserIDFromToken(db, token)
-		username := model.GetUsernameFromToken(db, token)
+		userID := models.GetUserIDFromToken(db, token)
+		username := models.GetUsernameFromToken(db, token)
 
 		if err := r.ParseForm(); err != nil {
 			fmt.Fprintf(w, "ParseForm() err: %v", err)
-			errorResponse := &errorhandler.Response{
+			errorResponse := &pkg.Response{
 				Error: err.Error(),
 			}
 
 			errorJSON, err := json.Marshal(errorResponse)
-			errorhandler.CheckError("Error on post create repo json marshal", err)
+			pkg.CheckError("Error on post create repo json marshal", err)
 
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadRequest)
@@ -484,7 +482,7 @@ func PostRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *sett
 
 		var postRepoMetaStruct = &PostRepoMetaStruct{}
 		err := decoder.Decode(postRepoMetaStruct, r.PostForm)
-		errorhandler.CheckError("Error on post repo meta decoder", err)
+		pkg.CheckError("Error on post repo meta decoder", err)
 
 		s := postRepoMetaStruct.Name
 		if len(s) > 100 || len(s) < 1 {
@@ -494,13 +492,13 @@ func PostRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *sett
 			footerPage := path.Join("./templates", "footer.html")
 
 			tmpl, err := template.ParseFiles(layoutPage, headerPage, repoMetaPage, footerPage)
-			errorhandler.CheckError("Error on template parse", err)
+			pkg.CheckError("Error on template parse", err)
 
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			w.WriteHeader(http.StatusOK)
 
 			data := GetRepoResponse{
-				SiteSettings:       util.GetSiteSettings(db, conf),
+				SiteSettings:       GetSiteSettings(db, conf),
 				IsLoggedIn:         checkUserLoggedIn(w),
 				ShowLoginMenu:      true,
 				HeaderActiveMenu:   "",
@@ -508,27 +506,27 @@ func PostRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *sett
 				Username:           username,
 				Reponame:           reponame,
 				ReponameErrMessage: "Repository name is too long (maximum is 100 characters).",
-				RepoDescription:    model.GetRepoDescriptionFromRepoName(db, reponame),
-				IsRepoPrivate:      model.GetRepoType(db, reponame),
-				RepoAccess:         model.CheckRepoOwnerFromUserIDAndReponame(db, userID, reponame),
+				RepoDescription:    models.GetRepoDescriptionFromRepoName(db, reponame),
+				IsRepoPrivate:      models.GetRepoType(db, reponame),
+				RepoAccess:         models.CheckRepoOwnerFromUserIDAndReponame(db, userID, reponame),
 			}
 
 			tmpl.ExecuteTemplate(w, "layout", data)
 			return
-		} else if strings.HasPrefix(s, "-") || strings.Contains(s, "--") || strings.HasSuffix(s, "-") || !util.IsAlnumOrHyphen(s) {
+		} else if strings.HasPrefix(s, "-") || strings.Contains(s, "--") || strings.HasSuffix(s, "-") || !pkg.IsAlnumOrHyphen(s) {
 			layoutPage := path.Join("./templates", "layout.html")
 			headerPage := path.Join("./templates", "header.html")
 			repoMetaPage := path.Join("./templates", "repo-meta.html")
 			footerPage := path.Join("./templates", "footer.html")
 
 			tmpl, err := template.ParseFiles(layoutPage, headerPage, repoMetaPage, footerPage)
-			errorhandler.CheckError("Error on template parse", err)
+			pkg.CheckError("Error on template parse", err)
 
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			w.WriteHeader(http.StatusOK)
 
 			data := GetRepoResponse{
-				SiteSettings:       util.GetSiteSettings(db, conf),
+				SiteSettings:       GetSiteSettings(db, conf),
 				IsLoggedIn:         checkUserLoggedIn(w),
 				ShowLoginMenu:      true,
 				HeaderActiveMenu:   "",
@@ -536,9 +534,9 @@ func PostRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *sett
 				Username:           username,
 				Reponame:           reponame,
 				ReponameErrMessage: "Repository name may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen.",
-				RepoDescription:    model.GetRepoDescriptionFromRepoName(db, reponame),
-				IsRepoPrivate:      model.GetRepoType(db, reponame),
-				RepoAccess:         model.CheckRepoOwnerFromUserIDAndReponame(db, userID, reponame),
+				RepoDescription:    models.GetRepoDescriptionFromRepoName(db, reponame),
+				IsRepoPrivate:      models.GetRepoType(db, reponame),
+				RepoAccess:         models.CheckRepoOwnerFromUserIDAndReponame(db, userID, reponame),
 			}
 
 			tmpl.ExecuteTemplate(w, "layout", data)
@@ -550,15 +548,15 @@ func PostRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *sett
 			isPrivate = 1
 		}
 
-		if model.CheckRepoOwnerFromUserIDAndReponame(db, userID, reponame) == true {
-			urs := model.UpdateRepoStruct{
-				RepoID:      model.GetRepoIDFromReponame(db, reponame),
+		if models.CheckRepoOwnerFromUserIDAndReponame(db, userID, reponame) == true {
+			urs := models.UpdateRepoStruct{
+				RepoID:      models.GetRepoIDFromReponame(db, reponame),
 				NewName:     postRepoMetaStruct.Name,
 				Description: postRepoMetaStruct.Description,
 				IsPrivate:   isPrivate,
 			}
 
-			model.UpdateRepo(db, urs)
+			models.UpdateRepo(db, urs)
 
 			// Update repository dir name
 			oldRepoDir := filepath.Join(conf.Paths.RepoPath, reponame+".git")
@@ -566,10 +564,10 @@ func PostRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *sett
 
 			if _, err := os.Stat(newRepoDir); os.IsNotExist(err) {
 				err = os.Rename(oldRepoDir, newRepoDir)
-				errorhandler.CheckError("Error on update repository dir name", err)
+				pkg.CheckError("Error on update repository dir name", err)
 			}
 
-			util.UpdateRefsWithNewName(conf.Paths.RefsPath, conf.Paths.RepoPath, reponame, urs.NewName)
+			pkg.UpdateRefsWithNewName(conf.Paths.RefsPath, conf.Paths.RepoPath, reponame, urs.NewName)
 
 			http.Redirect(w, r, "/r/"+urs.NewName+"/meta", http.StatusFound)
 			return
@@ -580,7 +578,7 @@ func PostRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *sett
 }
 
 // RemoveRepoMetaUser ...
-func RemoveRepoMetaUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
+func RemoveRepoMetaUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct) {
 	userPresent := w.Header().Get("user-present")
 	vars := mux.Vars(r)
 	reponame := vars["reponame"]
@@ -588,12 +586,12 @@ func RemoveRepoMetaUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf
 
 	if userPresent == "true" {
 		token := w.Header().Get("sorcia-cookie-token")
-		loggedInUserID := model.GetUserIDFromToken(db, token)
+		loggedInUserID := models.GetUserIDFromToken(db, token)
 
-		if model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame) {
-			userIDToRemove := model.GetUserIDFromUsername(db, username)
-			repoID := model.GetRepoIDFromReponame(db, reponame)
-			model.RemoveRepoMember(db, userIDToRemove, repoID)
+		if models.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame) {
+			userIDToRemove := models.GetUserIDFromUsername(db, username)
+			repoID := models.GetRepoIDFromReponame(db, reponame)
+			models.RemoveRepoMember(db, userIDToRemove, repoID)
 
 			http.Redirect(w, r, "/r/"+reponame+"/meta", http.StatusFound)
 			return
@@ -609,23 +607,23 @@ type PostRepoMetaMember struct {
 }
 
 // PostRepoMetaUser ...
-func PostRepoMetaUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct, decoder *schema.Decoder) {
+func PostRepoMetaUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct, decoder *schema.Decoder) {
 	userPresent := w.Header().Get("user-present")
 	vars := mux.Vars(r)
 	reponame := vars["reponame"]
 
 	if userPresent == "true" {
 		token := w.Header().Get("sorcia-cookie-token")
-		username := model.GetUsernameFromToken(db, token)
+		username := models.GetUsernameFromToken(db, token)
 
 		if err := r.ParseForm(); err != nil {
 			fmt.Fprintf(w, "ParseForm() err: %v", err)
-			errorResponse := &errorhandler.Response{
+			errorResponse := &pkg.Response{
 				Error: err.Error(),
 			}
 
 			errorJSON, err := json.Marshal(errorResponse)
-			errorhandler.CheckError("Error on post create repo json marshal", err)
+			pkg.CheckError("Error on post create repo json marshal", err)
 
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadRequest)
@@ -639,37 +637,37 @@ func PostRepoMetaUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *
 		footerPage := path.Join("./templates", "footer.html")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, repoMetaPage, footerPage)
-		errorhandler.CheckError("Error on template parse", err)
+		pkg.CheckError("Error on template parse", err)
 
 		data := GetRepoResponse{
-			SiteSettings:     util.GetSiteSettings(db, conf),
+			SiteSettings:     GetSiteSettings(db, conf),
 			IsLoggedIn:       checkUserLoggedIn(w),
 			ShowLoginMenu:    true,
 			HeaderActiveMenu: "",
 			SorciaVersion:    conf.Version,
 			Username:         username,
 			Reponame:         reponame,
-			RepoDescription:  model.GetRepoDescriptionFromRepoName(db, reponame),
-			IsRepoPrivate:    model.GetRepoType(db, reponame),
-			RepoAccess:       model.CheckRepoOwnerFromUserIDAndReponame(db, model.GetUserIDFromUsername(db, username), reponame),
+			RepoDescription:  models.GetRepoDescriptionFromRepoName(db, reponame),
+			IsRepoPrivate:    models.GetRepoType(db, reponame),
+			RepoAccess:       models.CheckRepoOwnerFromUserIDAndReponame(db, models.GetUserIDFromUsername(db, username), reponame),
 		}
 
 		var postRepoMetaMember = &PostRepoMetaMember{}
 		err = decoder.Decode(postRepoMetaMember, r.PostForm)
-		errorhandler.CheckError("Error on post repo meta member decoder", err)
+		pkg.CheckError("Error on post repo meta member decoder", err)
 
-		userID := model.GetUserIDFromUsername(db, postRepoMetaMember.Username)
-		repoID := model.GetRepoIDFromReponame(db, reponame)
+		userID := models.GetUserIDFromUsername(db, postRepoMetaMember.Username)
+		repoID := models.GetRepoIDFromReponame(db, reponame)
 		if userID > 0 {
-			if !model.CheckRepoOwnerFromUserIDAndReponame(db, userID, reponame) {
-				if !model.CheckRepoMemberExistFromUserIDAndRepoID(db, userID, repoID) {
-					crm := model.CreateRepoMember{
+			if !models.CheckRepoOwnerFromUserIDAndReponame(db, userID, reponame) {
+				if !models.CheckRepoMemberExistFromUserIDAndRepoID(db, userID, repoID) {
+					crm := models.CreateRepoMember{
 						UserID:     userID,
 						RepoID:     repoID,
 						Permission: postRepoMetaMember.Permission,
 					}
 
-					model.InsertRepoMember(db, crm)
+					models.InsertRepoMember(db, crm)
 
 					http.Redirect(w, r, "/r/"+reponame+"/meta", http.StatusFound)
 					return
@@ -695,19 +693,19 @@ func PostRepoMetaUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *
 }
 
 // GetRepoTree ...
-func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
+func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct) {
 	vars := mux.Vars(r)
 	reponame := vars["reponame"]
 	branch := vars["branch"]
 
 	repoDir := filepath.Join(conf.Paths.RepoPath, reponame+".git")
 
-	if repoExists := model.CheckRepoExists(db, reponame); !repoExists {
+	if repoExists := models.CheckRepoExists(db, reponame); !repoExists {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
-	if util.GetCommitCounts(conf.Paths.RepoPath, reponame) == "" {
+	if pkg.GetCommitCounts(conf.Paths.RepoPath, reponame) == "" {
 		http.Redirect(w, r, "/r/"+reponame, http.StatusFound)
 		return
 	}
@@ -716,30 +714,30 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 	var loggedInUserID int
 	if userPresent == "true" {
 		token := w.Header().Get("sorcia-cookie-token")
-		loggedInUserID = model.GetUserIDFromToken(db, token)
+		loggedInUserID = models.GetUserIDFromToken(db, token)
 	}
 
-	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
+	repoDescription := models.GetRepoDescriptionFromRepoName(db, reponame)
 
 	var permission string
-	if model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame) {
+	if models.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame) {
 		permission = "read/write"
 	} else {
-		permission = model.GetRepoMemberPermissionFromUserIDAndRepoID(db, loggedInUserID, model.GetRepoIDFromReponame(db, reponame))
+		permission = models.GetRepoMemberPermissionFromUserIDAndRepoID(db, loggedInUserID, models.GetRepoIDFromReponame(db, reponame))
 	}
 
 	data := GetRepoResponse{
-		SiteSettings:     util.GetSiteSettings(db, conf),
+		SiteSettings:     GetSiteSettings(db, conf),
 		IsLoggedIn:       checkUserLoggedIn(w),
 		ShowLoginMenu:    true,
 		HeaderActiveMenu: "",
 		SorciaVersion:    conf.Version,
 		Reponame:         reponame,
-		RepoAccess:       model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame),
+		RepoAccess:       models.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame),
 		RepoPermission:   permission,
 		RepoDescription:  repoDescription,
-		IsRepoPrivate:    model.GetRepoType(db, reponame),
-		RepoBranches:     util.GetGitBranches(repoDir),
+		IsRepoPrivate:    models.GetRepoType(db, reponame),
+		RepoBranches:     pkg.GetGitBranches(repoDir),
 	}
 
 	if !data.IsLoggedIn && data.IsRepoPrivate {
@@ -747,7 +745,7 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 		return
 	}
 
-	gitPath := util.GetGitBinPath()
+	gitPath := pkg.GetGitBinPath()
 
 	dirs, files := walkThrough(repoDir, gitPath, branch, ".", 0)
 
@@ -759,7 +757,7 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 	commit := getCommits(repoDir, branch, -1)
 	data.RepoLogs = *commit
 	if len(data.RepoLogs.History) == 1 {
-		data.RepoLogs.History[0].Message = util.LimitCharLengthInString(data.RepoLogs.History[0].Message)
+		data.RepoLogs.History[0].Message = pkg.LimitCharLengthInString(data.RepoLogs.History[0].Message)
 	}
 
 	writeRepoResponse(w, r, db, reponame, "repo-tree.html", data)
@@ -767,17 +765,17 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 }
 
 // GetRepoTreePath ...
-func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
+func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct) {
 	vars := mux.Vars(r)
 	reponame := vars["reponame"]
 	branchOrHash := vars["branchorhash"]
 
-	if repoExists := model.CheckRepoExists(db, reponame); !repoExists {
+	if repoExists := models.CheckRepoExists(db, reponame); !repoExists {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
-	if util.GetCommitCounts(conf.Paths.RepoPath, reponame) == "" {
+	if pkg.GetCommitCounts(conf.Paths.RepoPath, reponame) == "" {
 		http.Redirect(w, r, "/r/"+reponame, http.StatusFound)
 		return
 	}
@@ -786,32 +784,32 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 	var loggedInUserID int
 	if userPresent == "true" {
 		token := w.Header().Get("sorcia-cookie-token")
-		loggedInUserID = model.GetUserIDFromToken(db, token)
+		loggedInUserID = models.GetUserIDFromToken(db, token)
 	}
 
 	repoDir := filepath.Join(conf.Paths.RepoPath, reponame+".git")
-	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
+	repoDescription := models.GetRepoDescriptionFromRepoName(db, reponame)
 
 	var permission string
-	if model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame) {
+	if models.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame) {
 		permission = "read/write"
 	} else {
-		permission = model.GetRepoMemberPermissionFromUserIDAndRepoID(db, loggedInUserID, model.GetRepoIDFromReponame(db, reponame))
+		permission = models.GetRepoMemberPermissionFromUserIDAndRepoID(db, loggedInUserID, models.GetRepoIDFromReponame(db, reponame))
 	}
 
 	data := GetRepoResponse{
-		SiteSettings:     util.GetSiteSettings(db, conf),
+		SiteSettings:     GetSiteSettings(db, conf),
 		IsLoggedIn:       checkUserLoggedIn(w),
 		ShowLoginMenu:    true,
 		HeaderActiveMenu: "",
 		SorciaVersion:    conf.Version,
 		Reponame:         reponame,
-		RepoAccess:       model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame),
+		RepoAccess:       models.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame),
 		RepoPermission:   permission,
 		RepoDescription:  repoDescription,
 		IsRepoBranch:     true,
-		IsRepoPrivate:    model.GetRepoType(db, reponame),
-		RepoBranches:     util.GetGitBranches(repoDir),
+		IsRepoPrivate:    models.GetRepoType(db, reponame),
+		RepoBranches:     pkg.GetGitBranches(repoDir),
 	}
 
 	if !data.IsLoggedIn && data.IsRepoPrivate {
@@ -819,11 +817,11 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 		return
 	}
 
-	gitPath := util.GetGitBinPath()
+	gitPath := pkg.GetGitBinPath()
 	frdpath := strings.Split(r.URL.Path, "r/"+reponame+"/tree/"+branchOrHash+"/")[1]
 
 	args := []string{"branch"}
-	out := util.ForkExec(gitPath, args, repoDir)
+	out := pkg.ForkExec(gitPath, args, repoDir)
 
 	ss := strings.Split(out, "\n")
 	entries := ss[:len(ss)-1]
@@ -855,7 +853,7 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 
 			if len(dirs) == 0 && len(files) == 0 {
 				args := []string{"show", fmt.Sprintf("%s:%s", branchOrHash, frdpath)}
-				out := util.ForkExec(gitPath, args, repoDir)
+				out := pkg.ForkExec(gitPath, args, repoDir)
 
 				frdSplit := strings.Split(frdpath, "/")
 
@@ -871,7 +869,7 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 
 				data.RepoDetail.FileContent = template.HTML(fileContent)
 
-				data.SiteStyle = model.GetSiteStyle(db)
+				data.SiteStyle = models.GetSiteStyle(db)
 
 				writeRepoResponse(w, r, db, reponame, "file-viewer.html", data)
 				return
@@ -887,13 +885,13 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 	data.IsRepoBranch = false
 
 	args = []string{"show", branchOrHash, "--pretty=format:", "--", frdpath}
-	out = util.ForkExec(gitPath, args, repoDir)
+	out = pkg.ForkExec(gitPath, args, repoDir)
 
 	diffLine := strings.Split(out, "\n")[0]
 
 	if diffLine == fmt.Sprintf("diff --git a/%s b/%s", frdpath, frdpath) {
 		args = []string{"show", fmt.Sprintf("%s:%s", branchOrHash, frdpath)}
-		out = util.ForkExec(gitPath, args, repoDir)
+		out = pkg.ForkExec(gitPath, args, repoDir)
 	}
 
 	frdSplit := strings.Split(frdpath, "/")
@@ -910,7 +908,7 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 
 	data.RepoDetail.FileContent = template.HTML(fileContent)
 
-	data.SiteStyle = model.GetSiteStyle(db)
+	data.SiteStyle = models.GetSiteStyle(db)
 
 	writeRepoResponse(w, r, db, reponame, "file-viewer.html", data)
 	return
@@ -921,7 +919,7 @@ func walkThrough(repoDir, gitPath, branch, lsTreePath string, lsTreePathLen int)
 	var dirs, files []string
 
 	args := []string{"ls-tree", "-r", "--name-only", branch, "HEAD", lsTreePath + "/"}
-	out := util.ForkExec(gitPath, args, repoDir)
+	out := pkg.ForkExec(gitPath, args, repoDir)
 
 	ss := strings.Split(out, "\n")
 	entries := ss[:len(ss)-1]
@@ -931,12 +929,12 @@ func walkThrough(repoDir, gitPath, branch, lsTreePath string, lsTreePathLen int)
 
 		if len(entrySplit) == 1 {
 			files = append(files, entrySplit[0])
-		} else if lsTreePathLen == 0 && !util.ContainsValueInArr(dirs, entrySplit[0]) {
+		} else if lsTreePathLen == 0 && !pkg.ContainsValueInArr(dirs, entrySplit[0]) {
 			dirs = append(dirs, entrySplit[0])
 		} else {
 			newPath := strings.Join(entrySplit[:lsTreePathLen+1], "/")
 			args = []string{"ls-tree", "-r", "--name-only", branch, "HEAD", newPath}
-			out = util.ForkExec(gitPath, args, repoDir)
+			out = pkg.ForkExec(gitPath, args, repoDir)
 			ss = strings.Split(out, "\n")
 			newEntries := ss[:len(ss)-1]
 
@@ -946,7 +944,7 @@ func walkThrough(repoDir, gitPath, branch, lsTreePath string, lsTreePathLen int)
 				if len(newEntrySplit) == (lsTreePathLen + 1) {
 					files = append(files, newEntrySplit[lsTreePathLen])
 				} else {
-					if !util.ContainsValueInArr(dirs, newEntrySplit[lsTreePathLen]) {
+					if !pkg.ContainsValueInArr(dirs, newEntrySplit[lsTreePathLen]) {
 						dirs = append(dirs, newEntrySplit[lsTreePathLen])
 					}
 				}
@@ -959,7 +957,7 @@ func walkThrough(repoDir, gitPath, branch, lsTreePath string, lsTreePathLen int)
 
 // applyDirsAndFiles ...
 func applyDirsAndFiles(dirs, files []string, repoDir, frdpath, branch string) ([]RepoDirDetail, []RepoFileDetail) {
-	gitPath := util.GetGitBinPath()
+	gitPath := pkg.GetGitBinPath()
 	repoDetail := RepoDetail{}
 
 	for _, dir := range dirs {
@@ -967,14 +965,14 @@ func applyDirsAndFiles(dirs, files []string, repoDir, frdpath, branch string) ([
 		repoDirDetail := RepoDirDetail{}
 
 		args := []string{"log", branch, "-n", "1", "--pretty=format:%s||srca-sptra||%cr||srca-sptra||%H", "--", dirPath}
-		out := util.ForkExec(gitPath, args, repoDir)
+		out := pkg.ForkExec(gitPath, args, repoDir)
 
 		ss := strings.Split(out, "||srca-sptra||")
 
 		repoDirDetail.DirName = dir
 		commit := ss[0]
 		if len(commit) > 50 {
-			commit = util.LimitCharLengthInString(commit)
+			commit = pkg.LimitCharLengthInString(commit)
 		}
 
 		repoDirDetail.DirCommit = commit
@@ -989,14 +987,14 @@ func applyDirsAndFiles(dirs, files []string, repoDir, frdpath, branch string) ([
 		repoFileDetail := RepoFileDetail{}
 
 		args := []string{"log", branch, "-n", "1", "--pretty=format:%s||srca-sptra||%cr||srca-sptra||%H", "--", filePath}
-		out := util.ForkExec(gitPath, args, repoDir)
+		out := pkg.ForkExec(gitPath, args, repoDir)
 
 		ss := strings.Split(out, "||srca-sptra||")
 
 		repoFileDetail.FileName = file
 		commit := ss[0]
 		if len(commit) > 50 {
-			commit = util.LimitCharLengthInString(commit)
+			commit = pkg.LimitCharLengthInString(commit)
 		}
 
 		repoFileDetail.FileCommit = commit
@@ -1010,7 +1008,7 @@ func applyDirsAndFiles(dirs, files []string, repoDir, frdpath, branch string) ([
 }
 
 // GetRepoLog ...
-func GetRepoLog(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
+func GetRepoLog(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct) {
 	vars := mux.Vars(r)
 	reponame := vars["reponame"]
 	branch := vars["branch"]
@@ -1026,12 +1024,12 @@ func GetRepoLog(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *settin
 		fromHash = qFrom[0]
 	}
 
-	if repoExists := model.CheckRepoExists(db, reponame); !repoExists {
+	if repoExists := models.CheckRepoExists(db, reponame); !repoExists {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
-	if util.GetCommitCounts(conf.Paths.RepoPath, reponame) == "" {
+	if pkg.GetCommitCounts(conf.Paths.RepoPath, reponame) == "" {
 		http.Redirect(w, r, "/r/"+reponame, http.StatusFound)
 		return
 	}
@@ -1040,30 +1038,30 @@ func GetRepoLog(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *settin
 	var loggedInUserID int
 	if userPresent == "true" {
 		token := w.Header().Get("sorcia-cookie-token")
-		loggedInUserID = model.GetUserIDFromToken(db, token)
+		loggedInUserID = models.GetUserIDFromToken(db, token)
 	}
 
-	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
+	repoDescription := models.GetRepoDescriptionFromRepoName(db, reponame)
 
 	var permission string
-	if model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame) {
+	if models.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame) {
 		permission = "read/write"
 	} else {
-		permission = model.GetRepoMemberPermissionFromUserIDAndRepoID(db, loggedInUserID, model.GetRepoIDFromReponame(db, reponame))
+		permission = models.GetRepoMemberPermissionFromUserIDAndRepoID(db, loggedInUserID, models.GetRepoIDFromReponame(db, reponame))
 	}
 
 	data := GetRepoResponse{
-		SiteSettings:     util.GetSiteSettings(db, conf),
+		SiteSettings:     GetSiteSettings(db, conf),
 		IsLoggedIn:       checkUserLoggedIn(w),
 		ShowLoginMenu:    true,
 		HeaderActiveMenu: "",
 		SorciaVersion:    conf.Version,
 		Reponame:         reponame,
-		RepoAccess:       model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame),
+		RepoAccess:       models.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame),
 		RepoPermission:   permission,
 		RepoDescription:  repoDescription,
-		IsRepoPrivate:    model.GetRepoType(db, reponame),
-		RepoBranches:     util.GetGitBranches(repoDir),
+		IsRepoPrivate:    models.GetRepoType(db, reponame),
+		RepoBranches:     pkg.GetGitBranches(repoDir),
 	}
 
 	if !data.IsLoggedIn && data.IsRepoPrivate {
@@ -1089,16 +1087,16 @@ type Refs struct {
 }
 
 // GetRepoRefs ...
-func GetRepoRefs(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
+func GetRepoRefs(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct) {
 	vars := mux.Vars(r)
 	reponame := vars["reponame"]
 
-	if repoExists := model.CheckRepoExists(db, reponame); !repoExists {
+	if repoExists := models.CheckRepoExists(db, reponame); !repoExists {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
-	if util.GetCommitCounts(conf.Paths.RepoPath, reponame) == "" {
+	if pkg.GetCommitCounts(conf.Paths.RepoPath, reponame) == "" {
 		http.Redirect(w, r, "/r/"+reponame, http.StatusFound)
 		return
 	}
@@ -1107,29 +1105,29 @@ func GetRepoRefs(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 	var loggedInUserID int
 	if userPresent == "true" {
 		token := w.Header().Get("sorcia-cookie-token")
-		loggedInUserID = model.GetUserIDFromToken(db, token)
+		loggedInUserID = models.GetUserIDFromToken(db, token)
 	}
 
-	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
+	repoDescription := models.GetRepoDescriptionFromRepoName(db, reponame)
 
 	var permission string
-	if model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame) {
+	if models.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame) {
 		permission = "read/write"
 	} else {
-		permission = model.GetRepoMemberPermissionFromUserIDAndRepoID(db, loggedInUserID, model.GetRepoIDFromReponame(db, reponame))
+		permission = models.GetRepoMemberPermissionFromUserIDAndRepoID(db, loggedInUserID, models.GetRepoIDFromReponame(db, reponame))
 	}
 
 	data := GetRepoResponse{
-		SiteSettings:     util.GetSiteSettings(db, conf),
+		SiteSettings:     GetSiteSettings(db, conf),
 		IsLoggedIn:       checkUserLoggedIn(w),
 		ShowLoginMenu:    true,
 		HeaderActiveMenu: "",
 		SorciaVersion:    conf.Version,
 		Reponame:         reponame,
-		RepoAccess:       model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame),
+		RepoAccess:       models.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame),
 		RepoPermission:   permission,
 		RepoDescription:  repoDescription,
-		IsRepoPrivate:    model.GetRepoType(db, reponame),
+		IsRepoPrivate:    models.GetRepoType(db, reponame),
 	}
 
 	if !data.IsLoggedIn && data.IsRepoPrivate {
@@ -1139,9 +1137,9 @@ func GetRepoRefs(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 
 	repoDir := filepath.Join(conf.Paths.RepoPath, reponame+".git")
 
-	gitPath := util.GetGitBinPath()
+	gitPath := pkg.GetGitBinPath()
 	args := []string{"for-each-ref", "--sort=-taggerdate", "--format", "%(refname) %(contents:subject)", "refs/tags"}
-	out := util.ForkExec(gitPath, args, repoDir)
+	out := pkg.ForkExec(gitPath, args, repoDir)
 
 	lineSplit := strings.Split(out, "\n")
 	lines := lineSplit[:len(lineSplit)-1]
@@ -1192,7 +1190,7 @@ func GetRepoRefs(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setti
 }
 
 // ServeRefFile ...
-func ServeRefFile(w http.ResponseWriter, r *http.Request, conf *setting.BaseStruct) {
+func ServeRefFile(w http.ResponseWriter, r *http.Request, conf *pkg.BaseStruct) {
 	vars := mux.Vars(r)
 	fileName := vars["file"]
 	dlPath := filepath.Join(conf.Paths.RefsPath, fileName)
@@ -1200,18 +1198,18 @@ func ServeRefFile(w http.ResponseWriter, r *http.Request, conf *setting.BaseStru
 }
 
 // GetRepoContributors ...
-func GetRepoContributors(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
+func GetRepoContributors(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct) {
 	vars := mux.Vars(r)
 	reponame := vars["reponame"]
 
 	repoDir := filepath.Join(conf.Paths.RepoPath, reponame+".git")
 
-	if repoExists := model.CheckRepoExists(db, reponame); !repoExists {
+	if repoExists := models.CheckRepoExists(db, reponame); !repoExists {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
-	if util.GetCommitCounts(conf.Paths.RepoPath, reponame) == "" {
+	if pkg.GetCommitCounts(conf.Paths.RepoPath, reponame) == "" {
 		http.Redirect(w, r, "/r/"+reponame, http.StatusFound)
 		return
 	}
@@ -1220,29 +1218,29 @@ func GetRepoContributors(w http.ResponseWriter, r *http.Request, db *sql.DB, con
 	var loggedInUserID int
 	if userPresent == "true" {
 		token := w.Header().Get("sorcia-cookie-token")
-		loggedInUserID = model.GetUserIDFromToken(db, token)
+		loggedInUserID = models.GetUserIDFromToken(db, token)
 	}
 
-	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
+	repoDescription := models.GetRepoDescriptionFromRepoName(db, reponame)
 
 	var permission string
-	if model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame) {
+	if models.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame) {
 		permission = "read/write"
 	} else {
-		permission = model.GetRepoMemberPermissionFromUserIDAndRepoID(db, loggedInUserID, model.GetRepoIDFromReponame(db, reponame))
+		permission = models.GetRepoMemberPermissionFromUserIDAndRepoID(db, loggedInUserID, models.GetRepoIDFromReponame(db, reponame))
 	}
 
 	data := GetRepoResponse{
-		SiteSettings:     util.GetSiteSettings(db, conf),
+		SiteSettings:     GetSiteSettings(db, conf),
 		IsLoggedIn:       checkUserLoggedIn(w),
 		ShowLoginMenu:    true,
 		HeaderActiveMenu: "",
 		SorciaVersion:    conf.Version,
 		Reponame:         reponame,
-		RepoAccess:       model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame),
+		RepoAccess:       models.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame),
 		RepoPermission:   permission,
 		RepoDescription:  repoDescription,
-		IsRepoPrivate:    model.GetRepoType(db, reponame),
+		IsRepoPrivate:    models.GetRepoType(db, reponame),
 	}
 
 	if !data.IsLoggedIn && data.IsRepoPrivate {
@@ -1286,7 +1284,7 @@ type CommitAmpersand struct {
 }
 
 // GetCommitDetail ...
-func GetCommitDetail(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *setting.BaseStruct) {
+func GetCommitDetail(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct) {
 	vars := mux.Vars(r)
 	reponame := vars["reponame"]
 	commitHash := vars["hash"]
@@ -1294,12 +1292,12 @@ func GetCommitDetail(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 
 	repoDir := filepath.Join(conf.Paths.RepoPath, reponame+".git")
 
-	if repoExists := model.CheckRepoExists(db, reponame); !repoExists {
+	if repoExists := models.CheckRepoExists(db, reponame); !repoExists {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
-	if util.GetCommitCounts(conf.Paths.RepoPath, reponame) == "" {
+	if pkg.GetCommitCounts(conf.Paths.RepoPath, reponame) == "" {
 		http.Redirect(w, r, "/r/"+reponame, http.StatusFound)
 		return
 	}
@@ -1308,30 +1306,30 @@ func GetCommitDetail(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 	var loggedInUserID int
 	if userPresent == "true" {
 		token := w.Header().Get("sorcia-cookie-token")
-		loggedInUserID = model.GetUserIDFromToken(db, token)
+		loggedInUserID = models.GetUserIDFromToken(db, token)
 	}
 
-	repoDescription := model.GetRepoDescriptionFromRepoName(db, reponame)
+	repoDescription := models.GetRepoDescriptionFromRepoName(db, reponame)
 
 	var permission string
-	if model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame) {
+	if models.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame) {
 		permission = "read/write"
 	} else {
-		permission = model.GetRepoMemberPermissionFromUserIDAndRepoID(db, loggedInUserID, model.GetRepoIDFromReponame(db, reponame))
+		permission = models.GetRepoMemberPermissionFromUserIDAndRepoID(db, loggedInUserID, models.GetRepoIDFromReponame(db, reponame))
 	}
 
 	data := GetRepoResponse{
-		SiteSettings:     util.GetSiteSettings(db, conf),
-		SiteStyle:        model.GetSiteStyle(db),
+		SiteSettings:     GetSiteSettings(db, conf),
+		SiteStyle:        models.GetSiteStyle(db),
 		IsLoggedIn:       checkUserLoggedIn(w),
 		ShowLoginMenu:    true,
 		HeaderActiveMenu: "",
 		SorciaVersion:    conf.Version,
 		Reponame:         reponame,
-		RepoAccess:       model.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame),
+		RepoAccess:       models.CheckRepoOwnerFromUserIDAndReponame(db, loggedInUserID, reponame),
 		RepoPermission:   permission,
 		RepoDescription:  repoDescription,
-		IsRepoPrivate:    model.GetRepoType(db, reponame),
+		IsRepoPrivate:    models.GetRepoType(db, reponame),
 	}
 
 	if !data.IsLoggedIn && data.IsRepoPrivate {
@@ -1339,10 +1337,10 @@ func GetCommitDetail(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 		return
 	}
 
-	gitPath := util.GetGitBinPath()
+	gitPath := pkg.GetGitBinPath()
 
 	args := []string{"show", commitHash, "--name-status", "--pretty=format:%ae||srca-sptra||%an||srca-sptra||%s||srca-sptra||%ar"}
-	out := util.ForkExec(gitPath, args, repoDir)
+	out := pkg.ForkExec(gitPath, args, repoDir)
 
 	lines := strings.Split(out, "\n")
 	// Remove empty last line
@@ -1380,7 +1378,7 @@ func GetCommitDetail(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 		}
 
 		args := []string{"show", commitHash, commitHash, "--pretty=format:", "--full-index", "--", cf.Filename}
-		out := util.ForkExec(gitPath, args, repoDir)
+		out := pkg.ForkExec(gitPath, args, repoDir)
 
 		lines = strings.Split(out, "\n")
 
@@ -1426,7 +1424,7 @@ func GetCommitDetail(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *s
 
 	// Get commit status
 	args = []string{"show", commitHash, "--stat", "--pretty=format:"}
-	out = util.ForkExec(gitPath, args, repoDir)
+	out = pkg.ForkExec(gitPath, args, repoDir)
 
 	lines = strings.Split(out, "\n")
 	// Remove empty last line
@@ -1454,10 +1452,10 @@ type Contributor struct {
 }
 
 func getContributors(repoDir string, getDetail bool) *Contributors {
-	gitPath := util.GetGitBinPath()
+	gitPath := pkg.GetGitBinPath()
 
 	args := []string{"shortlog", "HEAD", "-sne"}
-	out := util.ForkExec(gitPath, args, repoDir)
+	out := pkg.ForkExec(gitPath, args, repoDir)
 
 	cStringRmLastLn := strings.TrimSuffix(out, "\n")
 	lines := strings.Split(cStringRmLastLn, "\n")
@@ -1490,12 +1488,12 @@ func getContributors(repoDir string, getDetail bool) *Contributors {
 }
 
 func noRepoAccess(w http.ResponseWriter) {
-	errorResponse := &errorhandler.Response{
+	errorResponse := &pkg.Response{
 		Error: "You don't have access to this repository.",
 	}
 
 	errorJSON, err := json.Marshal(errorResponse)
-	errorhandler.CheckError("Error on no repo access function json marshal", err)
+	pkg.CheckError("Error on no repo access function json marshal", err)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusBadRequest)
@@ -1505,7 +1503,7 @@ func noRepoAccess(w http.ResponseWriter) {
 
 func writeRepoResponse(w http.ResponseWriter, r *http.Request, db *sql.DB, reponame string, mainPage string, data GetRepoResponse) {
 	// Check if repository is not private
-	if isRepoPrivate := model.GetRepoType(db, reponame); !isRepoPrivate {
+	if isRepoPrivate := models.GetRepoType(db, reponame); !isRepoPrivate {
 		tmpl := parseTemplates(w, mainPage)
 		tmpl.ExecuteTemplate(w, "layout", data)
 	} else {
@@ -1513,13 +1511,13 @@ func writeRepoResponse(w http.ResponseWriter, r *http.Request, db *sql.DB, repon
 
 		if userPresent != "" {
 			token := w.Header().Get("sorcia-cookie-token")
-			userIDFromToken := model.GetUserIDFromToken(db, token)
+			userIDFromToken := models.GetUserIDFromToken(db, token)
 
 			// Check if the logged in user has access to view the repository.
-			hasRepoAccess := model.CheckRepoOwnerFromUserIDAndReponame(db, userIDFromToken, reponame)
+			hasRepoAccess := models.CheckRepoOwnerFromUserIDAndReponame(db, userIDFromToken, reponame)
 			if !hasRepoAccess {
-				repoID := model.GetRepoIDFromReponame(db, reponame)
-				hasRepoAccess = model.CheckRepoMemberExistFromUserIDAndRepoID(db, userIDFromToken, repoID)
+				repoID := models.GetRepoIDFromReponame(db, reponame)
+				hasRepoAccess = models.CheckRepoMemberExistFromUserIDAndRepoID(db, userIDFromToken, repoID)
 			}
 			if hasRepoAccess {
 				data.IsRepoPrivate = true
@@ -1541,7 +1539,7 @@ func parseTemplates(w http.ResponseWriter, mainPage string) *template.Template {
 	footerPage := path.Join("./templates", "footer.html")
 
 	tmpl, err := template.ParseFiles(layoutPage, headerPage, repoLogPage, footerPage)
-	errorhandler.CheckError("Error on template parse", err)
+	pkg.CheckError("Error on template parse", err)
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
@@ -1560,11 +1558,11 @@ func getCommits(repoDir, branch string, commitCount int) *RepoLogs {
 	rla := RepoLogs{}
 	rl := RepoLog{}
 
-	gitPath := util.GetGitBinPath()
+	gitPath := pkg.GetGitBinPath()
 
 	var args []string
 	args = []string{"log", branch, strconv.Itoa(commitCount), "--pretty=format:%H||srca-sptra||%h||srca-sptra||%d||srca-sptra||%s||srca-sptra||%cr||srca-sptra||%an||srca-sptra||%ae"}
-	out := util.ForkExec(gitPath, args, repoDir)
+	out := pkg.ForkExec(gitPath, args, repoDir)
 
 	ss := strings.Split(out, "\n")
 
@@ -1603,9 +1601,9 @@ func getCommitsFromHash(repoDir, branch, fromHash string, commitCount int) *Repo
 		if i == (len(ss) - 1) {
 			hashLink = strings.Split(ss[i], "||srca-sptra||")[0]
 
-			gitPath := util.GetGitBinPath()
+			gitPath := pkg.GetGitBinPath()
 			args := []string{"rev-list", branch, "--max-parents=0", "HEAD"}
-			out := util.ForkExec(gitPath, args, repoDir)
+			out := pkg.ForkExec(gitPath, args, repoDir)
 
 			lastHash := strings.Split(out, "\n")[0]
 
@@ -1639,7 +1637,7 @@ func getCommitsFromHash(repoDir, branch, fromHash string, commitCount int) *Repo
 }
 
 func getGitCommits(commitCount int, branch, fromHash, dirPath string) []string {
-	gitPath := util.GetGitBinPath()
+	gitPath := pkg.GetGitBinPath()
 
 	var args []string
 	if fromHash == "" {
@@ -1647,7 +1645,7 @@ func getGitCommits(commitCount int, branch, fromHash, dirPath string) []string {
 	} else {
 		args = []string{"log", fmt.Sprintf("--max-count=%s", strconv.Itoa(commitCount)), fromHash, "--pretty=format:%H||srca-sptra||%h||srca-sptra||%d||srca-sptra||%s||srca-sptra||%cr||srca-sptra||%an||srca-sptra||%ae"}
 	}
-	out := util.ForkExec(gitPath, args, dirPath)
+	out := pkg.ForkExec(gitPath, args, dirPath)
 
 	ss := strings.Split(out, "\n")
 

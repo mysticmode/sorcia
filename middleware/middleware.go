@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"net/http"
 
-	"sorcia/model"
-	"sorcia/setting"
+	"sorcia/models"
+	"sorcia/pkg"
 
 	// SQLite3 driver
 	_ "github.com/mattn/go-sqlite3"
@@ -15,9 +15,8 @@ var middlewareDB *sql.DB
 
 func init() {
 	// Get config values
-	conf := setting.GetConf()
+	conf := pkg.GetConf()
 
-	// Open postgres database
 	db := conf.DBConn
 
 	middlewareDB = db
@@ -38,7 +37,7 @@ func userMiddleware(w http.ResponseWriter, r *http.Request, db *sql.DB) http.Res
 	for _, cookie := range r.Cookies() {
 		if cookie.Name == cookieName && cookie.Value != "" {
 			cookieValue = cookie.Value
-			userID := model.GetUserIDFromToken(db, cookie.Value)
+			userID := models.GetUserIDFromToken(db, cookie.Value)
 			if userID != 0 {
 				userPresent = "true"
 			}

@@ -9,14 +9,13 @@ import (
 	"strings"
 	"syscall"
 
-	errorhandler "sorcia/error"
-	"sorcia/handler"
-	"sorcia/model"
-	"sorcia/setting"
+	"sorcia/internal"
+	"sorcia/models"
+	"sorcia/pkg"
 )
 
 // UserMod ...
-func UserMod(conf *setting.BaseStruct) {
+func UserMod(conf *pkg.BaseStruct) {
 	// Open postgres database
 	db := conf.DBConn
 	defer db.Close()
@@ -27,7 +26,7 @@ func UserMod(conf *setting.BaseStruct) {
 		fmt.Println("[1] Reset username of a user\n[2] Reset password of a user\n[3] Delete user\n[4] Delete repository")
 		fmt.Print("Enter your option [1/2/3/4]: ")
 		optionInput, err := reader.ReadString('\n')
-		errorhandler.CheckError("User mod", err)
+		pkg.CheckError("User mod", err)
 
 		option := strings.TrimSpace(optionInput)
 
@@ -56,20 +55,20 @@ func resetUserName(db *sql.DB) {
 	for {
 		fmt.Println("Enter the current username of a user")
 		usernameInput, err := reader.ReadString('\n')
-		errorhandler.CheckError("Usermod: Reset username of a user", err)
+		pkg.CheckError("Usermod: Reset username of a user", err)
 
 		username := strings.TrimSpace(usernameInput)
 
-		userID := model.GetUserIDFromUsername(db, username)
+		userID := models.GetUserIDFromUsername(db, username)
 
 		if userID > 0 {
 			fmt.Println("Enter the new username")
 			newUsernameInput, err := reader.ReadString('\n')
-			errorhandler.CheckError("Usermod: new username error", err)
+			pkg.CheckError("Usermod: new username error", err)
 
 			newUsername := strings.TrimSpace(newUsernameInput)
 
-			model.ResetUsernameByUserID(db, newUsername, userID)
+			models.ResetUsernameByUserID(db, newUsername, userID)
 			fmt.Println("Username has been successfully changed.")
 			return
 		}
@@ -83,30 +82,30 @@ func resetUserPassword(db *sql.DB) {
 	for {
 		fmt.Println("Enter the username")
 		usernameInput, err := reader.ReadString('\n')
-		errorhandler.CheckError("Usermod: Reset password of a user - enter username", err)
+		pkg.CheckError("Usermod: Reset password of a user - enter username", err)
 
 		username := strings.TrimSpace(usernameInput)
 
-		userID := model.GetUserIDFromUsername(db, username)
+		userID := models.GetUserIDFromUsername(db, username)
 
 		if userID > 0 {
 			newPassword := getPassword("Enter the password")
 
 			// Generate password hash using bcrypt
-			passwordHash, err := handler.HashPassword(newPassword)
-			errorhandler.CheckError("Error on usermod hash password", err)
+			passwordHash, err := internal.HashPassword(newPassword)
+			pkg.CheckError("Error on usermod hash password", err)
 
 			// Generate JWT token using the hash password above
-			token, err := handler.GenerateJWTToken(passwordHash)
-			errorhandler.CheckError("Error on usermod generate jwt token", err)
+			token, err := internal.GenerateJWTToken(passwordHash)
+			pkg.CheckError("Error on usermod generate jwt token", err)
 
-			rsp := model.ResetUserPasswordbyUsernameStruct{
+			rsp := models.ResetUserPasswordbyUsernameStruct{
 				Username:     username,
 				PasswordHash: passwordHash,
 				JwtToken:     token,
 			}
 
-			model.ResetUserPasswordbyUsername(db, rsp)
+			models.ResetUserPasswordbyUsername(db, rsp)
 
 			fmt.Println("Password has been successfully changed.")
 			return
@@ -118,7 +117,7 @@ func resetUserPassword(db *sql.DB) {
 func getPassword(prompt string) string {
 	fmt.Println(prompt)
 
-	// Common settings and variables for both stty calls.
+	// Common internals and variables for both stty calls.
 	attrs := syscall.ProcAttr{
 		Dir:   "",
 		Env:   []string{},
@@ -166,51 +165,51 @@ func getPassword(prompt string) string {
 	return strings.TrimSpace(text)
 }
 
-func deleteUser(db *sql.DB, conf *setting.BaseStruct) {
+func deleteUser(db *sql.DB, conf *pkg.BaseStruct) {
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
 		fmt.Println("Enter the username (this will delete all the repositories that this user has ownership of)")
 		usernameInput, err := reader.ReadString('\n')
-		errorhandler.CheckError("Usermod: Reset username of a user", err)
+		pkg.CheckError("Usermod: Reset username of a user", err)
 
 		username := strings.TrimSpace(usernameInput)
 
-		userID := model.GetUserIDFromUsername(db, username)
+		userID := models.GetUserIDFromUsername(db, username)
 
 		if userID > 0 {
 
-			isAdmin := model.CheckifUserIsAnAdmin(db, userID)
+			isAdmin := models.CheckifUserIsAnAdmin(db, userID)
 
 			if isAdmin {
 				fmt.Println("You cannot delete an admin user of Sorcia.")
 				return
 			}
 
-			rds := model.GetReposFromUserID(db, userID)
+			rds := models.GetReposFromUserID(db, userID)
 
 			for _, repo := range rds.Repositories {
 				refsPattern := filepath.Join(conf.Paths.RefsPath, repo.Name+"*")
 				files, err := filepath.Glob(refsPattern)
-				errorhandler.CheckError("Error on post repo meta delete filepath.Glob", err)
+				pkg.CheckError("Error on post repo meta delete filepath.Glob", err)
 
 				for _, f := range files {
 					err := os.Remove(f)
-					errorhandler.CheckError("Error on removing ref files", err)
+					pkg.CheckError("Error on removing ref files", err)
 				}
 
 				repoDir := filepath.Join(conf.Paths.RepoPath, repo.Name+".git")
 				err = os.RemoveAll(repoDir)
-				errorhandler.CheckError("Error on removing repository directory", err)
+				pkg.CheckError("Error on removing repository directory", err)
 			}
 
-			rmi := model.GetRepoMemberIDFromUserID(db, userID)
+			rmi := models.GetRepoMemberIDFromUserID(db, userID)
 
 			for _, m := range rmi {
-				model.DeleteRepoMemberByID(db, m)
+				models.DeleteRepoMemberByID(db, m)
 			}
 
-			model.DeleteUserbyUsername(db, username)
+			models.DeleteUserbyUsername(db, username)
 
 			fmt.Println("Username has been successfully deleted.")
 			return
@@ -219,31 +218,31 @@ func deleteUser(db *sql.DB, conf *setting.BaseStruct) {
 	}
 }
 
-func deleteRepository(db *sql.DB, conf *setting.BaseStruct) {
+func deleteRepository(db *sql.DB, conf *pkg.BaseStruct) {
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
 		fmt.Println("Enter the repository name")
 		reponameInput, err := reader.ReadString('\n')
-		errorhandler.CheckError("Usermod: Delete repository", err)
+		pkg.CheckError("Usermod: Delete repository", err)
 
 		reponame := strings.TrimSpace(reponameInput)
 
-		if model.CheckRepoExists(db, reponame) {
-			model.DeleteRepobyReponame(db, reponame)
+		if models.CheckRepoExists(db, reponame) {
+			models.DeleteRepobyReponame(db, reponame)
 			refsPattern := filepath.Join(conf.Paths.RefsPath, reponame+"*")
 
 			files, err := filepath.Glob(refsPattern)
-			errorhandler.CheckError("Error on post repo meta delete filepath.Glob", err)
+			pkg.CheckError("Error on post repo meta delete filepath.Glob", err)
 
 			for _, f := range files {
 				err := os.Remove(f)
-				errorhandler.CheckError("Error on removing ref files", err)
+				pkg.CheckError("Error on removing ref files", err)
 			}
 
 			repoDir := filepath.Join(conf.Paths.RepoPath, reponame+".git")
 			err = os.RemoveAll(repoDir)
-			errorhandler.CheckError("Error on removing repository directory", err)
+			pkg.CheckError("Error on removing repository directory", err)
 
 			fmt.Println("Repository has been successfully deleted.")
 			return
