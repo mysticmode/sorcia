@@ -34,7 +34,7 @@ sudo su - git
 
 **Install from binary**
 ```
-wget https://sorcia.mysticmode.org/dl/sorcia-0.3.1-linux-amd64.tar.gz
+wget https://sorcia.org/dl/sorcia-0.3.1-linux-amd64.tar.gz
 mkdir sorcia
 tar -C sorcia -xzf sorcia.linux-amd64.tar.gz
 cd sorcia
