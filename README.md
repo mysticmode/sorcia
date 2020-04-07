@@ -1,5 +1,5 @@
 ## sorcia
-Sorcia is a self-hosted web frontend for git repositories which is written in Golang [https://sorcia.mysticmode.org](https://sorcia.mysticmode.org)
+Sorcia is a self-hosted web frontend for git repositories which is written in Golang [https://sorcia.org](https://sorcia.org).
 
 ### community
  * Ask your questions on [sorcia@googlegroups.com](https://groups.google.com/d/forum/sorcia).
