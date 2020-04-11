@@ -1,5 +1,5 @@
 app_mode = production
-version = 0.3.0
+version = 0.3.1 # do not modify this!
 
 [paths]
 # all the paths should be in absolute path formats.
