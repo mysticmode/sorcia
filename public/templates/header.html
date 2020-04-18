@@ -19,23 +19,17 @@
     <header class="header">
         <div class="header__left">
             <a href="/" class="header__logo">
-                {{if .SiteSettings.IsSiteLogo}}
-                    {{if .SiteSettings.IsSiteLogoSVG}}
-                    <img src="/uploads{{.SiteSettings.SiteLogo}}" />
-                    <!-- {{.SiteSettings.SVGDAT}} -->
-                    {{else}}
-                    <img src="/uploads{{.SiteSettings.SiteLogo}}" width="{{.SiteSettings.SiteLogoWidth}}px" height="{{.SiteSettings.SiteLogoHeight}}px" />
-                    {{end}}
-                {{else}}
-                    <img src="/public/img/sorcia.svg" width="81px" height="18px" />
-                {{end}}
+                <img src="/public/img/sorcia_logo.svg" width="33px" height="33px" />
             </a>
+            <input type="text" placeholder="Type here to search.." />
         </div>
         <div class="header__right">
             {{if eq .HeaderActiveMenu "meta"}}
+            <a href="/create-repo" class="button button--primary">Create new repository</a>
             <a href="/meta" class="header__right__item header__right__item--active">meta</a>
             <a href="/logout" class="header__right__item">logout</a>
             {{else}}
+            <a href="/create-repo" class="button button--primary">Create new repository</a>
             <a href="/meta" class="header__right__item">meta</a>
             <a href="/logout" class="header__right__item">logout</a>
             {{end}}
