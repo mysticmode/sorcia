@@ -1,6 +1,6 @@
 .header {
     display: flex;
-    align-items: start;
+    align-items: center;
     justify-content: space-between;
     width: 100%;
     height: 30px;
@@ -8,12 +8,13 @@
 
     &__left {
         display: flex;
-        align-items: start;
+        align-items: center;
+    }
 
-        & input[type="text"] {
-            width: 400px;
-            margin-left: 20px;
-        }
+    &__logo {
+        display: flex;
+        justify-content: center;
+        margin-right: 40px;
     }
 
     &__right {
@@ -22,13 +23,9 @@
         
         color: $text-color;
 
-        & .button {
-            margin-right: 20px;
-        }
-
         &__item {
             text-decoration: none;
-            color: $text-color-2;
+            color: $text-color;
             margin-right: 20px;
 
             &:last-child {
