@@ -1,50 +1,7 @@
 {{define "title"}}{{ .Reponame }} - Tree{{end}}
 {{define "content"}}
 <main class="container repo">
-    <div class="repo__header">
-        <div>
-            <div class="repo__title">
-                <a href="/r/{{ .Reponame }}">{{ .Reponame }}
-                    {{if .IsLoggedIn}}
-                    {{if .IsRepoPrivate}}<i>private</i>{{end}}
-                    {{if eq .RepoPermission "read"}}<i>read</i>{{end}}
-                    {{if eq .RepoPermission "read/write"}}<i>read/write</i>{{end}}
-                    {{if not .IsRepoPrivate}}
-                        {{if eq .RepoPermission "read/write"}}
-                        {{else}}
-                        <i>read</i>
-                        {{end}}
-                    {{end}}
-                    {{end}}
-                </a>
-            </div>
-            <div class="repo__description">{{ .RepoDescription }}</div>
-        </div>
-    </div>
-    <div class="repo__menu">
-        <a href="/r/{{ .Reponame }}" class="repo__menu__item">summary</a>
-        <a href="/r/{{ .Reponame }}/tree/master" class="repo__menu__item repo__menu__item--active">tree</a>
-        <a href="/r/{{ .Reponame }}/log/master" class="repo__menu__item">log</a>
-        <a href="/r/{{ .Reponame }}/refs" class="repo__menu__item">refs</a>
-        <a href="/r/{{ .Reponame }}/contributors" class="repo__menu__item">contributors</a>
-        {{if .IsLoggedIn}}
-            <a href="/r/{{ .Reponame }}/meta" class="repo__menu__item">meta</a>
-        {{end}}
-    </div>
-    <div class="repo__sub-menu">
-        <div class="repo__sub-menu__item branch">
-            <form method="get" action="" class="form">
-                <div class="form__group">
-                    <label for="branchSelect">branch:</label>
-                    <select id="branchSelect" onchange="branchChange(this.value)">
-                        {{range .RepoBranches}}
-                        <option value="{{.}}">{{.}}</option>
-                        {{end}}
-                    </select>
-                </div>
-            </form>
-        </div>
-    </div>
+    {{template "repo-header" .}}
     {{if .RepoDetail.PathEmpty}}
     {{range .RepoLogs.History}}
     <div class="latest-commit">

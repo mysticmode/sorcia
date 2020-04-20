@@ -46,6 +46,31 @@
     &__header {
         display: flex;
         justify-content: space-between;
+
+        &__right {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            
+            & a {
+                cursor: pointer;
+
+                &.boost-count {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 49px;
+                    height: 31px;
+                    color: $text-color-2;
+                    border: 1px solid $brand-border;
+                    border-left: none;
+
+                    &:hover {
+                        color: $text-color;
+                    }
+                }
+            }
+        }
     }
 
     &__title {
