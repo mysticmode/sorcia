@@ -9,7 +9,7 @@ html, body {
 }
 
 body {
-    width: 860px;
+    width: 960px;
     margin: 0 auto;
     font-family: $font-default;
     font-size: 14px;
@@ -75,10 +75,21 @@ pre {
 
     &__info {
         width: 220px;
+        margin-right: 50px;
 
-        & .button {
+        &__fullname {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        &__bio {
+            margin-top: 10px;
+        }
+
+        &__website {
             display: block;
-            width: max-content;
+            margin-top: 10px;
         }
     }
 }
