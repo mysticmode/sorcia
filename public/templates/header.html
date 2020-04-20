@@ -26,7 +26,19 @@
             <a href="/meta" class="header__right__item header__right__item--active">meta</a>
             <a href="/logout" class="header__right__item">logout</a>
             {{else}}
-            <a href="/create-repo" class="header__right_item button button--primary">Create new repository</a>
+            <a href="" class="header__right__item create-new" id="createNewLink" onclick="return triggerCreateDropdown(event)">
+                create new
+                <i>
+                    <svg width="12" height="9" viewBox="0 0 12 9" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 9L0.803847 9.78799e-07L11.1962 7.02746e-08L6 9Z" fill="#8D8D8D"/>
+                    </svg>                        
+                </i>
+            </a>
+            <div class="create-new-dropdown" id="createNewDropdown">
+                <a href="/create-repo">repository</a>
+                <a href="">mailing list</a>
+            </div>
+            <a href="/lists" class="header__right__item">lists</a>
             <a href="/meta" class="header__right__item">meta</a>
             <a href="/logout" class="header__right__item">logout</a>
             {{end}}
@@ -44,4 +56,5 @@
         {{end}}
     </header>
     {{end}}
+    <script src="/public/js/misc.js"></script>
 {{end}}

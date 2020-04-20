@@ -83,6 +83,10 @@ pre {
             margin-top: 10px;
         }
 
+        &__username {
+            color: $text-color-2;
+        }
+
         &__follow {
             display: block;
             text-align: center;
@@ -93,7 +97,7 @@ pre {
             margin-top: 10px;
         }
 
-        &__website {
+        &__website, &__email {
             display: block;
             margin-top: 10px;
         }
