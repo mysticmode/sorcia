@@ -9,7 +9,7 @@ html, body {
 }
 
 body {
-    width: 860px;
+    width: 960px;
     margin: 0 auto;
     font-family: $font-default;
     font-size: 14px;
@@ -27,7 +27,7 @@ a {
 }
 
 p {
-    line-height: 20px;
+    line-height: 22px;
     word-wrap: break-word;
 }
 
@@ -75,10 +75,31 @@ pre {
 
     &__info {
         width: 220px;
+        margin-right: 50px;
 
-        & .button {
+        &__fullname {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        &__username {
+            color: $text-color-2;
+        }
+
+        &__follow {
             display: block;
-            width: max-content;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        &__bio {
+            margin-top: 10px;
+        }
+
+        &__website, &__email {
+            display: block;
+            margin-top: 10px;
         }
     }
 }

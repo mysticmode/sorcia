@@ -3,7 +3,7 @@
     justify-content: space-between;
 
     &__repos {
-        width: 610px;
+        width: 690px;
 
         &__title {
             font-weight: bold;
@@ -36,7 +36,7 @@
                 background: $text-color-2;
                 text-decoration: none;
                 padding: 2px;
-                margin-left: 3px;
+                margin-left: 7px;
             }
         }
     }
@@ -46,6 +46,31 @@
     &__header {
         display: flex;
         justify-content: space-between;
+
+        &__right {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            
+            & a {
+                cursor: pointer;
+
+                &.boost-count {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 49px;
+                    height: 31px;
+                    color: $text-color-2;
+                    border: 1px solid $brand-border;
+                    border-left: none;
+
+                    &:hover {
+                        color: $text-color;
+                    }
+                }
+            }
+        }
     }
 
     &__title {
@@ -90,7 +115,7 @@
     }
 
     &__latest-commits {
-        width: 470px;
+        width: 570px;
 
         & li {
             & div {
@@ -314,7 +339,7 @@
 
         &__message {
             float: left;
-            width: 440px;
+            width: 540px;
             margin-right: 20px;
             word-wrap: break-word;
             color: $text-color;

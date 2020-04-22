@@ -1,26 +1,7 @@
 {{define "title"}}{{ .Reponame }} - Contributors{{end}}
 {{define "content"}}
 <main class="container repo">
-    <div class="repo__header">
-        <div>
-            <div class="repo__title">
-                <a href="/r/{{ .Reponame }}">{{ .Reponame }}
-                    {{if .IsLoggedIn}}
-                    {{if .IsRepoPrivate}}<i>private</i>{{end}}
-                    {{if eq .RepoPermission "read"}}<i>read</i>{{end}}
-                    {{if eq .RepoPermission "read/write"}}<i>read/write</i>{{end}}
-                    {{if not .IsRepoPrivate}}
-                        {{if eq .RepoPermission "read/write"}}
-                        {{else}}
-                        <i>read</i>
-                        {{end}}
-                    {{end}}
-                    {{end}}
-                </a>
-            </div>
-            <div class="repo__description">{{ .RepoDescription }}</div>
-        </div>
-    </div>
+    {{template "repo-header" .}}
     <div class="repo__menu">
         <a href="/r/{{ .Reponame }}" class="repo__menu__item">summary</a>
         <a href="/r/{{ .Reponame }}/tree/master" class="repo__menu__item">tree</a>

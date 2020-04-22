@@ -1,0 +1,26 @@
+{{define "repo-header"}}
+<div class="repo__header">
+  <div class="repo__header__left">
+      <div class="repo__title">
+          <a href="/r/{{ .Reponame }}">{{ .Reponame }}
+              {{if .IsLoggedIn}}
+              {{if .IsRepoPrivate}}<i>private</i>{{end}}
+              {{if eq .RepoPermission "read"}}<i>read</i>{{end}}
+              {{if eq .RepoPermission "read/write"}}<i>read/write</i>{{end}}
+              {{if not .IsRepoPrivate}}
+                  {{if eq .RepoPermission "read/write"}}
+                  {{else}}
+                  <i>read</i>
+                  {{end}}
+              {{end}}
+              {{end}}
+          </a>
+      </div>
+      <div class="repo__description">{{ .RepoDescription }}</div>
+  </div>
+  <div class="repo__header__right">
+      <a href="" class="button button--primary boost">Boost</a>
+      <a class="boost-count">237</a>
+  </div>
+</div>
+{{end}}
