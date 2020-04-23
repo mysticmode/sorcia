@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"syscall"
 
 	"sorcia/internal"
 	"sorcia/models"
@@ -89,7 +88,9 @@ func resetUserPassword(db *sql.DB) {
 		userID := models.GetUserIDFromUsername(db, username)
 
 		if userID > 0 {
-			newPassword := getPassword("Enter the password")
+			fmt.Println("Enter the new username")
+			newPassword, err := reader.ReadString('\n')
+			pkg.CheckError("Usermod: new password error", err)
 
 			// Generate password hash using bcrypt
 			passwordHash, err := internal.HashPassword(newPassword)
@@ -112,57 +113,6 @@ func resetUserPassword(db *sql.DB) {
 		}
 		fmt.Println("Username does not exist. Please check the username or Ctrl-c to exit")
 	}
-}
-
-func getPassword(prompt string) string {
-	fmt.Println(prompt)
-
-	// Common internals and variables for both stty calls.
-	attrs := syscall.ProcAttr{
-		Dir:   "",
-		Env:   []string{},
-		Files: []uintptr{os.Stdin.Fd(), os.Stdout.Fd(), os.Stderr.Fd()},
-		Sys:   nil}
-	var ws syscall.WaitStatus
-
-	// Disable echoing.
-	pid, err := syscall.ForkExec(
-		"/bin/stty",
-		[]string{"stty", "-echo"},
-		&attrs)
-	if err != nil {
-		panic(err)
-	}
-
-	// Wait for the stty process to complete.
-	_, err = syscall.Wait4(pid, &ws, 0, nil)
-	if err != nil {
-		panic(err)
-	}
-
-	// Echo is disabled, now grab the data.
-	reader := bufio.NewReader(os.Stdin)
-	text, err := reader.ReadString('\n')
-	if err != nil {
-		panic(err)
-	}
-
-	// Re-enable echo.
-	pid, err = syscall.ForkExec(
-		"/bin/stty",
-		[]string{"stty", "echo"},
-		&attrs)
-	if err != nil {
-		panic(err)
-	}
-
-	// Wait for the stty process to complete.
-	_, err = syscall.Wait4(pid, &ws, 0, nil)
-	if err != nil {
-		panic(err)
-	}
-
-	return strings.TrimSpace(text)
 }
 
 func deleteUser(db *sql.DB, conf *pkg.BaseStruct) {
