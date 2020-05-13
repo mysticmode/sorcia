@@ -8,6 +8,7 @@ repo_path = /home/git/data/repositories
 refs_path = /home/git/data/refs
 db_path = /home/git/data
 ssh_path = /home/git/data/ssh
+template_path = /home/git/sorcia/public/templates
 upload_asset_path = /home/git/data/uploads
 
 [server]

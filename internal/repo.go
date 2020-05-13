@@ -336,7 +336,7 @@ func GetRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseS
 	contributors := getContributors(repoDir, false)
 	data.Contributors = *contributors
 
-	writeRepoResponse(w, r, db, reponame, "repo-summary.html", data)
+	writeRepoResponse(w, r, db, reponame, "repo-summary.html", data, conf)
 	return
 }
 
@@ -410,7 +410,7 @@ func GetRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.B
 		data.RepoEmpty = true
 	}
 
-	writeRepoResponse(w, r, db, reponame, "repo-meta.html", data)
+	writeRepoResponse(w, r, db, reponame, "repo-meta.html", data, conf)
 	return
 }
 
@@ -760,7 +760,7 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.B
 		data.RepoLogs.History[0].Message = pkg.LimitCharLengthInString(data.RepoLogs.History[0].Message)
 	}
 
-	writeRepoResponse(w, r, db, reponame, "repo-tree.html", data)
+	writeRepoResponse(w, r, db, reponame, "repo-tree.html", data, conf)
 	return
 }
 
@@ -871,13 +871,13 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *p
 
 				data.SiteStyle = models.GetSiteStyle(db)
 
-				writeRepoResponse(w, r, db, reponame, "file-viewer.html", data)
+				writeRepoResponse(w, r, db, reponame, "file-viewer.html", data, conf)
 				return
 			}
 
 			data.RepoDetail.RepoDirsDetail, data.RepoDetail.RepoFilesDetail = applyDirsAndFiles(dirs, files, repoDir, frdpath, branchOrHash)
 
-			writeRepoResponse(w, r, db, reponame, "repo-tree.html", data)
+			writeRepoResponse(w, r, db, reponame, "repo-tree.html", data, conf)
 			return
 		}
 	}
@@ -910,7 +910,7 @@ func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *p
 
 	data.SiteStyle = models.GetSiteStyle(db)
 
-	writeRepoResponse(w, r, db, reponame, "file-viewer.html", data)
+	writeRepoResponse(w, r, db, reponame, "file-viewer.html", data, conf)
 	return
 }
 
@@ -1072,7 +1072,7 @@ func GetRepoLog(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.Ba
 	commits := getCommitsFromHash(repoDir, branch, fromHash, 11)
 	data.RepoLogs = *commits
 
-	writeRepoResponse(w, r, db, reponame, "repo-log.html", data)
+	writeRepoResponse(w, r, db, reponame, "repo-log.html", data, conf)
 	return
 }
 
@@ -1185,7 +1185,7 @@ func GetRepoRefs(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.B
 
 	data.RepoRefs = rfs
 
-	writeRepoResponse(w, r, db, reponame, "repo-refs.html", data)
+	writeRepoResponse(w, r, db, reponame, "repo-refs.html", data, conf)
 	return
 }
 
@@ -1252,7 +1252,7 @@ func GetRepoContributors(w http.ResponseWriter, r *http.Request, db *sql.DB, con
 
 	data.Contributors = *contributors
 
-	writeRepoResponse(w, r, db, reponame, "repo-contributors.html", data)
+	writeRepoResponse(w, r, db, reponame, "repo-contributors.html", data, conf)
 	return
 }
 
@@ -1434,7 +1434,7 @@ func GetCommitDetail(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *p
 
 	data.CommitDetail = cds
 
-	writeRepoResponse(w, r, db, reponame, "repo-commit.html", data)
+	writeRepoResponse(w, r, db, reponame, "repo-commit.html", data, conf)
 	return
 }
 
@@ -1501,10 +1501,10 @@ func noRepoAccess(w http.ResponseWriter) {
 	w.Write(errorJSON)
 }
 
-func writeRepoResponse(w http.ResponseWriter, r *http.Request, db *sql.DB, reponame string, mainPage string, data GetRepoResponse) {
+func writeRepoResponse(w http.ResponseWriter, r *http.Request, db *sql.DB, reponame string, mainPage string, data GetRepoResponse, conf *pkg.BaseStruct) {
 	// Check if repository is not private
 	if isRepoPrivate := models.GetRepoType(db, reponame); !isRepoPrivate {
-		tmpl := parseTemplates(w, mainPage)
+		tmpl := parseTemplates(w, mainPage, conf)
 		tmpl.ExecuteTemplate(w, "layout", data)
 	} else {
 		userPresent := w.Header().Get("user-present")
@@ -1521,7 +1521,7 @@ func writeRepoResponse(w http.ResponseWriter, r *http.Request, db *sql.DB, repon
 			}
 			if hasRepoAccess {
 				data.IsRepoPrivate = true
-				tmpl := parseTemplates(w, mainPage)
+				tmpl := parseTemplates(w, mainPage, conf)
 				tmpl.ExecuteTemplate(w, "layout", data)
 			} else {
 				noRepoAccess(w)
@@ -1532,13 +1532,14 @@ func writeRepoResponse(w http.ResponseWriter, r *http.Request, db *sql.DB, repon
 	}
 }
 
-func parseTemplates(w http.ResponseWriter, mainPage string) *template.Template {
-	layoutPage := path.Join("./public/templates", "layout.html")
-	headerPage := path.Join("./public/templates", "header.html")
-	repoLogPage := path.Join("./public/templates", mainPage)
-	footerPage := path.Join("./public/templates", "footer.html")
+func parseTemplates(w http.ResponseWriter, mainPage string, conf *pkg.BaseStruct) *template.Template {
+	layoutPage := path.Join(conf.Paths.TemplatePath, "layout.html")
+	headerPage := path.Join(conf.Paths.TemplatePath, "header.html")
+	repoHeaderPage := path.Join(conf.Paths.TemplatePath, "repo-header.html")
+	repoMainPage := path.Join(conf.Paths.TemplatePath, mainPage)
+	footerPage := path.Join(conf.Paths.TemplatePath, "footer.html")
 
-	tmpl, err := template.ParseFiles(layoutPage, headerPage, repoLogPage, footerPage)
+	tmpl, err := template.ParseFiles(layoutPage, headerPage, repoHeaderPage, repoMainPage, footerPage)
 	pkg.CheckError("Error on template parse", err)
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")

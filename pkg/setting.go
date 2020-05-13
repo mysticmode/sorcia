@@ -30,6 +30,7 @@ type PathsStruct struct {
 	RefsPath        string
 	DBPath          string
 	SSHPath         string
+	TemplatePath    string
 	UploadAssetPath string
 }
 
@@ -58,6 +59,7 @@ func init() {
 			RefsPath:        cfg.Section("paths").Key("refs_path").String(),
 			DBPath:          cfg.Section("paths").Key("db_path").String(),
 			SSHPath:         cfg.Section("paths").Key("ssh_path").String(),
+			TemplatePath:    cfg.Section("paths").Key("template_path").String(),
 			UploadAssetPath: cfg.Section("paths").Key("upload_asset_path").String(),
 		},
 		Server: ServerStruct{
