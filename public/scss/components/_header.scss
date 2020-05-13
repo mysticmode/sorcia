@@ -41,41 +41,4 @@
             color: $text-color;
         }
     }
-
-    & .create-new {
-        &:hover {
-            & i {
-                & svg {
-                    & path {
-                        fill: $text-color;
-                    }
-                }
-            }
-        }
-
-        &-dropdown {
-            display: none;
-            flex-direction: column;
-            position: absolute;
-            top: 50px;
-            width: 160px;
-            height: auto;
-            background: white;
-            border: 1px solid $brand-border;
-            padding: 10px;
-
-            & a {
-                margin-right: 0;
-                margin-bottom: 15px;
-
-                &:last-child {
-                    margin-bottom: 0;
-                }
-            }
-
-            &.active {
-                display: flex;
-            }
-        }
-    }
 }
