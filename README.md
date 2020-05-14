@@ -1,6 +1,20 @@
 ## sorcia
 Sorcia is a self-hosted web frontend for git repositories which is written in Golang [https://sorcia.org](https://sorcia.org).
 
+### license information
+Sorcia has a dual license, a commercial one suitable for closed source projects and an AGPL license that can be used in open source softwares.
+
+Depending on your needs, you must choose one of them and follow its policies. A detail of the policies and agreements for each license type are available in the LICENSE.COMMERCIAL and LICENSE.AGPL files.
+
+When you purchase a license, you will get rid of the footer mentioning about Sorcia and instead you could be able to add a custom footer in the meta section.
+
+The way to load your license is through config/app.ini, for example:
+```
+[license]
+sorcia_customer_email=youremail@yourwebsite.com
+sorcia_license_path=/path/to/licenses/sorcia-commercial.txt
+```
+
 ### community
  * Ask your questions on [sorcia@googlegroups.com](https://groups.google.com/d/forum/sorcia).
  * Subscribe to release announcements on [sorcia-announce@googlegroups.com](https://groups.google.com/d/forum/sorcia-announce).
