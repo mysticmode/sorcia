@@ -4,7 +4,7 @@ Sorcia is a self-hosted web frontend for git repositories which is written in Go
 ### license information
 Sorcia has a dual license, a commercial one suitable for closed source projects and an AGPL license that can be used in open source softwares.
 
-You can make a private repository in Sorcia. But if the source code that your are developing and publishing is a propreitary one, you must buy a commercial license.
+You can make a private repository in Sorcia. But if the source code that your are developing and publishing is a proprietary one, you must buy a commercial license.
 
 Depending on your needs, you must choose one of them and follow its policies. A detail of the policies and agreements for each license type are available in the LICENSE.COMMERCIAL and LICENSE.AGPL files.
 
