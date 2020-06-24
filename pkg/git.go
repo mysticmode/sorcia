@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 )
 
@@ -115,6 +116,11 @@ func GetCommitCounts(repoPath, reponame string) string {
 
 // GetGitBinPath ...
 func GetGitBinPath() string {
+	if runtime.GOOS == "windows" {
+		gitPath := "C:\\Program Files\\Git\\bin\\git.exe"
+		return gitPath
+	}
+
 	gitPath := "/usr/bin/git"
 	if _, err := os.Stat(gitPath); err != nil {
 		gitPath = "/bin/git"

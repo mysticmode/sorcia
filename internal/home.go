@@ -5,7 +5,6 @@ import (
 	"html/template"
 	"io/ioutil"
 	"net/http"
-	"path"
 	"path/filepath"
 	"sorcia/models"
 	"sorcia/pkg"
@@ -102,10 +101,10 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseS
 			}
 		}
 
-		layoutPage := path.Join(conf.Paths.TemplatePath, "layout.html")
-		headerPage := path.Join(conf.Paths.TemplatePath, "header.html")
-		indexPage := path.Join(conf.Paths.TemplatePath, "index.html")
-		footerPage := path.Join(conf.Paths.TemplatePath, "footer.html")
+		layoutPage := filepath.Join(conf.Paths.TemplatePath, "layout.html")
+		headerPage := filepath.Join(conf.Paths.TemplatePath, "header.html")
+		indexPage := filepath.Join(conf.Paths.TemplatePath, "index.html")
+		footerPage := filepath.Join(conf.Paths.TemplatePath, "footer.html")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, indexPage, footerPage)
 		pkg.CheckError("Error on template parse", err)
@@ -140,10 +139,10 @@ func GetHome(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseS
 			grs.Repositories = append(grs.Repositories, rd)
 		}
 
-		layoutPage := path.Join(conf.Paths.TemplatePath, "layout.html")
-		headerPage := path.Join(conf.Paths.TemplatePath, "header.html")
-		indexPage := path.Join(conf.Paths.TemplatePath, "index.html")
-		footerPage := path.Join(conf.Paths.TemplatePath, "footer.html")
+		layoutPage := filepath.Join(conf.Paths.TemplatePath, "layout.html")
+		headerPage := filepath.Join(conf.Paths.TemplatePath, "header.html")
+		indexPage := filepath.Join(conf.Paths.TemplatePath, "index.html")
+		footerPage := filepath.Join(conf.Paths.TemplatePath, "footer.html")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, indexPage, footerPage)
 		pkg.CheckError("Error on template parse", err)

@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -130,7 +129,7 @@ func updateServerInfo(dir string) []byte {
 }
 
 func (gh *gitHandler) sendFile(contentType string) {
-	reqFile := path.Join(gh.dir, gh.file)
+	reqFile := filepath.Join(gh.dir, gh.file)
 	fi, err := os.Stat(reqFile)
 	if os.IsNotExist(err) {
 		gh.w.WriteHeader(http.StatusNotFound)

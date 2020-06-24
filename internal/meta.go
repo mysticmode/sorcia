@@ -15,7 +15,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -50,10 +49,10 @@ func GetMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseS
 
 		userID := models.GetUserIDFromToken(db, token)
 
-		layoutPage := path.Join(conf.Paths.TemplatePath, "layout.html")
-		headerPage := path.Join(conf.Paths.TemplatePath, "header.html")
-		metaPage := path.Join(conf.Paths.TemplatePath, "meta.html")
-		footerPage := path.Join(conf.Paths.TemplatePath, "footer.html")
+		layoutPage := filepath.Join(conf.Paths.TemplatePath, "layout.html")
+		headerPage := filepath.Join(conf.Paths.TemplatePath, "header.html")
+		metaPage := filepath.Join(conf.Paths.TemplatePath, "meta.html")
+		footerPage := filepath.Join(conf.Paths.TemplatePath, "footer.html")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, metaPage, footerPage)
 		pkg.CheckError("Error on template parse", err)
@@ -96,10 +95,10 @@ func GetMetaKeys(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.B
 
 		sshKeys := models.GetSSHKeysFromUserID(db, userID)
 
-		layoutPage := path.Join(conf.Paths.TemplatePath, "layout.html")
-		headerPage := path.Join(conf.Paths.TemplatePath, "header.html")
-		metaPage := path.Join(conf.Paths.TemplatePath, "meta-keys.html")
-		footerPage := path.Join(conf.Paths.TemplatePath, "footer.html")
+		layoutPage := filepath.Join(conf.Paths.TemplatePath, "layout.html")
+		headerPage := filepath.Join(conf.Paths.TemplatePath, "header.html")
+		metaPage := filepath.Join(conf.Paths.TemplatePath, "meta-keys.html")
+		footerPage := filepath.Join(conf.Paths.TemplatePath, "footer.html")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, metaPage, footerPage)
 		pkg.CheckError("Error on template parse", err)
@@ -278,10 +277,10 @@ func PostUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.Base
 		s := postUserRequest.Username
 
 		if len(s) > 39 || len(s) < 1 {
-			layoutPage := path.Join(conf.Paths.TemplatePath, "layout.html")
-			headerPage := path.Join(conf.Paths.TemplatePath, "header.html")
-			metaUsersPage := path.Join(conf.Paths.TemplatePath, "meta-users.html")
-			footerPage := path.Join(conf.Paths.TemplatePath, "footer.html")
+			layoutPage := filepath.Join(conf.Paths.TemplatePath, "layout.html")
+			headerPage := filepath.Join(conf.Paths.TemplatePath, "header.html")
+			metaUsersPage := filepath.Join(conf.Paths.TemplatePath, "meta-users.html")
+			footerPage := filepath.Join(conf.Paths.TemplatePath, "footer.html")
 
 			tmpl, err := template.ParseFiles(layoutPage, headerPage, metaUsersPage, footerPage)
 			pkg.CheckError("Error on template parse", err)
@@ -303,10 +302,10 @@ func PostUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.Base
 			tmpl.ExecuteTemplate(w, "layout", data)
 			return
 		} else if strings.HasPrefix(s, "-") || strings.Contains(s, "--") || strings.HasSuffix(s, "-") || !pkg.IsAlnumOrHyphen(s) {
-			layoutPage := path.Join(conf.Paths.TemplatePath, "layout.html")
-			headerPage := path.Join(conf.Paths.TemplatePath, "header.html")
-			metaUsersPage := path.Join(conf.Paths.TemplatePath, "meta-users.html")
-			footerPage := path.Join(conf.Paths.TemplatePath, "footer.html")
+			layoutPage := filepath.Join(conf.Paths.TemplatePath, "layout.html")
+			headerPage := filepath.Join(conf.Paths.TemplatePath, "header.html")
+			metaUsersPage := filepath.Join(conf.Paths.TemplatePath, "meta-users.html")
+			footerPage := filepath.Join(conf.Paths.TemplatePath, "footer.html")
 
 			tmpl, err := template.ParseFiles(layoutPage, headerPage, metaUsersPage, footerPage)
 			pkg.CheckError("Error on template parse", err)
@@ -361,10 +360,10 @@ func GetMetaUsers(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.
 
 		users := models.GetAllUsers(db)
 
-		layoutPage := path.Join(conf.Paths.TemplatePath, "layout.html")
-		headerPage := path.Join(conf.Paths.TemplatePath, "header.html")
-		metaPage := path.Join(conf.Paths.TemplatePath, "meta-users.html")
-		footerPage := path.Join(conf.Paths.TemplatePath, "footer.html")
+		layoutPage := filepath.Join(conf.Paths.TemplatePath, "layout.html")
+		headerPage := filepath.Join(conf.Paths.TemplatePath, "header.html")
+		metaPage := filepath.Join(conf.Paths.TemplatePath, "meta-users.html")
+		footerPage := filepath.Join(conf.Paths.TemplatePath, "footer.html")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, metaPage, footerPage)
 		pkg.CheckError("Error on template parse", err)

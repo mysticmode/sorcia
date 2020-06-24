@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 
 	// SQLite3 driver
 	_ "github.com/mattn/go-sqlite3"
@@ -69,7 +69,7 @@ func init() {
 		DBConn: nil,
 	}
 
-	db, err := sql.Open("sqlite3", path.Join(conf.Paths.DBPath, "sorcia.db?_foreign_keys=on"))
+	db, err := sql.Open("sqlite3", filepath.Join(conf.Paths.DBPath, "sorcia.db?_foreign_keys=on"))
 	CheckError("Error on opening sqlite3", err)
 
 	conf.DBConn = db

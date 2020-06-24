@@ -9,7 +9,6 @@ import (
 	"html/template"
 	"net/http"
 	"os"
-	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -43,10 +42,10 @@ func GetCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg
 			http.Redirect(w, r, "/", http.StatusFound)
 		}
 
-		layoutPage := path.Join("./public/templates", "layout.html")
-		headerPage := path.Join("./public/templates", "header.html")
-		createRepoPage := path.Join("./public/templates", "create-repo.html")
-		footerPage := path.Join("./public/templates", "footer.html")
+		layoutPage := filepath.Join("./public/templates", "layout.html")
+		headerPage := filepath.Join("./public/templates", "header.html")
+		createRepoPage := filepath.Join("./public/templates", "create-repo.html")
+		footerPage := filepath.Join("./public/templates", "footer.html")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, createRepoPage, footerPage)
 		pkg.CheckError("Error on template parse", err)
@@ -107,10 +106,10 @@ func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder 
 
 		s := createRepoRequest.Name
 		if len(s) > 100 || len(s) < 1 {
-			layoutPage := path.Join("./public/templates", "layout.html")
-			headerPage := path.Join("./public/templates", "header.html")
-			createRepoPage := path.Join("./public/templates", "create-repo.html")
-			footerPage := path.Join("./public/templates", "footer.html")
+			layoutPage := filepath.Join("./public/templates", "layout.html")
+			headerPage := filepath.Join("./public/templates", "header.html")
+			createRepoPage := filepath.Join("./public/templates", "create-repo.html")
+			footerPage := filepath.Join("./public/templates", "footer.html")
 
 			tmpl, err := template.ParseFiles(layoutPage, headerPage, createRepoPage, footerPage)
 			pkg.CheckError("Error on template parse", err)
@@ -129,10 +128,10 @@ func PostCreateRepo(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder 
 			tmpl.ExecuteTemplate(w, "layout", data)
 			return
 		} else if strings.HasPrefix(s, "-") || strings.Contains(s, "--") || strings.HasSuffix(s, "-") || !pkg.IsAlnumOrHyphen(s) {
-			layoutPage := path.Join("./public/templates", "layout.html")
-			headerPage := path.Join("./public/templates", "header.html")
-			createRepoPage := path.Join("./public/templates", "create-repo.html")
-			footerPage := path.Join("./public/templates", "footer.html")
+			layoutPage := filepath.Join("./public/templates", "layout.html")
+			headerPage := filepath.Join("./public/templates", "header.html")
+			createRepoPage := filepath.Join("./public/templates", "create-repo.html")
+			footerPage := filepath.Join("./public/templates", "footer.html")
 
 			tmpl, err := template.ParseFiles(layoutPage, headerPage, createRepoPage, footerPage)
 			pkg.CheckError("Error on template parse", err)
@@ -486,10 +485,10 @@ func PostRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.
 
 		s := postRepoMetaStruct.Name
 		if len(s) > 100 || len(s) < 1 {
-			layoutPage := path.Join("./public/templates", "layout.html")
-			headerPage := path.Join("./public/templates", "header.html")
-			repoMetaPage := path.Join("./public/templates", "repo-meta.html")
-			footerPage := path.Join("./public/templates", "footer.html")
+			layoutPage := filepath.Join("./public/templates", "layout.html")
+			headerPage := filepath.Join("./public/templates", "header.html")
+			repoMetaPage := filepath.Join("./public/templates", "repo-meta.html")
+			footerPage := filepath.Join("./public/templates", "footer.html")
 
 			tmpl, err := template.ParseFiles(layoutPage, headerPage, repoMetaPage, footerPage)
 			pkg.CheckError("Error on template parse", err)
@@ -514,10 +513,10 @@ func PostRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.
 			tmpl.ExecuteTemplate(w, "layout", data)
 			return
 		} else if strings.HasPrefix(s, "-") || strings.Contains(s, "--") || strings.HasSuffix(s, "-") || !pkg.IsAlnumOrHyphen(s) {
-			layoutPage := path.Join("./public/templates", "layout.html")
-			headerPage := path.Join("./public/templates", "header.html")
-			repoMetaPage := path.Join("./public/templates", "repo-meta.html")
-			footerPage := path.Join("./public/templates", "footer.html")
+			layoutPage := filepath.Join("./public/templates", "layout.html")
+			headerPage := filepath.Join("./public/templates", "header.html")
+			repoMetaPage := filepath.Join("./public/templates", "repo-meta.html")
+			footerPage := filepath.Join("./public/templates", "footer.html")
 
 			tmpl, err := template.ParseFiles(layoutPage, headerPage, repoMetaPage, footerPage)
 			pkg.CheckError("Error on template parse", err)
@@ -631,10 +630,10 @@ func PostRepoMetaUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *
 			w.Write(errorJSON)
 		}
 
-		layoutPage := path.Join("./public/templates", "layout.html")
-		headerPage := path.Join("./public/templates", "header.html")
-		repoMetaPage := path.Join("./public/templates", "repo-meta.html")
-		footerPage := path.Join("./public/templates", "footer.html")
+		layoutPage := filepath.Join("./public/templates", "layout.html")
+		headerPage := filepath.Join("./public/templates", "header.html")
+		repoMetaPage := filepath.Join("./public/templates", "repo-meta.html")
+		footerPage := filepath.Join("./public/templates", "footer.html")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, repoMetaPage, footerPage)
 		pkg.CheckError("Error on template parse", err)
@@ -1533,11 +1532,11 @@ func writeRepoResponse(w http.ResponseWriter, r *http.Request, db *sql.DB, repon
 }
 
 func parseTemplates(w http.ResponseWriter, mainPage string, conf *pkg.BaseStruct) *template.Template {
-	layoutPage := path.Join(conf.Paths.TemplatePath, "layout.html")
-	headerPage := path.Join(conf.Paths.TemplatePath, "header.html")
-	repoHeaderPage := path.Join(conf.Paths.TemplatePath, "repo-header.html")
-	repoMainPage := path.Join(conf.Paths.TemplatePath, mainPage)
-	footerPage := path.Join(conf.Paths.TemplatePath, "footer.html")
+	layoutPage := filepath.Join(conf.Paths.TemplatePath, "layout.html")
+	headerPage := filepath.Join(conf.Paths.TemplatePath, "header.html")
+	repoHeaderPage := filepath.Join(conf.Paths.TemplatePath, "repo-header.html")
+	repoMainPage := filepath.Join(conf.Paths.TemplatePath, mainPage)
+	footerPage := filepath.Join(conf.Paths.TemplatePath, "footer.html")
 
 	tmpl, err := template.ParseFiles(layoutPage, headerPage, repoHeaderPage, repoMainPage, footerPage)
 	pkg.CheckError("Error on template parse", err)
