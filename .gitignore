@@ -10,3 +10,5 @@ app.ini
 error.log
 
 data/
+repositories/
+ssh/
