@@ -970,7 +970,7 @@ func applyDirsAndFiles(dirs, files []string, repoDir, frdpath, branch string) ([
 
 		repoDirDetail.DirName = dir
 		commit := ss[0]
-		if len(commit) > 32 {
+		if len(commit) > 50 {
 			commit = pkg.LimitCharLengthInString(commit)
 		}
 
@@ -992,7 +992,7 @@ func applyDirsAndFiles(dirs, files []string, repoDir, frdpath, branch string) ([
 
 		repoFileDetail.FileName = file
 		commit := ss[0]
-		if len(commit) > 32 {
+		if len(commit) > 50 {
 			commit = pkg.LimitCharLengthInString(commit)
 		}
 

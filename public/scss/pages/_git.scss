@@ -74,13 +74,14 @@
     }
 
     &__title {
+        font-size: 20px;
         font-weight: bold;
 
         & i {
             display: inline-block;
             font-weight: 400;
             font-style: normal;
-            font-size: 12px;
+            font-size: 14px;
             color: white;
             background: $text-color-2;
             padding: 2px;
