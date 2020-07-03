@@ -118,7 +118,7 @@
         width: 390px;
 
         & li {
-            & div {
+            & div { 
                 display: flex;
                 align-items: start;
 
@@ -331,7 +331,7 @@
             
             &:first-child {
                 float: left;
-                width: 190px;
+                width: 160px;
                 margin-right: 20px;
                 word-wrap: break-word;
             }
@@ -339,7 +339,7 @@
 
         &__message {
             float: left;
-            width: 540px;
+            width: 420px;
             margin-right: 20px;
             word-wrap: break-word;
             color: $text-color;
@@ -351,7 +351,7 @@
 
         &__date {
             float: left;
-            width: 180px;
+            width: 130px;
             word-wrap: break-word;
             text-align: right;
             opacity: 0.7;

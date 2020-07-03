@@ -66,7 +66,7 @@ func CreateSSHDirAndGenerateKey(sshPath string) {
 
 // LimitCharLengthInString ...
 func LimitCharLengthInString(limitString string) string {
-	if len(limitString) > 80 {
+	if len(limitString) > 32 {
 		limitString = fmt.Sprintf("%s...", string(limitString[:50]))
 		return limitString
 	}
