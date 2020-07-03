@@ -1,7 +1,7 @@
-## sorcia
+# sorcia
 Sorcia is a self-hosted web frontend for git repositories which is written in Golang [https://sorcia.org](https://sorcia.org).
 
-### license information
+## license information
 Sorcia has a dual license, a commercial one suitable for closed source projects and an AGPL license that can be used in open source softwares.
 
 You can make a private repository in Sorcia. But if the source code that your are developing and publishing is a proprietary one, you must buy a commercial license.
@@ -17,16 +17,16 @@ sorcia_customer_email=youremail@yourwebsite.com
 sorcia_license_path=/path/to/licenses/sorcia-commercial.txt
 ```
 
-### community
+## community
  * Ask your questions on [sorcia@googlegroups.com](https://groups.google.com/d/forum/sorcia).
  * Subscribe to release announcements on [sorcia-announce@googlegroups.com](https://groups.google.com/d/forum/sorcia-announce).
  * Send patches to [sorcia-devel@googlegroups.com](https://groups.google.com/d/forum/sorcia-devel).
 
-### pre-requisites
+## pre-requisites
  * Ubuntu 18.04 LTS
  * SQLite3
  
-### installation
+## installation
 At this moment, this documentation assumes that you are using a freshly installed Ubuntu 18.04 LTS box for the Sorcia installation. This will get updated to the platforms that Go can compile for as soon as possible. If you had installed Sorcia on a different OS or Architecture successfully, please feel free to send patches and update this README section.
 
 SSH into your server as a root user or a user who has root privleges. For commands that needs root privileges, this documentation will prefix the command with `sudo`.
@@ -175,7 +175,7 @@ sudo systemctl reload nginx
 
 You can now see your domain with https served by Let's Encrypt.
 
-### post installation
+## post installation
 There is this important CLI utility from Sorcia which I need to mention. As Sorcia doesn't rely on SMTP settings, this CLI utility can be used to change:
 
  * Reset username of any user

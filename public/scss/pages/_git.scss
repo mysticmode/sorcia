@@ -275,17 +275,17 @@
 
 .readme {
     & h1 {
-        font-size: 22px;
+        font-size: 24px;
         margin-bottom: 10px;
     }
 
     & h2 {
-        font-size: 17px;
+        font-size: 20px;
         margin-bottom: 10px;
     }
 
     & h3 {
-        font-size: 15px;
+        font-size: 17px;
         margin-bottom: 10px;
     }
     
@@ -325,6 +325,10 @@
         padding: 5px;
         border-bottom: 1px solid $brand-border;
         overflow: hidden;
+
+        &:last-child {
+            border-bottom: none;
+        }
 
         & a {
             cursor: pointer;
