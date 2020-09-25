@@ -8,6 +8,17 @@ html, body {
     background: $brand-bg;
 }
 
+#overlay {
+  position: fixed;
+  z-index: 999999;
+  width: 100%;
+  height: 100%;
+  background-color: #FFFFFF;
+  left: 0;
+  top: 0;
+  opacity: 0.95;
+}
+
 /* source-sans-pro-italic - latin */
 @font-face {
     font-family: 'Source Sans Pro';
