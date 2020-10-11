@@ -58,15 +58,16 @@
             & a {
                 cursor: pointer;
 
-                &.star-count {
+                &.upvote-count {
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     width: 50px;
-                    height: 37px;
+                    height: 33px;
                     color: $text-color-2;
                     border: 1px solid $brand-border;
                     border-left: none;
+                    padding: 7px;
 
                     &:hover {
                         color: $text-color;
