@@ -14,7 +14,7 @@
             background: $brand-bg-1;
             padding: 10px;
             margin-bottom: 10px;
-            font-size: 22px;
+            font-size: 20px;
             font-weight: bold;
         }
         
@@ -22,7 +22,6 @@
             display: flex;
             align-items: center;
             margin-bottom: 7px;
-            word-wrap: break-word;
             text-decoration: none;
         }
 
@@ -39,7 +38,7 @@
         }
 
         & p {
-          font-size: 18px;
+          font-size: 16px;
           font-weight: normal;
         }
     }
@@ -48,6 +47,7 @@
 .repo {
     &__header {
         display: flex;
+        align-items: baseline;
         justify-content: space-between;
 
         &__right {
@@ -77,8 +77,13 @@
     }
 
     &__title {
-        font-size: 22px;
+        font-size: 20px;
         font-weight: bold;
+
+        & a {
+          display: flex;
+          align-items: center;
+        }
 
         & i {
             display: inline-block;
@@ -89,7 +94,7 @@
             text-decoration: none;
             background: $text-color-2;
             padding: 2px 4px;
-            margin-left: 2px;
+            margin-left: 7px;
         }
     }
 
@@ -266,8 +271,8 @@
             }
 
             & select {
-                height: 26px;
-                font-size: 18px;
+                height: auto;
+                font-size: 16px;
             }
         }
 
@@ -275,6 +280,7 @@
             float: left;
             color: $text-color-2;
             margin-right: 10px;
+            font-size: 24px;
         }
     }
 }

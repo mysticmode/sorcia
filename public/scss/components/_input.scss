@@ -1,11 +1,11 @@
 input[type="text"], input[type="email"], input[type="password"], textarea {
     font-family: $font-default;
-    font-size: 18px;
+    font-size: 16px;
     background: white;
     color: $input-color;
     border: 1px solid $brand-border !important;
     border-radius: 0;
-    padding: 6px 10px;
+    padding: 7px 10px;
     outline: none;
 
     &:focus {

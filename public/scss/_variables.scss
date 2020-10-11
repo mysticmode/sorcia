@@ -1,7 +1,7 @@
 // Brand colors
-$brand-primary: #3663b1;
+$brand-primary: #395d9e;
 $brand-border: #bebebe; 
-$brand-danger: #cc4444;
+$brand-danger: #ca5050;
 
 // Background colors
 $brand-bg: white;
@@ -11,11 +11,11 @@ $brand-bg-1: #ececec;
 $button-bg: $brand-primary;
 
 // Text color
-$text-color: black;
-$text-color-2: #555555;
+$text-color: #222222;
+$text-color-2: #777777;
 
 // Input color
-$input-color: black;
+$input-color: #222222;
 
 // Link text-decoration
 $link-text-decoration: none;
@@ -33,10 +33,10 @@ $hljs-ln-color: $text-color-2;
 // HL.JS code highlighter
 $hljs-code-green: #d0f3db;
 $hljs-code-red: #f7cbcb;
-$hljs-selection: #b0c9f5;
+$hljs-selection: #f6ffa9;
 
 // Default font
-$font-default: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, "Calibri", Roboto, "DejaVu Sans", "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+$font-default: 'Roboto', -apple-system, BlinkMacSystemFont, "Calibri", Roboto, "DejaVu Sans", "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 
 // Source code font
 $font-source-code: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
