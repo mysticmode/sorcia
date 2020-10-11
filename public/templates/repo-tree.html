@@ -29,7 +29,7 @@
     {{if .RepoDetail.PathEmpty}}
     {{range .RepoLogs.History}}
     <div class="latest-commit">
-        <img src="{{.DP}}" width="23px">
+        <img src="{{.DP}}?s=27" width="27px">
         <div class="latest-commit__name">{{.Author}}</div>
         <a href="/r/{{ $.Reponame }}/commit/{{.Branch}}/{{.FullHash}}">{{.Message}}</a>
         <div class="latest-commit__date">{{.Date}}</div>
