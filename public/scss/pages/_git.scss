@@ -328,8 +328,10 @@
 }
 
 .repo-tree {
+    border: 1px solid $brand-border;
+
     &__info {
-        padding: 5px;
+        padding: 10px;
         border-bottom: 1px solid $brand-border;
         overflow: hidden;
         display: flex;
@@ -343,16 +345,14 @@
             
             &:first-child {
                 float: left;
-                width: 160px;
+                width: 180px;
                 margin-right: 20px;
-                word-wrap: break-word;
                 flex: 0 1 auto;
             }
         }
 
         &__message {
             float: left;
-            width: 420px;
             margin-right: 20px;
             white-space: nowrap;
             overflow: hidden;
@@ -367,10 +367,10 @@
 
         &__date {
             float: left;
-            width: 130px;
-            word-wrap: break-word;
+            width: 140px;
             text-align: right;
             opacity: 0.7;
+            line-height: inherit;
         }
     }
 
