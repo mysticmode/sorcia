@@ -51,6 +51,9 @@
             </div>
         </div>
     </div>
-    <div class="readme">{{ .RepoDetail.Readme }}</div>
+    <div class="readme">
+      <div class="readme__title">README.md</div>
+      <div class="readme__content">{{ .RepoDetail.Readme }}</div>
+    </div>
 </main>
 {{end}}

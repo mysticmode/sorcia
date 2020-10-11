@@ -291,6 +291,18 @@
 }
 
 .readme {
+    border: 1px solid $brand-border;
+
+    &__title, &__content {
+          padding: 10px 20px;
+    }
+
+    &__title {
+      font-weight: bold;
+      background: $brand-bg-1;
+      border-bottom: 1px solid $brand-border;
+    }
+   
     & h1, & h2, & h3, &h4 , &h5, &h6 {
         margin-bottom: 10px;
         border-bottom: 1px solid $brand-border;
