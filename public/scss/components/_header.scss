@@ -6,26 +6,13 @@
     height: 35px;
     margin-top: 15px;
 
-    &__left {
+    &__left, &__right {
         display: flex;
         align-items: center;
-
-        & input[type="text"] {
-            width: 380px;
-        }
     }
 
-    &__right {
-        display: flex;
-        align-items: center;
-
-        & .button {
-            color: white;
-
-            &:hover {
-                color: white;
-            }
-        }
+    & input[type="text"] {
+      width: 380px;
     }
 
     & a {
@@ -37,8 +24,12 @@
             margin-right: 0;
         }
 
-        &--active, &:hover {
-            color: $text-color;
+        &.active, &:hover {
+            color: $brand-primary;
+        }
+
+        &.button {
+          color: white;
         }
     }
 }

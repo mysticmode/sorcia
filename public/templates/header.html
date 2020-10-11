@@ -23,12 +23,12 @@
         </div>
         <div class="header__right">
             {{if eq .HeaderActiveMenu "meta"}}
-            <a href="/meta" class="header__right__item header__right__item--active">meta</a>
-            <a href="/logout" class="header__right__item">logout</a>
+            <a href="/meta" class="active">meta</a>
+            <a href="/logout">logout</a>
             {{else}}
             <a href="/create-repo" class="button button--primary">Create new repository</a>
-            <a href="/meta" class="header__right__item">meta</a>
-            <a href="/logout" class="header__right__item">logout</a>
+            <a href="/meta">meta</a>
+            <a href="/logout">logout</a>
             {{end}}
         </div>
     </header>
@@ -40,7 +40,7 @@
         </div>
         {{if .ShowLoginMenu}}
         <div class="header__right">
-            <a href="/login" class="header__right__item">login</a>
+            <a href="/login">login</a>
         </div>
         {{end}}
     </header>
