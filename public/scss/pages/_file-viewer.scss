@@ -22,5 +22,9 @@
 
     & .hljs-ln-numbers {
         color: $hljs-ln-color;
+
+        &:hover {
+          color: $text-color;
+        }
     }
 }

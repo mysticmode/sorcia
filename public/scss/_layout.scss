@@ -76,10 +76,10 @@ html, body {
 }  
 
 body {
-    width: 840px;
+    width: 960px;
     margin: 0 auto 0;
     font-family: $font-default;
-    font-size: 16px;
+    font-size: 18px;
     color: $text-color;
 }
 
@@ -89,12 +89,12 @@ a {
     outline: none;
 
     &:hover {
-        color: darken($color: $brand-primary, $amount: 15%);
+        color: darken($color: $brand-primary, $amount: 25%);
     }
 }
 
 p {
-    line-height: 22px;
+    line-height: 26px;
     word-wrap: break-word;
 }
 
@@ -137,11 +137,11 @@ pre {
 }
 
 .container {
-    margin: 30px 0;
+    margin: 50px 0;
     min-height: calc(100vh - 152px);
 
     &__info {
-        width: 200px;
+        width: 220px;
         margin-right: 30px;
 
         &__fullname {

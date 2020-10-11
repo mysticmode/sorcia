@@ -1,7 +1,7 @@
 .button {
     background: $button-bg;
     font-family: $font-default;
-    font-size: 16px;
+    font-size: 18px;
     color: white;
     border: none;
     padding: 7px 10px;
@@ -10,7 +10,7 @@
     text-decoration: none;
 
     &:hover {
-        background: darken($color: $button-bg, $amount: 10%);
+        background: darken($color: $button-bg, $amount: 15%);
         color: white;
     }
 
@@ -18,7 +18,7 @@
         background: $brand-danger;
 
         &:hover {
-            background: darken($color: $brand-danger, $amount: 10%);
+            background: darken($color: $brand-danger, $amount: 15%);
             color: white;
         }
     }
