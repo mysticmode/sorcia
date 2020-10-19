@@ -13,4 +13,4 @@ upload_asset_path = /home/git/data/uploads
 
 [server]
 http_port = 1937
-ssh_port = 22
+ssh_port = 2222
