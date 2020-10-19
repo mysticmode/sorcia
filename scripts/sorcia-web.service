@@ -3,13 +3,13 @@ Description=sorcia web service
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/sudo ./sorcia web
+ExecStart=/home/git/sorcia/sorcia web
 TimeoutStartSec=3600
 Restart=always
 RestartSec=10
 WorkingDirectory=/home/git/sorcia
-User=root
-Group=root
+User=git
+Group=git
 
 [Install]
 WantedBy=multi-user.target
