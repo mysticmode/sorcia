@@ -145,6 +145,10 @@
                         & a {
                             margin-right: 5px;
                         }
+
+                        & span {
+                          margin-left: 5px;
+                        }
                     }
                 }
             }
@@ -162,10 +166,10 @@
             & a {
                 margin-right: 5px;
             }
-        }
 
-        &__dp {
-            margin: 0 5px;
+            & span {
+              margin-left: 5px;
+            }
         }
 
         & li {
@@ -447,10 +451,6 @@
     &__title {
         display: flex;
         margin-bottom: 10px;
-        
-        & img {
-            margin-right: 5px;
-        }
     }
 
     &__name {

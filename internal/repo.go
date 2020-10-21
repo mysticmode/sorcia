@@ -1257,7 +1257,6 @@ func GetRepoContributors(w http.ResponseWriter, r *http.Request, db *sql.DB, con
 
 // CommitDetailStruct struct
 type CommitDetailStruct struct {
-	DP           string
 	Name         string
 	Message      string
 	Hash         string
@@ -1352,12 +1351,6 @@ func GetCommitDetail(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *p
 
 	if len(ss) > 1 {
 		cds.Hash = commitHash
-
-		email := ss[0]
-		gravatarHash := md5.Sum([]byte(email))
-		stringHash := hex.EncodeToString(gravatarHash[:])
-		cds.DP = fmt.Sprintf("https://www.gravatar.com/avatar/%s", stringHash)
-
 		cds.Name = ss[1]
 		cds.Message = ss[2]
 		cds.Date = ss[3]
