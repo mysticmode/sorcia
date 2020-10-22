@@ -1,9 +1,7 @@
 package internal
 
 import (
-	"crypto/md5"
 	"database/sql"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -1464,12 +1462,14 @@ func getContributors(repoDir string, getDetail bool) *Contributors {
 				contributor.Commits = lineDetail[0]
 				lineFurther := strings.Join(lineDetail[1:], " ")
 				contributor.Name = strings.Split(lineFurther, " <")[0]
-				emailSplit := strings.Split(lineFurther, " <")[1]
-				email := strings.Split(emailSplit, ">")[0]
 
-				hash := md5.Sum([]byte(email))
-				stringHash := hex.EncodeToString(hash[:])
-				contributor.DP = fmt.Sprintf("https://www.gravatar.com/avatar/%s", stringHash)
+				// TODO:
+				// This email variable will be used to check if the account
+				// exists in the database, if so, then display the username
+				// of that account as link.
+
+				// emailSplit := strings.Split(lineFurther, " <")[1]
+				// email := strings.Split(emailSplit, ">")[0]
 
 				contributors.Detail = append(contributors.Detail, contributor)
 			}
@@ -1569,10 +1569,6 @@ func getCommits(repoDir, branch string, commitCount int) *RepoLogs {
 			rl.Author = st[5]
 			rl.Branch = branch
 
-			hash := md5.Sum([]byte(st[6]))
-			stringHash := hex.EncodeToString(hash[:])
-			rl.DP = fmt.Sprintf("https://www.gravatar.com/avatar/%s", stringHash)
-
 			rla = RepoLogs{
 				History: append(rla.History, rl),
 			}
@@ -1613,10 +1609,6 @@ func getCommitsFromHash(repoDir, branch, fromHash string, commitCount int) *Repo
 			rl.Date = st[4]
 			rl.Author = st[5]
 			rl.Branch = branch
-
-			hash := md5.Sum([]byte(st[6]))
-			stringHash := hex.EncodeToString(hash[:])
-			rl.DP = fmt.Sprintf("https://www.gravatar.com/avatar/%s", stringHash)
 
 			rla = RepoLogs{
 				History: append(rla.History, rl),
