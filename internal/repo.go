@@ -352,8 +352,8 @@ func processREADME(repoPath string) template.HTML {
 	return html
 }
 
-// GetRepoMeta ...
-func GetRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct) {
+// GetRepoSettings ...
+func GetRepoSettings(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct) {
 	vars := mux.Vars(r)
 	reponame := vars["reponame"]
 
@@ -407,12 +407,12 @@ func GetRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.B
 		data.RepoEmpty = true
 	}
 
-	writeRepoResponse(w, r, db, reponame, "repo-meta.html", data, conf)
+	writeRepoResponse(w, r, db, reponame, "repo-settings.html", data, conf)
 	return
 }
 
-// PostRepoMetaDelete ...
-func PostRepoMetaDelete(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct) {
+// PostRepoSettingsDelete ...
+func PostRepoSettingsDelete(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct) {
 	userPresent := w.Header().Get("user-present")
 	vars := mux.Vars(r)
 	reponame := vars["reponame"]
@@ -444,15 +444,15 @@ func PostRepoMetaDelete(w http.ResponseWriter, r *http.Request, db *sql.DB, conf
 	http.Redirect(w, r, "/", http.StatusFound)
 }
 
-// PostRepoMetaStruct struct
-type PostRepoMetaStruct struct {
+// PostRepoSettingsStruct struct
+type PostRepoSettingsStruct struct {
 	Name        string `schema:"name"`
 	Description string `schema:"description"`
 	IsPrivate   string `schema:"is_private"`
 }
 
-// PostRepoMeta ...
-func PostRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct, decoder *schema.Decoder) {
+// PostRepoSettings ...
+func PostRepoSettings(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct, decoder *schema.Decoder) {
 	userPresent := w.Header().Get("user-present")
 	vars := mux.Vars(r)
 	reponame := vars["reponame"]
@@ -477,18 +477,18 @@ func PostRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.
 			w.Write(errorJSON)
 		}
 
-		var postRepoMetaStruct = &PostRepoMetaStruct{}
-		err := decoder.Decode(postRepoMetaStruct, r.PostForm)
+		var postRepoSettingsStruct = &PostRepoSettingsStruct{}
+		err := decoder.Decode(postRepoSettingsStruct, r.PostForm)
 		pkg.CheckError("Error on post repo meta decoder", err)
 
-		s := postRepoMetaStruct.Name
+		s := postRepoSettingsStruct.Name
 		if len(s) > 100 || len(s) < 1 {
 			layoutPage := filepath.Join("./public/templates", "layout.html")
 			headerPage := filepath.Join("./public/templates", "header.html")
-			repoMetaPage := filepath.Join("./public/templates", "repo-meta.html")
+			repoSettingsPage := filepath.Join("./public/templates", "repo-meta.html")
 			footerPage := filepath.Join("./public/templates", "footer.html")
 
-			tmpl, err := template.ParseFiles(layoutPage, headerPage, repoMetaPage, footerPage)
+			tmpl, err := template.ParseFiles(layoutPage, headerPage, repoSettingsPage, footerPage)
 			pkg.CheckError("Error on template parse", err)
 
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -513,10 +513,10 @@ func PostRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.
 		} else if strings.HasPrefix(s, "-") || strings.Contains(s, "--") || strings.HasSuffix(s, "-") || !pkg.IsAlnumOrHyphen(s) {
 			layoutPage := filepath.Join("./public/templates", "layout.html")
 			headerPage := filepath.Join("./public/templates", "header.html")
-			repoMetaPage := filepath.Join("./public/templates", "repo-meta.html")
+			repoSettingsPage := filepath.Join("./public/templates", "repo-meta.html")
 			footerPage := filepath.Join("./public/templates", "footer.html")
 
-			tmpl, err := template.ParseFiles(layoutPage, headerPage, repoMetaPage, footerPage)
+			tmpl, err := template.ParseFiles(layoutPage, headerPage, repoSettingsPage, footerPage)
 			pkg.CheckError("Error on template parse", err)
 
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -541,15 +541,15 @@ func PostRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.
 		}
 
 		var isPrivate int
-		if isPrivate = 0; postRepoMetaStruct.IsPrivate == "1" {
+		if isPrivate = 0; postRepoSettingsStruct.IsPrivate == "1" {
 			isPrivate = 1
 		}
 
 		if models.CheckRepoOwnerFromUserIDAndReponame(db, userID, reponame) == true {
 			urs := models.UpdateRepoStruct{
 				RepoID:      models.GetRepoIDFromReponame(db, reponame),
-				NewName:     postRepoMetaStruct.Name,
-				Description: postRepoMetaStruct.Description,
+				NewName:     postRepoSettingsStruct.Name,
+				Description: postRepoSettingsStruct.Description,
 				IsPrivate:   isPrivate,
 			}
 
@@ -574,8 +574,8 @@ func PostRepoMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.
 	http.Redirect(w, r, "/login", http.StatusFound)
 }
 
-// RemoveRepoMetaUser ...
-func RemoveRepoMetaUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct) {
+// RemoveRepoSettingsUser ...
+func RemoveRepoSettingsUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct) {
 	userPresent := w.Header().Get("user-present")
 	vars := mux.Vars(r)
 	reponame := vars["reponame"]
@@ -597,14 +597,14 @@ func RemoveRepoMetaUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf
 	http.Redirect(w, r, "/r/"+reponame+"/meta", http.StatusFound)
 }
 
-// PostRepoMetaMember struct
-type PostRepoMetaMember struct {
+// PostRepoSettingsMember struct
+type PostRepoSettingsMember struct {
 	Username   string `schema:"username"`
 	Permission string `schema:"is_readorwrite"`
 }
 
-// PostRepoMetaUser ...
-func PostRepoMetaUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct, decoder *schema.Decoder) {
+// PostRepoSettingsUser ...
+func PostRepoSettingsUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct, decoder *schema.Decoder) {
 	userPresent := w.Header().Get("user-present")
 	vars := mux.Vars(r)
 	reponame := vars["reponame"]
@@ -630,10 +630,10 @@ func PostRepoMetaUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *
 
 		layoutPage := filepath.Join("./public/templates", "layout.html")
 		headerPage := filepath.Join("./public/templates", "header.html")
-		repoMetaPage := filepath.Join("./public/templates", "repo-meta.html")
+		repoSettingsPage := filepath.Join("./public/templates", "repo-meta.html")
 		footerPage := filepath.Join("./public/templates", "footer.html")
 
-		tmpl, err := template.ParseFiles(layoutPage, headerPage, repoMetaPage, footerPage)
+		tmpl, err := template.ParseFiles(layoutPage, headerPage, repoSettingsPage, footerPage)
 		pkg.CheckError("Error on template parse", err)
 
 		data := GetRepoResponse{
@@ -649,11 +649,11 @@ func PostRepoMetaUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *
 			RepoAccess:       models.CheckRepoOwnerFromUserIDAndReponame(db, models.GetUserIDFromUsername(db, username), reponame),
 		}
 
-		var postRepoMetaMember = &PostRepoMetaMember{}
-		err = decoder.Decode(postRepoMetaMember, r.PostForm)
+		var postRepoSettingsMember = &PostRepoSettingsMember{}
+		err = decoder.Decode(postRepoSettingsMember, r.PostForm)
 		pkg.CheckError("Error on post repo meta member decoder", err)
 
-		userID := models.GetUserIDFromUsername(db, postRepoMetaMember.Username)
+		userID := models.GetUserIDFromUsername(db, postRepoSettingsMember.Username)
 		repoID := models.GetRepoIDFromReponame(db, reponame)
 		if userID > 0 {
 			if !models.CheckRepoOwnerFromUserIDAndReponame(db, userID, reponame) {
@@ -661,7 +661,7 @@ func PostRepoMetaUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *
 					crm := models.CreateRepoMember{
 						UserID:     userID,
 						RepoID:     repoID,
-						Permission: postRepoMetaMember.Permission,
+						Permission: postRepoSettingsMember.Permission,
 					}
 
 					models.InsertRepoMember(db, crm)
@@ -689,8 +689,8 @@ func PostRepoMetaUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *
 	return
 }
 
-// GetRepoTree ...
-func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct) {
+// GetRepoBrowse ...
+func GetRepoBrowse(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct) {
 	vars := mux.Vars(r)
 	reponame := vars["reponame"]
 	branch := vars["branch"]
@@ -761,8 +761,8 @@ func GetRepoTree(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.B
 	return
 }
 
-// GetRepoTreePath ...
-func GetRepoTreePath(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct) {
+// GetRepoBrowsePath ...
+func GetRepoBrowsePath(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct) {
 	vars := mux.Vars(r)
 	reponame := vars["reponame"]
 	branchOrHash := vars["branchorhash"]
@@ -1004,8 +1004,8 @@ func applyDirsAndFiles(dirs, files []string, repoDir, frdpath, branch string) ([
 	return repoDetail.RepoDirsDetail, repoDetail.RepoFilesDetail
 }
 
-// GetRepoLog ...
-func GetRepoLog(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct) {
+// GetRepoCommits ...
+func GetRepoCommits(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct) {
 	vars := mux.Vars(r)
 	reponame := vars["reponame"]
 	branch := vars["branch"]
@@ -1186,8 +1186,8 @@ func GetRepoRefs(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.B
 	return
 }
 
-// ServeRefFile ...
-func ServeRefFile(w http.ResponseWriter, r *http.Request, conf *pkg.BaseStruct) {
+// ServeReleasesFile ...
+func ServeReleasesFile(w http.ResponseWriter, r *http.Request, conf *pkg.BaseStruct) {
 	vars := mux.Vars(r)
 	fileName := vars["file"]
 	dlPath := filepath.Join(conf.Paths.RefsPath, fileName)
@@ -1335,28 +1335,34 @@ func GetCommitDetail(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *p
 
 	gitPath := pkg.GetGitBinPath()
 
-	args := []string{"show", commitHash, "--name-status", "--pretty=format:%ae||srca-sptra||%an||srca-sptra||%s||srca-sptra||%ar"}
+	args := []string{"show", commitHash, "--name-status", "--pretty=format:%an||srca-sptra||%s||srca-sptra||%ar"}
 	out := pkg.ForkExec(gitPath, args, repoDir)
 
 	lines := strings.Split(out, "\n")
 	// Remove empty last line
 	lines = lines[:len(lines)-1]
 
+	fmt.Println(lines)
+
 	//filesChanged := strings.TrimSpace(lines[len(lines)-1])
 	ss := strings.Split(lines[0], "||srca-sptra||")
 	var cds CommitDetailStruct
 	cds.Branch = branch
 
+	fmt.Println(ss)
+
 	if len(ss) > 1 {
 		cds.Hash = commitHash
-		cds.Name = ss[1]
-		cds.Message = ss[2]
-		cds.Date = ss[3]
+		cds.Name = ss[0]
+		cds.Message = ss[1]
+		cds.Date = ss[2]
 	}
 
 	for _, file := range lines[1:] {
 		cf := CommitFile{}
 		ca := CommitAmpersand{}
+
+		fmt.Println(strings.Fields(file))
 
 		cf.State = strings.Fields(file)[0]
 		cf.Filename = strings.Fields(file)[1]

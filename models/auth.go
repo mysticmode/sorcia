@@ -288,13 +288,13 @@ func InsertSSHPubKey(db *sql.DB, ispk InsertSSHPubKeyStruct) {
 	pkg.CheckError("Error on model insert ssh pub key exec", err)
 }
 
-// DeleteMetaKeyByID ...
-func DeleteMetaKeyByID(db *sql.DB, id int) {
+// DeleteSettingsKeyByID ...
+func DeleteSettingsKeyByID(db *sql.DB, id int) {
 	stmt, err := db.Prepare("DELETE FROM ssh WHERE id = ?")
-	pkg.CheckError("Error on model delete meta key by id", err)
+	pkg.CheckError("Error on model delete settings key by id", err)
 
 	_, err = stmt.Exec(id)
-	pkg.CheckError("Error on model delete meta key by id exec", err)
+	pkg.CheckError("Error on model delete settings key by id exec", err)
 }
 
 // SSHKeysResponse struct

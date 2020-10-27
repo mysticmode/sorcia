@@ -26,8 +26,8 @@ import (
 	"github.com/gorilla/schema"
 )
 
-// MetaResponse struct
-type MetaResponse struct {
+// SettingsResponse struct
+type SettingsResponse struct {
 	IsLoggedIn         bool
 	IsAdmin            bool
 	HeaderActiveMenu   string
@@ -39,8 +39,8 @@ type MetaResponse struct {
 	SiteSettings       SiteSettings
 }
 
-// GetMeta ...
-func GetMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct) {
+// GetSettings ...
+func GetSettings(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct) {
 	userPresent := w.Header().Get("user-present")
 
 	if userPresent == "true" {
@@ -60,7 +60,7 @@ func GetMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseS
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
 
-		data := MetaResponse{
+		data := SettingsResponse{
 			IsLoggedIn:       true,
 			IsAdmin:          models.CheckifUserIsAnAdmin(db, userID),
 			HeaderActiveMenu: "meta",
@@ -75,8 +75,8 @@ func GetMeta(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseS
 	}
 }
 
-// MetaKeysResponse struct
-type MetaKeysResponse struct {
+// SettingsKeysResponse struct
+type SettingsKeysResponse struct {
 	IsLoggedIn       bool
 	IsAdmin          bool
 	HeaderActiveMenu string
@@ -85,8 +85,8 @@ type MetaKeysResponse struct {
 	SiteSettings     SiteSettings
 }
 
-// GetMetaKeys ...
-func GetMetaKeys(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct) {
+// GetSettingsKeys ...
+func GetSettingsKeys(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct) {
 	userPresent := w.Header().Get("user-present")
 
 	if userPresent == "true" {
@@ -106,7 +106,7 @@ func GetMetaKeys(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.B
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
 
-		data := MetaKeysResponse{
+		data := SettingsKeysResponse{
 			IsLoggedIn:       true,
 			IsAdmin:          models.CheckifUserIsAnAdmin(db, userID),
 			HeaderActiveMenu: "meta",
@@ -121,8 +121,8 @@ func GetMetaKeys(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.B
 	}
 }
 
-// DeleteMetaKey ...
-func DeleteMetaKey(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+// DeleteSettingsKey ...
+func DeleteSettingsKey(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	vars := mux.Vars(r)
 	keyID := vars["keyID"]
 
@@ -130,10 +130,10 @@ func DeleteMetaKey(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 	if userPresent == "true" {
 		i, err := strconv.Atoi(keyID)
-		pkg.CheckError("Error on converting SSH key id(string) to int on delete meta keys", err)
+		pkg.CheckError("Error on converting SSH key id(string) to int on delete settings keys", err)
 
-		models.DeleteMetaKeyByID(db, i)
-		http.Redirect(w, r, "/meta/keys", http.StatusFound)
+		models.DeleteSettingsKeyByID(db, i)
+		http.Redirect(w, r, "/settings/keys", http.StatusFound)
 	} else {
 		http.Redirect(w, r, "/login", http.StatusFound)
 	}
@@ -350,8 +350,8 @@ func PostUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.Base
 	http.Redirect(w, r, "/login", http.StatusFound)
 }
 
-// GetMetaUsers ...
-func GetMetaUsers(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct) {
+// GetSettingsUsers ...
+func GetSettingsUsers(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct) {
 	userPresent := w.Header().Get("user-present")
 
 	if userPresent == "true" {
@@ -371,7 +371,7 @@ func GetMetaUsers(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
 
-		data := MetaResponse{
+		data := SettingsResponse{
 			IsLoggedIn:         true,
 			IsAdmin:            models.CheckifUserIsAnAdmin(db, userID),
 			RegisterErrMessage: "",
@@ -393,8 +393,8 @@ type PostPasswordRequest struct {
 	Password string `schema:"password"`
 }
 
-// MetaPostPassword ...
-func MetaPostPassword(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder *schema.Decoder) {
+// SettingsPostPassword ...
+func SettingsPostPassword(w http.ResponseWriter, r *http.Request, db *sql.DB, decoder *schema.Decoder) {
 	userPresent := w.Header().Get("user-present")
 
 	if userPresent == "true" {
@@ -443,8 +443,8 @@ func MetaPostPassword(w http.ResponseWriter, r *http.Request, db *sql.DB, decode
 	http.Redirect(w, r, "/login", http.StatusFound)
 }
 
-// MetaPostSiteSettings ...
-func MetaPostSiteSettings(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct) {
+// SettingsPostSiteSettings ...
+func SettingsPostSiteSettings(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.BaseStruct) {
 	userPresent := w.Header().Get("user-present")
 
 	if userPresent == "true" {

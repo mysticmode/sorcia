@@ -4,12 +4,12 @@
     {{template "repo-header" .}}
     <div class="repo__menu">
         <a href="/r/{{ .Reponame }}" class="repo__menu__item">summary</a>
-        <a href="/r/{{ .Reponame }}/tree/{{.CommitDetail.Branch}}" class="repo__menu__item">tree</a>
-        <a href="/r/{{ .Reponame }}/log/{{.CommitDetail.Branch}}" class="repo__menu__item repo__menu__item--active">log</a>
-        <a href="/r/{{ .Reponame }}/refs" class="repo__menu__item">refs</a>
+        <a href="/r/{{ .Reponame }}/browse/{{.CommitDetail.Branch}}" class="repo__menu__item">browse</a>
+        <a href="/r/{{ .Reponame }}/commits/{{.CommitDetail.Branch}}" class="repo__menu__item repo__menu__item--active">commits</a>
+        <a href="/r/{{ .Reponame }}/releases" class="repo__menu__item">releases</a>
         <a href="/r/{{ .Reponame }}/contributors" class="repo__menu__item">contributors</a>
         {{if .IsLoggedIn}}
-            <a href="/r/{{ .Reponame }}/meta" class="repo__menu__item">meta</a>
+            <a href="/r/{{ .Reponame }}/settings" class="repo__menu__item">settings</a>
         {{end}}
     </div>
     <div class="repo-commit">
@@ -19,7 +19,6 @@
                 <div class="repo-commit__date">{{.CommitDetail.Date}}</div>
             </div>
             <div class="repo-commit__profile">
-                <img src="{{.CommitDetail.DP}}" width="23px" />
                 <div>{{.CommitDetail.Name}}</div>
             </div>
             <div class="repo-commit__message">{{.CommitDetail.Message}}</div>

@@ -5,13 +5,13 @@
     <div class="repo__menu">
         <a href="/r/{{ .Reponame }}" class="repo__menu__item">summary</a>
         {{if eq .RepoEmpty false}}
-        <a href="/r/{{ .Reponame }}/tree/master" class="repo__menu__item">tree</a>
-        <a href="/r/{{ .Reponame }}/log/master" class="repo__menu__item">log</a>
-        <a href="/r/{{ .Reponame }}/refs" class="repo__menu__item">refs</a>
+        <a href="/r/{{ .Reponame }}/browse/master" class="repo__menu__item">browse</a>
+        <a href="/r/{{ .Reponame }}/commits/master" class="repo__menu__item">commits</a>
+        <a href="/r/{{ .Reponame }}/releases" class="repo__menu__item">releases</a>
         <a href="/r/{{ .Reponame }}/contributors" class="repo__menu__item">contributors</a>
         {{end}}
         {{if .IsLoggedIn}}
-            <a href="/r/{{ .Reponame }}/meta" class="repo__menu__item repo__menu__item--active">meta</a>
+            <a href="/r/{{ .Reponame }}/settings" class="repo__menu__item repo__menu__item--active">settings</a>
         {{end}}
     </div>
     {{if .IsLoggedIn}}
