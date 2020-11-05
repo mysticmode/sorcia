@@ -757,7 +757,7 @@ func GetRepoBrowse(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg
 		data.RepoLogs.History[0].Message = pkg.LimitCharLengthInString(data.RepoLogs.History[0].Message)
 	}
 
-	writeRepoResponse(w, r, db, reponame, "repo-tree.html", data, conf)
+	writeRepoResponse(w, r, db, reponame, "repo-browse.html", data, conf)
 	return
 }
 
@@ -815,7 +815,7 @@ func GetRepoBrowsePath(w http.ResponseWriter, r *http.Request, db *sql.DB, conf 
 	}
 
 	gitPath := pkg.GetGitBinPath()
-	frdpath := strings.Split(r.URL.Path, "r/"+reponame+"/tree/"+branchOrHash+"/")[1]
+	frdpath := strings.Split(r.URL.Path, "r/"+reponame+"/browse/"+branchOrHash+"/")[1]
 
 	args := []string{"branch"}
 	out := pkg.ForkExec(gitPath, args, repoDir)
@@ -823,7 +823,7 @@ func GetRepoBrowsePath(w http.ResponseWriter, r *http.Request, db *sql.DB, conf 
 	ss := strings.Split(out, "\n")
 	entries := ss[:len(ss)-1]
 
-	legendHref := "\"/r/" + reponame + "/tree/" + branchOrHash + "\""
+	legendHref := "\"/r/" + reponame + "/browse/" + branchOrHash + "\""
 	legendPath := "<a href=" + legendHref + ">" + reponame + "</a>"
 
 	legendPathSplit := strings.Split(frdpath, "/")
@@ -874,7 +874,7 @@ func GetRepoBrowsePath(w http.ResponseWriter, r *http.Request, db *sql.DB, conf 
 
 			data.RepoDetail.RepoDirsDetail, data.RepoDetail.RepoFilesDetail = applyDirsAndFiles(dirs, files, repoDir, frdpath, branchOrHash)
 
-			writeRepoResponse(w, r, db, reponame, "repo-tree.html", data, conf)
+			writeRepoResponse(w, r, db, reponame, "repo-browse.html", data, conf)
 			return
 		}
 	}
