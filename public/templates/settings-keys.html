@@ -1,13 +1,13 @@
-{{define "title"}}meta - Keys{{end}}
+{{define "title"}}settings - Keys{{end}}
 {{define "content"}}
 <main class="container meta">
     <div class="repo__menu">
-        <a href="/meta" class="repo__menu__item">general</a>
+        <a href="/settings" class="repo__menu__item">general</a>
         <a href="" class="repo__menu__item repo__menu__item--active">keys</a>
-        <a href="/meta/users" class="repo__menu__item">users</a>
+        <a href="/settings/users" class="repo__menu__item">users</a>
     </div>
     <div class="meta__detail">
-        <form class="form meta__detail__form" method="POST" action="/meta/keys">
+        <form class="form meta__detail__form" method="POST" action="/settings/keys">
             <div class="form__title">add new ssh key</div>
             <div class="form__group">
                 <label for="sshTitle">Title<i>*</i></label>
@@ -27,7 +27,7 @@
                 <p>{{.Title}}</p>
                 <div>Fingerprint</div>
                 <p>{{.Fingerprint}}</p>
-                <a href="/meta/keys/delete/{{.ID}}" class="button button--danger">Delete</a>
+                <a href="/settings/keys/delete/{{.ID}}" class="button button--danger">Delete</a>
             </div>
             {{end}}
         </div>

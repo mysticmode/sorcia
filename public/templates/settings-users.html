@@ -1,14 +1,14 @@
-{{define "title"}}meta - Users{{end}}
+{{define "title"}}settings - Users{{end}}
 {{define "content"}}
 <main class="container meta">
     <div class="repo__menu">
-        <a href="/meta" class="repo__menu__item">general</a>
-        <a href="/meta/keys" class="repo__menu__item">keys</a>
+        <a href="/settings" class="repo__menu__item">general</a>
+        <a href="/settings/keys" class="repo__menu__item">keys</a>
         <a href="" class="repo__menu__item repo__menu__item--active">users</a>
     </div>
     <div class="meta__detail">
         {{if .IsAdmin}}
-        <form class="form meta__detail__form" method="POST" action="/meta/users">
+        <form class="form meta__detail__form" method="POST" action="/settings/users">
             <div class="form__title">add new user</div>
             <div class="meta__detail__form__error">{{ .RegisterErrMessage }}</div>
             <div class="meta__error"></div>
@@ -36,9 +36,9 @@
                     <p>{{.Username}}</p>
                     {{if not .IsAdmin}}
                     {{if .CanCreateRepo}}
-                        <p class="create-repo-access">This user can create repositories. <a onclick="return confirm('Are you sure, you want to revoke create repository access for this user?');" href="/meta/user/revoke-access/{{.Username}}" class="button button--danger">Revoke access</a></p>
+                        <p class="create-repo-access">This user can create repositories. <a onclick="return confirm('Are you sure, you want to revoke create repository access for this user?');" href="/settings/user/revoke-access/{{.Username}}" class="button button--danger">Revoke access</a></p>
                     {{else}}
-                        <a href="/meta/user/add-access/{{.Username}}" class="button button--primary">Add create repo access</a>
+                        <a href="/settings/user/add-access/{{.Username}}" class="button button--primary">Add create repo access</a>
                     {{end}}
                     {{else}}
                         <p class="create-repo-access">This user is an admin, hence he can create repositories.</p>

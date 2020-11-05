@@ -51,7 +51,7 @@ func GetSettings(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.B
 
 		layoutPage := filepath.Join(conf.Paths.TemplatePath, "layout.html")
 		headerPage := filepath.Join(conf.Paths.TemplatePath, "header.html")
-		metaPage := filepath.Join(conf.Paths.TemplatePath, "meta.html")
+		metaPage := filepath.Join(conf.Paths.TemplatePath, "settings.html")
 		footerPage := filepath.Join(conf.Paths.TemplatePath, "footer.html")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, metaPage, footerPage)
@@ -97,7 +97,7 @@ func GetSettingsKeys(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *p
 
 		layoutPage := filepath.Join(conf.Paths.TemplatePath, "layout.html")
 		headerPage := filepath.Join(conf.Paths.TemplatePath, "header.html")
-		metaPage := filepath.Join(conf.Paths.TemplatePath, "meta-keys.html")
+		metaPage := filepath.Join(conf.Paths.TemplatePath, "settings-keys.html")
 		footerPage := filepath.Join(conf.Paths.TemplatePath, "footer.html")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, metaPage, footerPage)
@@ -186,7 +186,7 @@ func PostAuthKey(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.B
 
 		models.InsertSSHPubKey(db, ispk)
 
-		http.Redirect(w, r, "/meta/keys", http.StatusFound)
+		http.Redirect(w, r, "/settings/keys", http.StatusFound)
 		return
 	}
 
@@ -206,12 +206,12 @@ func RevokeCreateRepoAccess(w http.ResponseWriter, r *http.Request, db *sql.DB, 
 		if models.CheckifUserIsAnAdmin(db, userID) {
 			models.RevokeCanCreateRepo(db, username)
 
-			http.Redirect(w, r, "/meta/users", http.StatusFound)
+			http.Redirect(w, r, "/settings/users", http.StatusFound)
 			return
 		}
 	}
 
-	http.Redirect(w, r, "/meta/users", http.StatusFound)
+	http.Redirect(w, r, "/settings/users", http.StatusFound)
 }
 
 // AddCreateRepoAccess ...
@@ -227,12 +227,12 @@ func AddCreateRepoAccess(w http.ResponseWriter, r *http.Request, db *sql.DB, con
 		if models.CheckifUserIsAnAdmin(db, userID) {
 			models.AddCanCreateRepo(db, username)
 
-			http.Redirect(w, r, "/meta/users", http.StatusFound)
+			http.Redirect(w, r, "/settings/users", http.StatusFound)
 			return
 		}
 	}
 
-	http.Redirect(w, r, "/meta/users", http.StatusFound)
+	http.Redirect(w, r, "/settings/users", http.StatusFound)
 }
 
 // PostUserRequest struct
@@ -279,7 +279,7 @@ func PostUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.Base
 		if len(s) > 39 || len(s) < 1 {
 			layoutPage := filepath.Join(conf.Paths.TemplatePath, "layout.html")
 			headerPage := filepath.Join(conf.Paths.TemplatePath, "header.html")
-			metaUsersPage := filepath.Join(conf.Paths.TemplatePath, "meta-users.html")
+			metaUsersPage := filepath.Join(conf.Paths.TemplatePath, "settings-users.html")
 			footerPage := filepath.Join(conf.Paths.TemplatePath, "footer.html")
 
 			tmpl, err := template.ParseFiles(layoutPage, headerPage, metaUsersPage, footerPage)
@@ -304,7 +304,7 @@ func PostUser(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.Base
 		} else if strings.HasPrefix(s, "-") || strings.Contains(s, "--") || strings.HasSuffix(s, "-") || !pkg.IsAlnumOrHyphen(s) {
 			layoutPage := filepath.Join(conf.Paths.TemplatePath, "layout.html")
 			headerPage := filepath.Join(conf.Paths.TemplatePath, "header.html")
-			metaUsersPage := filepath.Join(conf.Paths.TemplatePath, "meta-users.html")
+			metaUsersPage := filepath.Join(conf.Paths.TemplatePath, "settings-users.html")
 			footerPage := filepath.Join(conf.Paths.TemplatePath, "footer.html")
 
 			tmpl, err := template.ParseFiles(layoutPage, headerPage, metaUsersPage, footerPage)
@@ -362,7 +362,7 @@ func GetSettingsUsers(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *
 
 		layoutPage := filepath.Join(conf.Paths.TemplatePath, "layout.html")
 		headerPage := filepath.Join(conf.Paths.TemplatePath, "header.html")
-		metaPage := filepath.Join(conf.Paths.TemplatePath, "meta-users.html")
+		metaPage := filepath.Join(conf.Paths.TemplatePath, "settings-users.html")
 		footerPage := filepath.Join(conf.Paths.TemplatePath, "footer.html")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, metaPage, footerPage)
@@ -456,7 +456,7 @@ func SettingsPostSiteSettings(w http.ResponseWriter, r *http.Request, db *sql.DB
 		gotLogo, logoPath, logoWidth, logoHeight := logoUpload(w, r, db, conf.Paths.UploadAssetPath)
 
 		if siteTitle == "" && siteStyle == "" && !gotFavicon && !gotLogo {
-			http.Redirect(w, r, "/meta", http.StatusFound)
+			http.Redirect(w, r, "/settings", http.StatusFound)
 			return
 		}
 
@@ -471,7 +471,7 @@ func SettingsPostSiteSettings(w http.ResponseWriter, r *http.Request, db *sql.DB
 			}
 			models.InsertSiteSettings(db, css)
 
-			http.Redirect(w, r, "/meta", http.StatusFound)
+			http.Redirect(w, r, "/settings", http.StatusFound)
 			return
 		}
 

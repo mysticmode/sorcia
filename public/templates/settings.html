@@ -1,13 +1,13 @@
-{{define "title"}}meta - General{{end}}
+{{define "title"}}settings - General{{end}}
 {{define "content"}}
 <main class="container meta">
     <div class="repo__menu">
         <a href="" class="repo__menu__item repo__menu__item--active">general</a>
-        <a href="/meta/keys" class="repo__menu__item">keys</a>
-        <a href="/meta/users" class="repo__menu__item">users</a>
+        <a href="/settings/keys" class="repo__menu__item">keys</a>
+        <a href="/settings/users" class="repo__menu__item">users</a>
     </div>
     <div class="meta__detail">
-        <form class="form meta__detail__form" method="POST" action="/meta/password">
+        <form class="form meta__detail__form" method="POST" action="/settings/password">
             <div class="form__title">your profile</div>
             <div class="meta__error"></div>
             <div class="form__group">
@@ -21,7 +21,7 @@
             <input type="submit" class="button button--primary" value="Save" />
         </form>
         {{if .IsAdmin}}
-        <form class="form meta__detail__form meta__detail__form--site-settings" method="POST" action="/meta/site" enctype="multipart/form-data">
+        <form class="form meta__detail__form meta__detail__form--site-settings" method="POST" action="/settings/site" enctype="multipart/form-data">
             <div class="form__title">site settings</div>
             <div class="meta__detail__form__info">None of these form fields are mandatory, you can change any one of these or all of it below if you wish.</div>
             <div class="meta__error"></div>
