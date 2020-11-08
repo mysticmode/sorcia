@@ -1,4 +1,4 @@
-{{define "title"}}{{ .Reponame }} - Meta{{end}}
+{{define "title"}}{{ .Reponame }} - Settings{{end}}
 {{define "content"}}
 <main class="container repo">
     {{template "repo-header" .}}
@@ -17,7 +17,7 @@
     {{if .IsLoggedIn}}
     <div class="repo__meta">
         {{if .RepoAccess}}
-        <form class="form repo__meta__form" method="POST" action="/r/{{.Reponame}}/meta">
+        <form class="form repo__meta__form" method="POST" action="/r/{{.Reponame}}/settings">
             <div class="form__title meta__form__title">general</div>
             <div class="form__error">{{ .ReponameErrMessage }}</div>
             <div class="form__group">
@@ -51,7 +51,7 @@
             </div>
             <input type="submit" class="button button--primary" value="Save" />
         </form>
-        <form class="form repo__meta__add-user__form" method="POST" action="/r/{{.Reponame}}/meta/user">
+        <form class="form repo__meta__add-user__form" method="POST" action="/r/{{.Reponame}}/settings/user">
             <div class="form__title meta__add-user__form-title">add user and set access</div>
             <div class="form__error">{{ .RepoUserAddError }}</div>
             <div class="form__group">
@@ -88,13 +88,13 @@
                 {{end}}
                 <p>({{.Permission}})</p>
                 {{if not .IsOwner}}
-                <a onclick="return confirm('Are you sure, you want to remove this user?');" href="/r/{{$.Reponame}}/meta/user/remove/{{.Username}}" class="button button--danger">Remove</a>
+                <a onclick="return confirm('Are you sure, you want to remove this user?');" href="/r/{{$.Reponame}}/settings/user/remove/{{.Username}}" class="button button--danger">Remove</a>
                 {{end}}
             </div>
             {{end}}
         </div>
         {{if .RepoAccess}}
-        <form class="form repo__meta__delete__form" method="POST" action="/r/{{.Reponame}}/meta/delete" onsubmit="return confirm('This will permanently delete your repository and cannot be undone. Are you sure?');">
+        <form class="form repo__meta__delete__form" method="POST" action="/r/{{.Reponame}}/settings/delete" onsubmit="return confirm('This will permanently delete your repository and cannot be undone. Are you sure?');">
             <div class="form__title meta__delete__form-title">delete this repository</div>
             <input type="submit" class="button button--danger" value="Delete" />
         </form>

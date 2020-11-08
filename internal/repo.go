@@ -485,7 +485,7 @@ func PostRepoSettings(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *
 		if len(s) > 100 || len(s) < 1 {
 			layoutPage := filepath.Join("./public/templates", "layout.html")
 			headerPage := filepath.Join("./public/templates", "header.html")
-			repoSettingsPage := filepath.Join("./public/templates", "repo-meta.html")
+			repoSettingsPage := filepath.Join("./public/templates", "repo-settings.html")
 			footerPage := filepath.Join("./public/templates", "footer.html")
 
 			tmpl, err := template.ParseFiles(layoutPage, headerPage, repoSettingsPage, footerPage)
@@ -513,7 +513,7 @@ func PostRepoSettings(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *
 		} else if strings.HasPrefix(s, "-") || strings.Contains(s, "--") || strings.HasSuffix(s, "-") || !pkg.IsAlnumOrHyphen(s) {
 			layoutPage := filepath.Join("./public/templates", "layout.html")
 			headerPage := filepath.Join("./public/templates", "header.html")
-			repoSettingsPage := filepath.Join("./public/templates", "repo-meta.html")
+			repoSettingsPage := filepath.Join("./public/templates", "repo-settings.html")
 			footerPage := filepath.Join("./public/templates", "footer.html")
 
 			tmpl, err := template.ParseFiles(layoutPage, headerPage, repoSettingsPage, footerPage)
@@ -566,7 +566,7 @@ func PostRepoSettings(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *
 
 			pkg.UpdateRefsWithNewName(conf.Paths.RefsPath, conf.Paths.RepoPath, reponame, urs.NewName)
 
-			http.Redirect(w, r, "/r/"+urs.NewName+"/meta", http.StatusFound)
+			http.Redirect(w, r, "/r/"+urs.NewName+"/settings", http.StatusFound)
 			return
 		}
 	}
@@ -590,11 +590,11 @@ func RemoveRepoSettingsUser(w http.ResponseWriter, r *http.Request, db *sql.DB, 
 			repoID := models.GetRepoIDFromReponame(db, reponame)
 			models.RemoveRepoMember(db, userIDToRemove, repoID)
 
-			http.Redirect(w, r, "/r/"+reponame+"/meta", http.StatusFound)
+			http.Redirect(w, r, "/r/"+reponame+"/settings", http.StatusFound)
 			return
 		}
 	}
-	http.Redirect(w, r, "/r/"+reponame+"/meta", http.StatusFound)
+	http.Redirect(w, r, "/r/"+reponame+"/settings", http.StatusFound)
 }
 
 // PostRepoSettingsMember struct
@@ -630,7 +630,7 @@ func PostRepoSettingsUser(w http.ResponseWriter, r *http.Request, db *sql.DB, co
 
 		layoutPage := filepath.Join("./public/templates", "layout.html")
 		headerPage := filepath.Join("./public/templates", "header.html")
-		repoSettingsPage := filepath.Join("./public/templates", "repo-meta.html")
+		repoSettingsPage := filepath.Join("./public/templates", "repo-settings.html")
 		footerPage := filepath.Join("./public/templates", "footer.html")
 
 		tmpl, err := template.ParseFiles(layoutPage, headerPage, repoSettingsPage, footerPage)
@@ -666,23 +666,26 @@ func PostRepoSettingsUser(w http.ResponseWriter, r *http.Request, db *sql.DB, co
 
 					models.InsertRepoMember(db, crm)
 
-					http.Redirect(w, r, "/r/"+reponame+"/meta", http.StatusFound)
+					http.Redirect(w, r, "/r/"+reponame+"/settings", http.StatusFound)
 					return
 				}
 				w.Header().Set("Content-Type", "text/html; charset=utf-8")
 				w.WriteHeader(http.StatusOK)
 				data.RepoUserAddError = "User is already a member of this repository."
 				tmpl.ExecuteTemplate(w, "layout", data)
+				return
 			}
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			w.WriteHeader(http.StatusOK)
 			data.RepoUserAddError = "User is the owner of this repository."
 			tmpl.ExecuteTemplate(w, "layout", data)
+			return
 		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
 		data.RepoUserAddError = "User does not exist. Check if the username is correct or ask the server/sys admin to add this user."
 		tmpl.ExecuteTemplate(w, "layout", data)
+		return
 	}
 
 	http.Redirect(w, r, "/login", http.StatusFound)
@@ -1069,7 +1072,7 @@ func GetRepoCommits(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pk
 	commits := getCommitsFromHash(repoDir, branch, fromHash, 11)
 	data.RepoLogs = *commits
 
-	writeRepoResponse(w, r, db, reponame, "repo-log.html", data, conf)
+	writeRepoResponse(w, r, db, reponame, "repo-commits.html", data, conf)
 	return
 }
 
@@ -1182,7 +1185,7 @@ func GetRepoRefs(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *pkg.B
 
 	data.RepoRefs = rfs
 
-	writeRepoResponse(w, r, db, reponame, "repo-refs.html", data, conf)
+	writeRepoResponse(w, r, db, reponame, "repo-releases.html", data, conf)
 	return
 }
 
@@ -1342,14 +1345,10 @@ func GetCommitDetail(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *p
 	// Remove empty last line
 	lines = lines[:len(lines)-1]
 
-	fmt.Println(lines)
-
 	//filesChanged := strings.TrimSpace(lines[len(lines)-1])
 	ss := strings.Split(lines[0], "||srca-sptra||")
 	var cds CommitDetailStruct
 	cds.Branch = branch
-
-	fmt.Println(ss)
 
 	if len(ss) > 1 {
 		cds.Hash = commitHash
@@ -1361,8 +1360,6 @@ func GetCommitDetail(w http.ResponseWriter, r *http.Request, db *sql.DB, conf *p
 	for _, file := range lines[1:] {
 		cf := CommitFile{}
 		ca := CommitAmpersand{}
-
-		fmt.Println(strings.Fields(file))
 
 		cf.State = strings.Fields(file)[0]
 		cf.Filename = strings.Fields(file)[1]
