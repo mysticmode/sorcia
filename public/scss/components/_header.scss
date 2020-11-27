@@ -33,4 +33,12 @@
           font-weight: normal;
         }
     }
+
+    & .logo {
+        width: 96px;
+        height: 22px;
+        background-image: url("/public/img/sorcia.svg");
+        background-repeat: no-repeat;
+        background-size: cover;
+    }
 }

@@ -18,7 +18,7 @@
     {{if .IsLoggedIn}}
     <header class="header">
         <div class="header__left">
-            <a href="/">home</a>
+            <a href="/" class="logo"></a>
             <input type="text" placeholder="Type here to search.." />
         </div>
         <div class="header__right">
@@ -35,7 +35,7 @@
     {{else}}
     <header class="header">
         <div class="header__left">
-            <a href="/">home</a>
+            <a href="/" class="logo"></a>
             <input type="text" placeholder="Type here to search.." />
         </div>
         {{if .ShowLoginMenu}}
