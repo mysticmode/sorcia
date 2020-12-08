@@ -847,4 +847,265 @@ textarea {
   margin-right: 5px;
 }
 
-.repo-commit .repo-commit__header
+.repo-commit .repo-commit__header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.repo-commit .repo-commit__description {
+  background: var(--brand-bg-1);
+  padding: 10px;
+}
+
+.repo-commit .repo-commit__hash {
+  font-weight: bold;
+}
+
+.repo-commit .repo-commit__profile {
+  display: flex;
+  margin-top: 10px;
+}
+
+.repo-commit .repo-commit__message {
+  margin-top: 10px;
+}
+
+.repo-commit .repo-commit__status {
+  background: var(--brand-bg-1);
+  margin-top: 20px;
+  padding: 10px;
+}
+
+.repo-commit .repo-commit__files-changed {
+  margin-top: 15px;
+}
+
+.repo-commit .repo-commit__files-changed div {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.repo-commit .repo-commit__files-changed div p {
+  margin-right: 10px;
+}
+
+.repo-commit .repo-commit__files-changed div p:last-child {
+  margin-bottom: 0;
+}
+
+.repo-commit .repo-commit__code-lines {
+  margin-top: 20px;
+}
+
+.repo-commit .repo-commit__file {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.repo-commit .repo-commit__file p {
+  margin-right: 10px;
+}
+
+.repo-commit .repo-commit__file div {
+  display: flex;
+  align-items: center;
+}
+
+.repo-commit .repo-commit__file i {
+  font-style: normal;
+  margin: 0 10px;
+}
+
+.repo-commit .repo-commit__code-line {
+  background: var(--brand-bg-1);
+  margin-bottom: 30px;
+  padding: 10px;
+}
+
+.repo-commit .repo-commit__code-line div {
+  margin: 15px 0;
+}
+
+.repo-commit .repo-commit__code-line div:first-child {
+  margin-top: 0;
+}
+
+.repo-commit .repo-commit__code-line .hljs {
+  line-height: 0;
+}
+
+.repo-commit .repo-commit__code-line .green {
+  background-color: var(--hljs-code-green);
+}
+
+.repo-commit .repo-commit__code-line .red {
+  background-color: var(--hljs-code-red);
+}
+
+.repo__meta #repoName,
+.repo__meta #repoDescription {
+  width: 480px;
+}
+
+.repo__meta form {
+  margin-bottom: 50px;
+}
+
+.repo__meta form:last-child {
+  margin-bottom: 0;
+}
+
+.repo__meta .repo__meta__users {
+  margin-bottom: 50px;
+  overflow: hidden;
+}
+
+.repo__meta .repo__meta__users__title {
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.repo__meta .repo__meta__users__item {
+  background: var(--brand-bg-1);
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.repo__meta .repo__meta__users__item p  {
+  margin-right: 5px;
+}
+
+.repo__meta .repo__meta__users__item:last-child {
+  margin-right: 0;
+}
+
+.repo__meta .repo__meta__users__item p.owner {
+  font-weight: bold;
+}
+
+.file-viewer code {
+  line-height: 22px;
+  background: var(--hljs-bg);
+  overflow-x: auto;
+  border: 1px solid var(--brand-border);
+  padding: 10px;
+}
+
+.file-viewer .hljs {
+  background: var(--hljs-bg);
+  color: var(--text-color);
+  padding: 0;
+  overflow: hidden;
+}
+
+.file-viewer .hljs-ln-numbers {
+  color: var(--hljs-ln-color);
+}
+
+.file-viewer .hljs-ln-numbers:hover {
+  color: var(--text-color);
+}
+
+.meta .meta__detail {
+  margin-top: 20px;
+}
+
+.meta .meta__detail .meta__detail__form--site-settings .form__title {
+  margin-bottom: 5px;
+}
+
+.meta .meta__detail .meta__detail__form__info {
+  margin-bottom: 15px;
+}
+
+.meta .meta__detail .meta__detail__form__error {
+  margin-bottom: 15px;
+  color: var(--brand-danger);
+}
+
+.meta .meta__detail .meta__detail__form__current {
+  margin-bottom: 10px;
+}
+
+.meta .meta__detail .meta__detail__form__current div {
+  margin-bottom: 5px;
+}
+
+.meta #profileUsername,
+.meta #profileEmail {
+  background: var(--brand-bg-1);
+}
+
+.meta #profileUsername:focus,
+.meta #profileEmail:focus {
+  border: 1px solid var(--brand-border);
+}
+
+.meta textarea {
+  width: 600px;
+  min-height: 100px;
+}
+
+.meta .meta__keys__title,
+.meta .meta__users__title {
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.meta .meta__keys__item,
+.meta .meta__users__item {
+  background: var(--brand-bg-1);
+  margin-bottom: 10px;
+  padding: 10px;
+  overflow: hidden;
+}
+
+.meta .meta__keys__item div,
+.meta .meta__users__item div {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.meta .meta__keys__item p,
+.meta .meta__users__item p {
+  margin-bottom: 10px;
+}
+
+.meta .meta__keys__buttons a,
+.meta .meta__users__buttons a {
+  margin-right: 20px;
+}
+
+.meta .meta__keys a,
+.meta .meta__users a {
+  float: left;
+}
+
+.meta .meta__users__title {
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.meta .meta__users__item p .create-repo-access {
+  display: flex;
+  align-items: center;
+}
+
+.meta .meta__users__item p .create-repo-access a {
+  margin-left: 10px;
+}
+
+.meta .meta__users__item .admin {
+  font-weight: bold;
+  clear: both;
+}
+
+.meta .meta__users__table th,
+.meta .meta__users__table td {
+  border: 1px solid var(--brand-border);
+  padding: 7px 10px;
+}
