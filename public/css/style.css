@@ -1,0 +1,850 @@
+:root {
+  /*
+   * Brand colors
+   */
+  --brand-primary: #395d9e;
+  --brand-border: #c5c5c5;
+  --brand-danger: #ca5050;
+
+  /*
+   * Background colors
+   */
+  --brand-bg: white;
+  --brand-bg-1: #efefef;
+
+  /*
+   * Button color
+   */
+  --button-bg: var(--brand-primary);
+
+  /*
+   * Text color
+   */
+  --text-color: #222222;
+  --text-color-2: #777777;
+
+  /*
+   * Input color
+   */
+  --input-color: #222222;
+
+  /*
+   * Link text-decoration
+   */
+  --link-text-decoration: none;
+
+  /*
+   * Repo link
+   */
+  --repo-link: none;
+
+  /*
+   * Folder font weight
+   */
+  --folder-font-weight: bold;
+
+  /*
+   * Highlight js
+   */
+  --hljs-bg: var(--brand-bg);
+  --hljs-ln-color: var(--text-color-2);
+
+  /*
+   * Highlight js - code highlight color
+   */
+  --hljs-code-green: #d0f3db;
+  --hljs-code-red: #f7cbcb;
+  --hljs-selection: #f6ffa9;
+
+  /*
+   * Default font
+   */
+  --font-default: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif;
+
+  /*
+   * Source code font
+   */
+  --font-source-code: SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace;
+
+  /*
+   * Default font size
+   */
+  --font-size: 14px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+#overlay {
+  position: fixed;
+  z-index: 999999;
+  width: 100%;
+  height: 100%;
+  background-color: #FFFFFF;
+  left: 0;
+  top: 0;
+  opacity: 0.95;
+}
+
+body {
+    width: 960px;
+    margin: 0 auto 0;
+    font-family: var(--font-default);
+    font-size: var(--font-size);
+    color: var(--text-color);
+}
+
+a {
+    text-decoration: var(--link-text-decoration);
+    color: var(--brand-primary);
+    outline: none;
+}
+
+a:hover {
+  color: darken($color: var(--brand-primary), $amount: 25%);
+}
+
+p {
+    line-height: 24px;
+    word-wrap: break-word;
+}
+
+ul {
+    list-style: none;
+}
+
+pre {
+    overflow-x: auto;
+}
+
+pre code {
+   font-family: var(--font-source-code);
+   font-size: var(--font-size);
+}
+
+pre code table, pre code tbody, pre code tr {
+  width: 100%;
+}
+
+pre code tr {
+  display: flex;
+  align-items: center;
+}
+
+pre code .hljs-ln-numbers {
+  display: inline-block;
+  width: 20px;
+  font-size: 12px;
+  color: var(--text-color-2);
+  text-align: right;
+  margin-right: 20px;
+  cursor: pointer;
+}
+
+pre code .hljs-ln-numbers:hover .hljs-ln-line.hljs-ln-n {
+  color: var(--text-color);
+}
+
+.container {
+    margin: 50px 0;
+    min-height: calc(100vh - 205px);
+}
+
+.container .container__info {
+  width: 220px;
+  margin-right: 30px;
+}
+
+.container .container__info .container__info__fullname {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.container .container__info .container__info__username {
+  color: var(--text-color-2);
+}
+
+.container .container__info .container__info__follow {
+  display: block;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.container .container__info .container__info__bio {
+  margin-top: 10px;
+}
+
+.container .container__info .container__info__website,
+.container .container__info .container__info__email {
+  display: block;
+  margin-top: 10px;
+}
+
+.create-repo {
+    width: 480px;
+}
+
+.create-repo .form,
+.create-repo .form__input,
+.create-repo .form__label {
+  width: 100%;
+}
+
+.button {
+    background: var(--button-bg);
+    font-family: var(--font-default);
+    font-size: var(--font-size);
+    color: white;
+    border: none;
+    padding: 7px 10px;
+    cursor: pointer;
+    outline: none;
+    text-decoration: none;
+}
+
+.button .button--danger {
+  background: var(--brand-danger);
+}
+
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea {
+    font-family: $font-default;
+    font-size: 16px;
+    background: white;
+    color: $input-color;
+    border: 1px solid $brand-border !important;
+    border-radius: 0;
+    padding: 7px 10px;
+    outline: none;
+}
+
+input:focus,
+textarea {
+  border: 1px solid var(--brand-primary);
+}
+
+textarea {
+    resize: vertical;
+    overflow: auto;
+}
+
+.form:first-child {
+  margin-bottom: 50px;
+}
+
+.form__title {
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.form__error {
+  margin-bottom: 15px;
+  color: var(--brand-danger);
+}
+
+.form__group {
+  margin-bottom: 15px;
+}
+
+.form__group .form__group-sub {
+  display: flex;
+  align-items: center;
+}
+
+.checkbox__group {
+  display: flex;
+  align-items: baseline;
+}
+
+.checkbox__group input[type="checkbox"] {
+  margin-right: 5px;
+}
+
+.radio__group {
+  display: flex;
+}
+
+.radio__group div {
+  display: flex;
+  align-items: baseline;
+  margin-right: 20px;
+}
+
+.radio__group div label {
+  margin-right: 5px;
+}
+
+.radio__group div:last-child {
+  margin-right: 0;
+}
+
+.form__username-tag {
+  color: var(--text-color);
+  background: var(--brand-bg-1);
+  padding: 7px 10px;
+  height: 33px;
+  min-width: max-content;
+}
+
+.form__radio-group {
+  display: flex;
+}
+
+.form label,
+.form .form__input {
+  display: block;
+}
+
+.form label {
+  margin-bottom: 5px;
+}
+
+.form .form__input {
+  width: 300px;
+}
+
+.form__submit-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.form i {
+  color: var(--brand-danger);
+  font-style: normal;
+  margin-left: 2px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 35px;
+  margin-top: 15px;
+}
+
+.header .header__left,
+.header .header__right {
+  display: flex;
+  align-items: center;
+}
+
+.header input[type="text"] {
+  width: 420px;
+}
+
+.header a {
+  text-decoration: var(--link-text-decoration);
+  color: var(--text-color);
+  margin-right: 20px;
+}
+
+.header a:last-child {
+  margin-right: 0;
+}
+
+.header a.active,
+.header a:hover {
+  color: var(--brand-primary);
+}
+
+.header .a .button {
+  color: white;
+  font-weight: normal;
+}
+
+.header .logo {
+  width: 90px;
+  height: 22px;
+  background-image: url("/public/img/sorcia.svg");
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.footer {
+  width: 100%;
+  background: var(--brand-bg);
+  border-top: 1px solid var(--brand-border);
+  text-align: center;
+  padding: 10px 0;
+}
+
+.footer a {
+  font-weight: bold;
+}
+
+.onboard {
+  width: 300px;
+}
+
+.onboard .onboard__form:first-child {
+  margin-bottom: 50px;
+}
+
+.onboard .onboard__form__title {
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.onboard .onboard__form__error {
+  margin-bottom: 15px;
+  color: var(--brand-danger);
+}
+
+.onboard .onboard__form__group {
+  margin-bottom: 15px;
+}
+
+.onboard .onboard__form label,
+.onboard .onboard__form__input {
+  display: block;
+}
+
+.onboard .onboard__form label {
+  margin-bottom: 5px;
+}
+
+.onboard .onboard__form__input {
+  width: 300px;
+}
+
+.onboard .onboard__form__submit-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.onboard .onboard__form i {
+  color: var(--brand-danger);
+  font-style: normal;
+  margin-left: 2px;
+}
+
+.git {
+  display: flex;
+  justify-content: space-between;
+}
+
+.git .git__repos {
+  width: 710px;
+}
+
+.git .git__repos .git__repos__title {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.git .git__repos li {
+  background: var(--brand-bg-1);
+  padding: 10px;
+  margin-bottom: 10px;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.git .git__repos a {
+  display: flex;
+  align-items: center;
+  margin-bottom: 7px;
+  text-decoration: none;
+}
+
+.git .git__repos i,
+.repo .repo__title i {
+  display: inline-block;
+  font-weight: normal;
+  font-style: normal;
+  font-size: 15px;
+  color: white;
+  background: var(--text-color-2);
+  text-decoration: none;
+  padding: 2px 4px;
+  margin-left: 7px;
+}
+
+.git .git__repos p {
+  font-size: 14px;
+  font-weight: normal;
+}
+
+.repo .repo__title {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.repo .repo__title a {
+  display: flex;
+  align-items: center;
+}
+
+.repo .repo__description {
+  margin-top: 7px;
+}
+
+.repo .repo__summary {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.repo .repo__summary li,
+.repo .repo__log li {
+  background: var(--brand-bg-1);
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.repo .repo__summary li:last-child,
+.repo .repo__log li:last-child {
+  margin-bottom: 0;
+}
+
+.repo .repo__summary li div,
+.repo .repo__log li div{
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.repo .repo__summary .repo__summary__right {
+  width: 410px;
+}
+
+.repo .repo__latest-commits {
+  width: 520px;
+}
+
+.repo .repo__latest-commits li div {
+  display: flex;
+  align-items: start;
+}
+
+.repo .repo__latest-commits li div p:first-child,
+.repo .repo__log .repo__log__info {
+  display: flex;
+  align-items: start;
+}
+
+.repo .repo__latest-commits li div p:first-child a,
+.repo .repo__log .repo__log__info a {
+  margin-right: 5px;
+}
+
+.repo .repo__latest-commits li div p:first-child span,
+.repo .repo__log .repo__log__info span {
+  margin-left: 5px;
+}
+
+.repo .repo__log {
+  width: 100%;
+  margin-top: 20px;
+}
+
+.repo .repo__pagination {
+  margin-top: 20px;
+  overflow: hidden;
+}
+
+.repo .repo__pagination a {
+  float: right;
+}
+
+.repo .repo__clone {
+  margin-top: 20px;
+}
+
+.repo .repo__clone .repo__clone__title {
+  font-weight: bold;
+}
+
+.repo .repo__clone .repo__clone__item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 410px;
+  margin-top: 5px;
+}
+
+.repo .repo__clone .repo__clone__item input[type="text"] {
+  width: 360px;
+}
+
+.repo .repo__owner .repo__owner__title {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.repo .repo__menu {
+  display: flex;
+  margin-top: 25px;
+  border-bottom: 1px solid var(--brand-border);
+}
+
+.repo .repo__menu .repo__menu__item {
+  color: var(--text-color);
+  margin-right: 20px;
+  padding: 7px 10px;
+  text-decoration: none;
+}
+
+.repo .repo__menu .repo__menu__item:hover {
+  background: var(--brand-bg-1);
+  color: var(--text-color);
+}
+
+.repo .repo__menu .repo__menu__item--active {
+  background: var(--brand-bg-1);
+}
+
+.repo .repo__menu .repo__menu__item:last-child {
+  margin-right: 0;
+}
+
+.repo .repo__sub-menu {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  width: 100%;
+  background: var(--brand-bg-1);
+  padding: 10px;
+}
+
+.repo .repo__sub-menu .repo__sub-menu__item {
+  margin-right: 10px;
+}
+
+.repo .repo__sub-menu .repo__sub-menu__item:last-child {
+  margin-right: 0;
+}
+
+.repo .repo__sub-menu .branch {
+  display: flex;
+  align-items: center;
+  margin-right: 20px;
+}
+
+.repo .repo__sub-menu .branch p {
+  margin-right: 5px;
+}
+
+.repo .repo__sub-menu .branch select {
+  height: auto;
+  font-size: 14px;
+}
+
+.repo .repo__sub-menu__bullet {
+  float: left;
+  color: var(--text-color-2);
+  margin-right: 10px;
+  font-size: 22px;
+}
+
+.readme,
+.repo-tree,
+.file-viewer {
+  margin-top: 20px;
+}
+
+.readme {
+  border: 1px solid var(--brand-border);
+}
+
+.readme .readme__title, .readme .readme__content {
+  padding: 10px 20px;
+}
+
+.readme .readme__title {
+  font-weight: bold;
+  background: var(--brand-bg-1);
+  border-bottom: 1px solid var(--brand-border);
+}
+
+.readme h1,
+.readme h2,
+.readme h3,
+.readme h4,
+.readme h5,
+.readme h6 {
+  margin-bottom: 10px;
+  border-bottom: 1px solid $brand-border;
+}
+
+.readme p {
+  margin-bottom: 20px;
+}
+
+.readme ul,
+.readme ol {
+  list-style: inherit;
+  margin: 0 20px 15px;
+}
+
+.readme li {
+  margin-bottom: 10px;
+  line-height: 26px;
+}
+
+.readme .readme li:last-child {
+  margin-bottom: 0;
+}
+
+.readme pre,
+.readme code {
+  font-family: var(--font-source-code);
+  font-size: 14px;
+  line-height: 26px;
+  background: var(--brand-bg-1);
+}
+
+.readme pre {
+  margin-bottom: 20px;
+  padding: 5px;
+}
+
+.repo-tree {
+  border: 1px solid var(--brand-border);
+}
+
+.repo-tree .repo-tree__info {
+  padding: 10px;
+  border-bottom: 1px solid var(--brand-border);
+  overflow: hidden;
+  display: flex;
+}
+
+.repo-tree .repo-tree__info:last-child {
+  border-bottom: none;
+}
+
+.repo-tree .repo-tree__info a {
+  cursor: pointer;
+}
+
+.repo-tree .repo-tree__info a:first-child {
+  width: 180px;
+  margin-right: 20px;
+  flex: 0 1 auto;
+}
+
+.repo-tree .repo-tree__info .repo-tree__info__message {
+  float: left;
+  margin-right: 20px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: $text-color;
+  flex: 1 1 auto;
+}
+
+.repo-tree .repo-tree__info .repo-tree__info__message:hover {
+  text-decoration: underline;
+}
+
+.repo-tree .repo-tree__info .repo-tree__info__date {
+  float: left;
+  width: 140px;
+  text-align: right;
+  opacity: 0.7;
+  line-height: inherit;
+}
+
+.repo-tree .repo-tree__file {
+  color: var(--text-color);
+}
+
+.repo-tree .repo-tree__directory {
+  font-weight: var(--folder-font-weight);
+}
+
+.repo-refs .repo-refs__info {
+  background: var(--brand-bg-1);
+  margin-bottom: 10px;
+  padding: 10px;
+}
+
+.repo-refs .repo-refs__info:last-child {
+  margin-bottom: 0;
+}
+
+.repo-refs .repo-refs__files {
+  display: flex;
+  margin-top: 10px;
+}
+
+.repo-refs .repo-refs__files a {
+  text-decoration: underline;
+  margin-right: 20px;
+}
+
+.repo-refs .repo-refs__files a:last-child {
+  margin-right: 0;
+}
+
+.repo-refs .repo-refs__version {
+  font-weight: bold;
+}
+
+.repo-refs .repo-refs__message {
+  margin-top: 10px;
+}
+
+.repo-contributors .repo-contributors__info {
+  background: $brand-bg-1;
+  margin-bottom: 10px;
+  padding: 10px;
+}
+
+.repo-contributors .repo-contributors__info:last-child {
+  margin-bottom: 0;
+}
+
+.repo-contributors .repo-contributors__title {
+  display: flex;
+  margin-bottom: 10px;
+}
+
+.repo-contributors .repo-contributors__name {
+  word-wrap: break-word;
+}
+
+.repo-contributors .repo-contributors__commits {
+  font-weight: bold;
+}
+
+.latest-commit,
+.path {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--brand-border);
+  padding: 10px;
+}
+
+.latest-commit .latest-commit__name {
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.latest-commit a {
+  text-decoration: underline;
+  margin-right: 10px;
+}
+
+.latest-commits .latest-commits__date {
+  opacity: 0.8;
+}
+
+.path p {
+  margin-right: 5px;
+}
+
+.repo-commit .repo-commit__header
