@@ -1,0 +1,19 @@
+#!/bin/sh
+#
+# PROVIDE: sorcia
+# REQUIRE: networking
+# KEYWORD:
+
+. /etc/rc.subr
+
+name="sorcia"
+rcvar="sorcia_enable"
+sorcia_command="/home/git/sorcia/sorcia web"
+pidfile="/var/run/${name}.pid"
+command="/usr/sbin/daemon"
+command_args="-P ${pidfile} -u root -r -f ${sorcia_command}"
+
+load_rc_config $name
+: ${sorcia_enable:=no}
+
+run_rc_command "$1"
